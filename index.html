@@ -494,6 +494,7 @@ body.dark .kot-cancel-note { background: #2E1F4A; }
     <div id="hdr-right">
       <span id="hdr-name"></span>
       <span id="hdr-user"></span>
+      <span id="fb-status" title="Local only" style="width:9px;height:9px;border-radius:50%;background:#9CA3AF;flex-shrink:0;"></span>
       <button id="theme-btn" onclick="toggleTheme()" title="Toggle theme">&#127769;</button>
       <button id="logout-btn" onclick="logout()" title="Sign out" style="display:none;">&#9211;</button>
     </div>
@@ -520,6 +521,28 @@ body.dark .kot-cancel-note { background: #2E1F4A; }
 <div id="rct-wrap" style="display:none;">
   <div id="rct-inner" style="font-family:'Courier New',monospace;font-size:13px;width:280px;color:#000;"></div>
 </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import {
+    getFirestore, collection, doc, setDoc, deleteDoc, getDocs, onSnapshot, writeBatch
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBZoKA9WNUkdWfykPKP0pUw1wuka7PI0yk",
+    authDomain: "tycc-9a6d2.firebaseapp.com",
+    projectId: "tycc-9a6d2",
+    storageBucket: "tycc-9a6d2.firebasestorage.app",
+    messagingSenderId: "521992294111",
+    appId: "1:521992294111:web:642daa9b0675e565b1236a"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const fbDb = getFirestore(fbApp);
+
+  window.__fb = { fbDb, collection, doc, setDoc, deleteDoc, getDocs, onSnapshot, writeBatch };
+  window.dispatchEvent(new Event('fb-ready'));
+</script>
 
 <script>
 // ═══════════════════════════════════════════════════════
@@ -725,7 +748,186 @@ function toggleTheme() {
 // ═══════════════════════════════════════════════════════
 //  STORAGE
 // ═══════════════════════════════════════════════════════
-function save() { localStorage.setItem('rb2_data', JSON.stringify(D)); }
+function save() {
+  localStorage.setItem('rb2_data', JSON.stringify(D));
+  scheduleFirebaseSync();
+}
+
+// ── Firebase (Firestore) real-time sync ──
+const FB_SYNC_COLLECTIONS = ['menu','tables','orders','users','customers','dueSettlements','vendors','expenses','kitchens','sections'];
+const FB_META_KEYS = ['settings','billSeq','kotSeq','tablesRenumbered'];
+let fbOutlet = (D.settings && D.settings.outletCode) || 'TYCC';
+let fbLastSynced = {};
+let fbLastMetaJson = null;
+let fbSyncTimer = null;
+let fbReady = false;
+let fbStatusEl = null;
+
+function fbSetStatus(state) {
+  if (!fbStatusEl) fbStatusEl = document.getElementById('fb-status');
+  if (!fbStatusEl) return;
+  const map = { connected: ['#16A34A','Cloud sync on'], syncing: ['#D97706','Syncing…'], offline: ['#9CA3AF','Local only'], error: ['#DC2626','Sync error'] };
+  const [color, title] = map[state] || map.offline;
+  fbStatusEl.style.background = color;
+  fbStatusEl.title = title;
+}
+
+function scheduleFirebaseSync() {
+  if (!fbReady) return;
+  fbSetStatus('syncing');
+  clearTimeout(fbSyncTimer);
+  fbSyncTimer = setTimeout(syncToFirebase, 700);
+}
+
+async function syncToFirebase() {
+  const { fbDb, doc, writeBatch } = window.__fb;
+  try {
+    const batch = writeBatch(fbDb);
+    let hasWrites = false;
+    for (const key of FB_SYNC_COLLECTIONS) {
+      const arr = Array.isArray(D[key]) ? D[key] : [];
+      const prevMap = fbLastSynced[key] || new Map();
+      const curIds = new Set();
+      for (const item of arr) {
+        if (item == null || item.id == null) continue;
+        const id = String(item.id);
+        curIds.add(id);
+        const json = JSON.stringify(item);
+        if (prevMap.get(id) !== json) {
+          batch.set(doc(fbDb, 'outlets', fbOutlet, key, id), item);
+          hasWrites = true;
+        }
+      }
+      for (const id of prevMap.keys()) {
+        if (!curIds.has(id)) {
+          batch.delete(doc(fbDb, 'outlets', fbOutlet, key, id));
+          hasWrites = true;
+        }
+      }
+    }
+    const meta = {};
+    FB_META_KEYS.forEach(k => meta[k] = D[k]);
+    const metaJson = JSON.stringify(meta);
+    if (fbLastMetaJson !== metaJson) {
+      batch.set(doc(fbDb, 'outlets', fbOutlet, 'meta', 'main'), meta);
+      hasWrites = true;
+    }
+    if (hasWrites) {
+      await Promise.race([batch.commit(), new Promise((_, rej) => setTimeout(() => rej(new Error('fb commit timeout')), 20000))]);
+    }
+    for (const key of FB_SYNC_COLLECTIONS) {
+      const map = new Map();
+      for (const item of (Array.isArray(D[key]) ? D[key] : [])) {
+        if (item != null && item.id != null) map.set(String(item.id), JSON.stringify(item));
+      }
+      fbLastSynced[key] = map;
+    }
+    fbLastMetaJson = metaJson;
+    fbSetStatus('connected');
+  } catch (e) {
+    console.error('Firebase sync failed', e);
+    fbSetStatus('error');
+  }
+}
+
+function applyFbSnapshotChange(key, change) {
+  const arr = Array.isArray(D[key]) ? D[key] : (D[key] = []);
+  const id = change.doc.id;
+  if (change.type === 'removed') {
+    const idx = arr.findIndex(x => String(x.id) === id);
+    if (idx >= 0) { arr.splice(idx, 1); return true; }
+    return false;
+  }
+  const data = change.doc.data();
+  const json = JSON.stringify(data);
+  (fbLastSynced[key] || (fbLastSynced[key] = new Map())).set(id, json);
+  const idx = arr.findIndex(x => String(x.id) === id);
+  if (idx >= 0) {
+    if (JSON.stringify(arr[idx]) === json) return false;
+    arr[idx] = data;
+  } else {
+    arr.push(data);
+  }
+  return true;
+}
+
+function setupFirebaseListeners() {
+  const { fbDb, collection, doc, onSnapshot } = window.__fb;
+  FB_SYNC_COLLECTIONS.forEach(key => {
+    onSnapshot(collection(fbDb, 'outlets', fbOutlet, key), snap => {
+      if (snap.metadata.hasPendingWrites) return;
+      let changed = false;
+      snap.docChanges().forEach(ch => { if (applyFbSnapshotChange(key, ch)) changed = true; });
+      if (changed) {
+        localStorage.setItem('rb2_data', JSON.stringify(D));
+        renderMain();
+      }
+    }, err => { console.error('Firebase listener error', err); fbSetStatus('error'); });
+  });
+  onSnapshot(doc(fbDb, 'outlets', fbOutlet, 'meta', 'main'), snap => {
+    if (snap.metadata.hasPendingWrites || !snap.exists()) return;
+    const data = snap.data();
+    const json = JSON.stringify(data);
+    if (json === fbLastMetaJson) return;
+    fbLastMetaJson = json;
+    FB_META_KEYS.forEach(k => { if (data[k] !== undefined) D[k] = data[k]; });
+    localStorage.setItem('rb2_data', JSON.stringify(D));
+    applyTheme();
+    renderMain();
+  }, err => { console.error('Firebase meta listener error', err); fbSetStatus('error'); });
+}
+
+async function initFirebaseSync() {
+  const { fbDb, collection, getDocs } = window.__fb;
+  try {
+    fbOutlet = (D.settings && D.settings.outletCode) || 'TYCC';
+    fbSetStatus('syncing');
+    const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('fb timeout')), ms))]);
+    let remoteHasData = false;
+    for (const key of FB_SYNC_COLLECTIONS) {
+      try {
+        const snap = await withTimeout(getDocs(collection(fbDb, 'outlets', fbOutlet, key)), 15000);
+        if (!snap.empty) {
+          remoteHasData = true;
+          D[key] = snap.docs.map(d => d.data());
+          const map = new Map();
+          snap.docs.forEach(d => map.set(d.id, JSON.stringify(d.data())));
+          fbLastSynced[key] = map;
+        }
+      } catch (e) { console.error('Firebase fetch failed for', key, e); }
+    }
+    try {
+      const metaSnap = await withTimeout(getDocs(collection(fbDb, 'outlets', fbOutlet, 'meta')), 12000);
+      const metaDoc = metaSnap.docs.find(d => d.id === 'main');
+      if (metaDoc) {
+        remoteHasData = true;
+        const data = metaDoc.data();
+        FB_META_KEYS.forEach(k => { if (data[k] !== undefined) D[k] = data[k]; });
+        fbLastMetaJson = JSON.stringify(data);
+      }
+    } catch (e) { console.error('Firebase meta fetch failed', e); }
+    fbReady = true;
+    if (!remoteHasData) {
+      // first run: seed Firestore with current local data
+      await syncToFirebase();
+    } else {
+      localStorage.setItem('rb2_data', JSON.stringify(D));
+      ensureMenuItemDefaults();
+      applyTheme();
+      renderMain();
+      buildNav();
+      fbSetStatus('connected');
+    }
+    setupFirebaseListeners();
+  } catch (e) {
+    console.error('Firebase init failed', e);
+    fbReady = true;
+    setupFirebaseListeners();
+    fbSetStatus('error');
+  }
+}
+
+window.addEventListener('fb-ready', () => { initFirebaseSync(); });
 
 function load() {
   const raw = localStorage.getItem('rb2_data');
