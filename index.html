@@ -95,7 +95,8 @@ nav button.active { background: rgba(255,255,255,0.22); color: #fff; }
 .ctx-menu button.ctx-danger { color: var(--danger); }
 .ctx-menu button.ctx-danger:hover { background: #FEE2E2; }
 .ctx-menu .ctx-ico { font-size: 15px; }
-.type-bar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+.type-bar { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.type-bar .btn { padding: 18px; font-size: 14.5px; font-weight: 600; border-radius: 12px; justify-content: center; }
 .otype-badge { display: inline-block; padding: 2px 9px; border-radius: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
 .ot-dinein   { background: #DBEAFE; color: #1D4ED8; }
 .ot-takeaway { background: #FEF3C7; color: #B45309; }
@@ -799,7 +800,7 @@ function save() {
 
 // ── Firebase (Firestore) real-time sync ──
 const FB_SYNC_COLLECTIONS = ['menu','tables','orders','users','customers','dueSettlements','vendors','expenses','kitchens','sections'];
-const FB_META_KEYS = ['settings','billSeq','kotSeq','tablesRenumbered'];
+const FB_META_KEYS = ['settings','billSeq','kotSeq','tablesRenumbered','tablesRenumberedV2'];
 let fbOutlet = (D.settings && D.settings.outletCode) || 'TYCC';
 let fbLastSynced = {};
 let fbLastMetaJson = null;
@@ -955,8 +956,10 @@ async function initFirebaseSync() {
       // first run: seed Firestore with current local data
       await syncToFirebase();
     } else {
-      localStorage.setItem('rb2_data', JSON.stringify(D));
       ensureMenuItemDefaults();
+      const renumbered = fixTableNumbering();
+      localStorage.setItem('rb2_data', JSON.stringify(D));
+      if (renumbered) scheduleFirebaseSync();
       applyTheme();
       renderMain();
       buildNav();
@@ -1013,26 +1016,10 @@ function load() {
         D.sections = [{ id: 'sec1', name: 'Main' }];
       }
       D.tables.forEach(tb => { if (!tb.sectionId) tb.sectionId = D.sections[0].id; });
-      // one-time renumber of auto-named "Table N" entries to be globally unique, section by section
-      if (!D.tablesRenumbered) {
-        let n = 1;
-        D.sections.forEach(sec => {
-          D.tables.filter(tb => tb.sectionId === sec.id).forEach(tb => {
-            if (/^Table \d+$/.test(tb.name)) {
-              const newName = 'Table ' + n;
-              if (newName !== tb.name) {
-                if (tb.orderId) {
-                  const o = D.orders.find(x => x.id === tb.orderId);
-                  if (o) o.tableName = newName;
-                }
-                tb.name = newName;
-              }
-              n++;
-            }
-          });
-        });
-        D.tablesRenumbered = true;
-      }
+      // renumber auto-named "Table N" entries to be sequential & unique, section by section
+      fixTableNumbering();
+      D.tablesRenumbered = true;
+      D.tablesRenumberedV2 = true;
       // migrate orders to have a type
       D.orders.forEach(o => { if (!o.type) o.type = 'dine-in'; });
       // assign sequential bill numbers to existing paid bills lacking one
@@ -1091,6 +1078,43 @@ function nextItemCode(excludeId) {
 
 function makeTables(n, sectionId) {
   return Array.from({length:n}, (_,i) => ({ id:'t'+(i+1), name:'Table '+(i+1), status:'available', orderId:null, sectionId }));
+}
+
+// Sort key for table display order: numeric position for auto-named "Table N" entries
+// (so display stays 1,2,3...N regardless of underlying array/storage order), custom names sort last.
+function tableSortNum(name) {
+  const m = /^Table (\d+)$/.exec(name);
+  return m ? parseInt(m[1], 10) : Infinity;
+}
+
+// Sections sorted alphabetically/numerically (ascending) for display and table numbering order
+function sortedSections() {
+  return D.sections.slice().sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+}
+
+// Idempotent: renumbers auto-named "Table N" entries section by section (in sorted section order)
+// so they're always sequential 1..N with no gaps/duplicates. Returns true if anything changed.
+function fixTableNumbering() {
+  let n = 1, changed = false;
+  sortedSections().forEach(sec => {
+    D.tables.filter(tb => tb.sectionId === sec.id)
+      .map(tb => ({ tb, num: /^Table (\d+)$/.exec(tb.name) }))
+      .filter(x => x.num)
+      .sort((a, b) => parseInt(a.num[1], 10) - parseInt(b.num[1], 10))
+      .forEach(({ tb }) => {
+        const newName = 'Table ' + n;
+        if (newName !== tb.name) {
+          if (tb.orderId) {
+            const o = D.orders.find(x => x.id === tb.orderId);
+            if (o) o.tableName = newName;
+          }
+          tb.name = newName;
+          changed = true;
+        }
+        n++;
+      });
+  });
+  return changed;
 }
 
 // Next free sequential number for auto-named "Table N" entries, so numbering stays unique across all sections
@@ -1238,12 +1262,12 @@ function tablesHTML() {
       </div>` : ''}
     ${D.tables.some(t => t.splitGroup) ? `<p class="merge-hint">&#9986; ${t('mergeHint')}</p>` : ''}
     ${S.selectedTables.length ? mergeBarHTML() : ''}
-    ${D.sections.map(sectionHTML).join('')}
+    ${sortedSections().map(sectionHTML).join('')}
     <button class="btn btn-ghost" style="margin-top:4px;" onclick="showAddSectionModal()">+ ${t('addSection')}</button>`;
 }
 
 function sectionHTML(sec) {
-  const tables = D.tables.filter(t => t.sectionId === sec.id);
+  const tables = D.tables.filter(t => t.sectionId === sec.id).slice().sort((a, b) => tableSortNum(a.name) - tableSortNum(b.name));
   const occ = tables.filter(t => t.status === 'occupied').length;
   return `
     <div class="sec-hdr">
@@ -4780,7 +4804,7 @@ function settingsHTML() {
 
       <div class="card">
         <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('tableManagement')}</h3>
-        ${D.sections.map(sec => {
+        ${sortedSections().map(sec => {
           const cnt = D.tables.filter(tb => tb.sectionId === sec.id).length;
           return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
             <div>
