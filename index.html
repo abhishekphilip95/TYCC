@@ -188,7 +188,7 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
 .tbl-items { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
 /* ── Order Layout ── */
-.order-wrap { display: flex; flex-direction: column; height: 100%; }
+.order-wrap { display: flex; flex-direction: column; height: 100%; flex: 1; min-width: 0; }
 .back-bar {
   padding: 10px 16px; background: var(--card);
   border-bottom: 1px solid var(--border);
@@ -198,17 +198,52 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
 .back-bar .order-id { margin-left: auto; font-size: 11.5px; color: var(--muted); font-family: monospace; }
 .order-split { display: flex; flex: 1; overflow: hidden; }
 
+/* Category sidebar */
+.menu-area { display: flex; flex: 1; overflow: hidden; }
+.cat-sidebar {
+  width: 132px; flex-shrink: 0; overflow-y: auto;
+  border-right: 1px solid var(--border); background: var(--card);
+  display: flex; flex-direction: column; gap: 3px; padding: 8px;
+}
+.cat-side-btn {
+  text-align: left; padding: 9px 10px; border-radius: 8px;
+  border: none; background: transparent; font-size: 12.5px;
+  font-weight: 500; cursor: pointer; transition: background 0.12s, color 0.12s;
+  color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cat-side-btn:hover { background: var(--hover); }
+.cat-side-btn.active { background: var(--primary); color: #fff; }
+
 /* Menu panel */
 .menu-pane {
   flex: 1; display: flex; flex-direction: column;
   overflow: hidden; border-right: 1px solid var(--border);
 }
+.items-scroll { flex: 1; overflow-y: auto; }
+.cat-section-hdr {
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  background: var(--card); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 1;
+}
+.cat-section-hdr .cat-count { margin-left: auto; font-size: 11.5px; color: var(--muted); font-weight: 400; }
+.chev { display: inline-block; transition: transform 0.15s; font-size: 11px; color: var(--muted); }
+.cat-section.collapsed .chev { transform: rotate(-90deg); }
+.cat-section.collapsed .items-grid { display: none; }
+.mgmt-cat-card.collapsed .chev { transform: rotate(-90deg); }
+.mgmt-cat-card.collapsed .data-tbl { display: none; }
 .pane-hdr {
   padding: 12px 16px; background: var(--card);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
 }
 .pane-hdr h3 { font-size: 14.5px; font-weight: 600; flex: 1; }
+.order-pane-table {
+  background: var(--primary); color: #fff;
+  font-size: 12.5px; font-weight: 700;
+  padding: 4px 12px; border-radius: 8px;
+  white-space: nowrap;
+}
 .menu-search-box { padding: 8px 12px 0; flex-shrink: 0; position: relative; }
 .menu-search-box input {
   width: 100%; padding: 7px 10px 7px 28px;
@@ -216,24 +251,13 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
 }
 .menu-search-box input:focus { outline: none; border-color: var(--primary); }
 .search-ico { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); pointer-events: none; }
-.cat-tabs {
-  display: flex; gap: 6px; padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto; flex-shrink: 0; background: var(--card);
-}
-.cat-tabs::-webkit-scrollbar { height: 0; }
-.cat-btn {
-  padding: 5px 13px; border-radius: 20px;
-  border: 1.5px solid var(--border); background: transparent;
-  font-size: 12.5px; font-weight: 500; cursor: pointer;
-  white-space: nowrap; transition: all 0.12s;
-}
-.cat-btn:hover { border-color: var(--primary); color: var(--primary); }
-.cat-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
 .items-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 10px; padding: 12px; overflow-y: auto; flex: 1;
+  gap: 10px; padding: 12px;
 }
+@media (min-width: 1280px) { .items-grid { grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); } }
+@media (min-width: 1600px) { .items-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); } }
+@media (max-width: 760px) { .cat-sidebar { width: 92px; } .items-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); } }
 .item-card {
   background: var(--card); border: 1.5px solid var(--border);
   border-radius: 10px; padding: 12px 10px; cursor: pointer;
@@ -260,7 +284,7 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
 
 /* Order panel */
 .order-pane {
-  width: 340px; flex-shrink: 0;
+  width: 420px; flex-shrink: 0;
   display: flex; flex-direction: column;
   overflow: hidden; background: var(--card);
 }
@@ -579,6 +603,8 @@ let S = {
   accountsTab: 'expenditure',
   billPayMethod: 'Cash',
   kotKitchenFilter: [],
+  collapsedCats: [],
+  mgmtCollapsedCats: [],
 };
 
 let D = {
@@ -594,6 +620,8 @@ let D = {
   vendors: [],
   expenses: [],
   kitchens: [],
+  categoryOrder: {},
+  categoryActive: {},
 };
 let editState = null;
 const ROLES = ['Owner', 'Manager', 'Cashier', 'Waiter'];
@@ -637,6 +665,8 @@ const I18N = {
     exportMenuCsv:'Export CSV', importMenuCsv:'Import CSV', menuCsvExported:'Menu exported', menuCsvImported:'Menu imported: %s added, %s updated',
     invalidMenuCsv:'Invalid or empty CSV file', confirmImportMenuCsv:'Import menu items from this CSV? Existing items with matching codes will be updated.',
     activeInBilling:'Active (show in billing)', reduceInventory:'Reduce inventory on billing', hidden:'hidden',
+    mostSelling:'Most Selling', all:'All', categoryOrder:'Category Order', noItemsFound:'No items found',
+    catShowInBilling:'Show in billing',
     salesReports:'Sales Reports', revenue:'Revenue', totalRevenue:'Total Revenue', menuItems:'Menu Items', topSelling:'Top Selling Items', noOrders:'No orders on this date',
     restaurantInfo:'Restaurant Info', restaurantName:'Restaurant Name', currency:'Currency Symbol', taxRate:'Tax Rate (%)', saveSettings:'Save Settings',
     tableManagement:'Table Management', numberOfTables:'Number of Tables', updateTables:'Update Tables',
@@ -709,6 +739,8 @@ const I18N = {
     exportMenuCsv:'CSV \u0928\u093F\u0930\u094D\u092F\u093E\u0924 \u0915\u0930\u0947\u0902', importMenuCsv:'CSV \u0906\u092F\u093E\u0924 \u0915\u0930\u0947\u0902', menuCsvExported:'\u092E\u0947\u0928\u0942 \u0928\u093F\u0930\u094D\u092F\u093E\u0924 \u0939\u0941\u0906', menuCsvImported:'\u092E\u0947\u0928\u0942 \u0906\u092F\u093E\u0924 \u0939\u0941\u0906: %s \u0928\u090F \u091C\u0941\u0921\u093C\u0947, %s \u0905\u0926\u094D\u092F\u0924\u0928',
     invalidMenuCsv:'\u0905\u0935\u0948\u0927 \u092F\u093E \u0930\u093F\u0915\u094D\u0924 CSV \u092B\u093C\u093E\u0907\u0932\u0964', confirmImportMenuCsv:'\u0907\u0938 CSV \u0938\u0947 \u092E\u0947\u0928\u0942 \u0906\u0907\u091F\u092E \u0906\u092F\u093E\u0924 \u0915\u0930\u0947\u0902? \u092E\u093F\u0932\u0924\u0947 \u0915\u094B\u0921 \u0935\u093E\u0932\u0947 \u092E\u094C\u091C\u0942\u0926\u093E \u0906\u0907\u091F\u092E \u0905\u0926\u094D\u092F\u0924\u0928 \u0939\u094B\u0902\u0917\u0947\u0964',
     activeInBilling:'\u0938\u0915\u094D\u0930\u093F\u092F (\u092C\u093F\u0932\u093F\u0902\u0917 \u092E\u0947\u0902 \u0926\u093F\u0916\u093E\u090F\u0902)', reduceInventory:'\u092C\u093F\u0932\u093F\u0902\u0917 \u092A\u0930 \u0938\u094D\u091F\u0949\u0915 \u0918\u091F\u093E\u0913\u0902', hidden:'\u091B\u0941\u092A\u093E \u0939\u0941\u0906',
+    mostSelling:'\u0938\u0930\u094D\u0935\u093E\u0927\u093F\u0915 \u092C\u093F\u0915\u0928\u0947 \u0935\u093E\u0932\u0947', all:'\u0938\u092D\u0940', categoryOrder:'\u0936\u094D\u0930\u0947\u0923\u0940 \u0915\u094D\u0930\u092E', noItemsFound:'\u0915\u094B\u0908 \u0906\u0907\u091F\u092E \u0928\u0939\u0940\u0902 \u092E\u093F\u0932\u093E',
+    catShowInBilling:'\u092C\u093F\u0932\u093F\u0902\u0917 \u092E\u0947\u0902 \u0926\u093F\u0916\u093E\u090F\u0902',
     salesReports:'\u092C\u093F\u0915\u094D\u0930\u0940 \u0930\u093F\u092A\u094B\u0930\u094D\u091F', revenue:'\u0906\u092F', totalRevenue:'\u0915\u0941\u0932 \u0906\u092F', menuItems:'\u092E\u0947\u0928\u0942 \u0906\u0907\u091F\u092E', topSelling:'\u0938\u092C\u0938\u0947 \u0905\u0927\u093F\u0915 \u092C\u093F\u0915\u0928\u0947 \u0935\u093E\u0932\u0947', noOrders:'\u0907\u0938 \u0924\u093E\u0930\u0940\u0916 \u0915\u094B \u0915\u094B\u0908 \u0911\u0930\u094D\u0921\u0930 \u0928\u0939\u0940\u0902',
     restaurantInfo:'\u0930\u0947\u0938\u094D\u0924\u0930\u093E\u0902 \u091C\u093E\u0928\u0915\u093E\u0930\u0940', restaurantName:'\u0930\u0947\u0938\u094D\u0924\u0930\u093E\u0902 \u0915\u093E \u0928\u093E\u092E', currency:'\u092E\u0941\u0926\u094D\u0930\u093E \u091A\u093F\u0939\u094D\u0928', taxRate:'\u0915\u0930 \u0926\u0930 (%)', saveSettings:'\u0938\u0947\u091F\u093F\u0902\u0917 \u0938\u0939\u0947\u091C\u0947\u0902',
     tableManagement:'\u091F\u0947\u092C\u0932 \u092A\u094D\u0930\u092C\u0902\u0927\u0928', numberOfTables:'\u091F\u0947\u092C\u0932 \u0915\u0940 \u0938\u0902\u0916\u094D\u092F\u093E', updateTables:'\u091F\u0947\u092C\u0932 \u0905\u092A\u0921\u0947\u091F',
@@ -800,7 +832,7 @@ function save() {
 
 // ── Firebase (Firestore) real-time sync ──
 const FB_SYNC_COLLECTIONS = ['menu','tables','orders','users','customers','dueSettlements','vendors','expenses','kitchens','sections'];
-const FB_META_KEYS = ['settings','billSeq','kotSeq','tablesRenumbered','tablesRenumberedV2'];
+const FB_META_KEYS = ['settings','billSeq','kotSeq','tablesRenumbered','tablesRenumberedV2','categoryOrder','categoryActive'];
 let fbOutlet = (D.settings && D.settings.outletCode) || 'TYCC';
 let fbLastSynced = {};
 let fbLastMetaJson = null;
@@ -1010,6 +1042,8 @@ function load() {
       if (!s.billPrinter || typeof s.billPrinter !== 'object') s.billPrinter = { enabled: true, size: '80mm' };
       if (typeof s.billPrinter.enabled !== 'boolean') s.billPrinter.enabled = true;
       if (!s.billPrinter.size) s.billPrinter.size = '80mm';
+      if (!D.categoryOrder || typeof D.categoryOrder !== 'object') D.categoryOrder = {};
+      if (!D.categoryActive || typeof D.categoryActive !== 'object') D.categoryActive = {};
       ensureMenuItemDefaults();
       // migrate to table sections
       if (!Array.isArray(D.sections) || !D.sections.length) {
@@ -1153,6 +1187,31 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 function today() { return new Date().toISOString().split('T')[0]; }
 function fmt(n) { return D.settings.currency + Number(n).toFixed(2); }
 function cats() { return [...new Set(D.menu.map(i => i.category))]; }
+// Categories sorted by their custom display order (D.categoryOrder), falling back to original order
+function orderedCats() {
+  const base = cats();
+  return base.slice().sort((a, b) => {
+    const oa = (D.categoryOrder && D.categoryOrder[a] != null) ? D.categoryOrder[a] : base.indexOf(a) + 1000;
+    const ob = (D.categoryOrder && D.categoryOrder[b] != null) ? D.categoryOrder[b] : base.indexOf(b) + 1000;
+    return oa - ob || base.indexOf(a) - base.indexOf(b);
+  });
+}
+// Whether a category should be shown in the billing section
+function isCategoryActive(cat) {
+  return !D.categoryActive || D.categoryActive[cat] !== false;
+}
+// Items ranked by total quantity sold across paid orders
+function mostSellingItems(limit = 12) {
+  const counts = {};
+  D.orders.forEach(o => {
+    if (o.status !== 'paid') return;
+    o.items.forEach(it => { counts[it.id] = (counts[it.id] || 0) + it.qty; });
+  });
+  return D.menu
+    .filter(i => i.active !== false && counts[i.id] > 0)
+    .sort((a, b) => counts[b.id] - counts[a.id])
+    .slice(0, limit);
+}
 function lowStockItems() { return D.menu.filter(i => i.stock != null && i.stock <= (D.settings.lowStock || 5)); }
 function getOrder(tableId) {
   const t = D.tables.find(t => t.id === tableId);
@@ -1693,41 +1752,75 @@ function buildOrderView() {
   return wrap;
 }
 
+function itemCardHTML(o, item) {
+  const tracked = item.stock != null;
+  const oos = tracked && item.stock <= 0;
+  const low = tracked && item.stock > 0 && item.stock <= (D.settings.lowStock||5);
+  const hasOpts = (item.variants && item.variants.length) || (item.addons && item.addons.length);
+  const badge = oos ? `<span class="stock-badge stock-out">${t('outOfStock')}</span>`
+    : low ? `<span class="stock-badge stock-low">${item.stock} left</span>`
+    : '';
+  return `<div class="item-card${oos?' oos':''}" ${oos?'':`onclick="clickMenuItem('${o.id}','${item.id}')"`}>
+    <div class="item-nm">${h(item.name)}${hasOpts?' &#9881;':''}</div>
+    <div class="item-pr">${fmt(item.price)}</div>
+    ${badge}
+  </div>`;
+}
+
 function menuPaneHTML(o) {
-  const allCats = ['All', ...cats()];
-  let items = D.menu.filter(i => i.active !== false);
-  if (S.activeCat !== 'All') items = items.filter(i => i.category === S.activeCat);
-  if (S.menuQ) items = items.filter(i => i.name.toLowerCase().includes(S.menuQ.toLowerCase()));
+  const q = S.menuQ.trim().toLowerCase();
+  const matchQ = i => !q || i.name.toLowerCase().includes(q);
+  const orderedCatList = orderedCats().filter(isCategoryActive);
+  const mostSelling = mostSellingItems().filter(matchQ).filter(i => isCategoryActive(i.category));
+
+  const sections = [];
+  if (mostSelling.length) sections.push({ id: 'cat-sec-most', label: '\u{1F525} ' + t('mostSelling'), safe: true, items: mostSelling });
+  orderedCatList.forEach((cat, idx) => {
+    const items = D.menu.filter(i => i.active !== false && i.category === cat).filter(matchQ);
+    sections.push({ id: 'cat-sec-' + idx, label: cat, safe: false, items });
+  });
+  const visibleSections = q ? sections.filter(s => s.items.length) : sections;
+
   return `
-    <div class="menu-pane" id="menu-pane">
-      <div class="pane-hdr"><h3>Menu</h3></div>
-      <div class="menu-search-box">
-        <span class="search-ico">&#128269;</span>
-        <input id="menu-q" type="text" placeholder="Search items..." value="${h(S.menuQ)}">
+    <div class="menu-area" id="menu-area">
+      <div class="cat-sidebar" id="cat-sidebar">
+        <button class="cat-side-btn active" data-target="cat-sec-all">${t('all')}</button>
+        ${mostSelling.length ? `<button class="cat-side-btn" data-target="cat-sec-most">\u{1F525} ${t('mostSelling')}</button>` : ''}
+        ${orderedCatList.map((cat, idx) => `<button class="cat-side-btn" data-target="cat-sec-${idx}">${h(cat)}</button>`).join('')}
       </div>
-      <div class="cat-tabs">
-        ${allCats.map(c => `<button class="cat-btn${S.activeCat===c?' active':''}" data-cat="${h(c)}">${h(c)}</button>`).join('')}
-      </div>
-      <div class="items-grid">
-        ${items.length
-          ? items.map(item => {
-              const tracked = item.stock != null;
-              const oos = tracked && item.stock <= 0;
-              const low = tracked && item.stock > 0 && item.stock <= (D.settings.lowStock||5);
-              const hasOpts = (item.variants && item.variants.length) || (item.addons && item.addons.length);
-              const badge = oos ? `<span class="stock-badge stock-out">${t('outOfStock')}</span>`
-                : low ? `<span class="stock-badge stock-low">${item.stock} left</span>`
-                : tracked ? `<span class="stock-badge stock-ok">${item.stock} in stock</span>` : '';
-              return `<div class="item-card${oos?' oos':''}" ${oos?'':`onclick="clickMenuItem('${o.id}','${item.id}')"`}>
-                <div class="item-nm">${h(item.name)}${hasOpts?' &#9881;':''}</div>
-                <div class="item-pr">${fmt(item.price)}</div>
-                ${badge}
-              </div>`;
-            }).join('')
-          : '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;font-size:13px;">No items found</div>'
-        }
+      <div class="menu-pane" id="menu-pane">
+        <div class="pane-hdr"><h3>${t('menu')}</h3></div>
+        <div class="menu-search-box">
+          <span class="search-ico">&#128269;</span>
+          <input id="menu-q" type="text" placeholder="Search items..." value="${h(S.menuQ)}">
+        </div>
+        <div class="items-scroll" id="items-scroll">
+          ${visibleSections.length
+            ? visibleSections.map(sec => {
+                const collapsed = !q && S.collapsedCats.includes(sec.id);
+                return `<div class="cat-section${collapsed?' collapsed':''}" id="${sec.id}">
+                  <div class="cat-section-hdr" onclick="toggleCatSection('${sec.id}')">
+                    <span class="chev">&#9660;</span><span>${sec.safe ? sec.label : h(sec.label)}</span><span class="cat-count">${sec.items.length}</span>
+                  </div>
+                  <div class="items-grid">${sec.items.length
+                    ? sec.items.map(item => itemCardHTML(o, item)).join('')
+                    : `<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;font-size:12.5px;">${t('noItemsFound')}</div>`}</div>
+                </div>`;
+              }).join('')
+            : `<div style="text-align:center;color:var(--muted);padding:40px;font-size:13px;">${t('noItemsFound')}</div>`
+          }
+        </div>
       </div>
     </div>`;
+}
+
+function toggleCatSection(secId) {
+  const el = document.getElementById(secId);
+  if (!el) return;
+  el.classList.toggle('collapsed');
+  const idx = S.collapsedCats.indexOf(secId);
+  if (el.classList.contains('collapsed')) { if (idx < 0) S.collapsedCats.push(secId); }
+  else if (idx >= 0) S.collapsedCats.splice(idx, 1);
 }
 
 function orderPaneHTML(o) {
@@ -1738,6 +1831,7 @@ function orderPaneHTML(o) {
     <div class="order-pane" id="order-pane">
       <div class="pane-hdr">
         <h3>${t('order')}</h3>
+        <span class="order-pane-table">${o.type === 'dine-in' ? h(o.tableName || 'Table') : ordTypeMeta(o.type).label}</span>
         <span style="font-size:11.5px;color:var(--muted);">${o.items.reduce((s,i)=>s+i.qty,0)} ${t('items')}</span>
         ${o.items.length ? `<button class="btn btn-sm" style="background:#FEE2E2;color:#DC2626;margin-left:auto;" onclick="clearOrder('${o.id}')">${t('clear')}</button>` : ''}
       </div>
@@ -2972,13 +3066,30 @@ function menuMgmtHTML() {
         <span style="font-size:12.5px;color:var(--muted);">${D.menu.length} items &middot; ${cats().length} categories</span>
       </div>
     </div>
+    ${cats().length > 0 ? `
+    <div class="card" style="margin-bottom:18px;">
+      <h3 style="font-size:13px;font-weight:600;margin-bottom:10px;">${t('categoryOrder')}</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${orderedCats().map((cat, idx) => `
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="number" min="1" value="${(D.categoryOrder && D.categoryOrder[cat] != null) ? D.categoryOrder[cat] : idx+1}"
+              style="width:60px;padding:4px 6px;border:1.5px solid var(--border);border-radius:6px;font-size:12.5px;"
+              onchange="setCategoryOrder('${cat.replace(/'/g,"\\'")}', this.value)">
+            <span style="font-size:13px;flex:1;">${h(cat)}</span>
+            <label class="toggle-switch"><input type="checkbox" ${isCategoryActive(cat)?'checked':''} onchange="toggleCategoryActive('${cat.replace(/'/g,"\\'")}', this.checked)"><span class="toggle-track"></span></label>
+            <span style="font-size:11.5px;color:var(--muted);">${t('catShowInBilling')}</span>
+          </div>`).join('')}
+      </div>
+    </div>` : ''}
     ${Object.keys(grouped).length === 0
       ? '<div class="card empty"><div class="eico">&#127869;</div><p>No menu items yet. Add some!</p></div>'
-      : Object.entries(grouped).map(([cat, items]) => `
-        <div class="card" style="margin-bottom:14px;">
-          <div style="display:flex;align-items:center;margin-bottom:10px;">
-            <span class="cat-badge" style="font-size:12.5px;padding:3px 10px;">${h(cat)}</span>
-            <span style="margin-left:8px;font-size:11.5px;color:var(--muted);">${items.length} item${items.length>1?'s':''}</span>
+      : orderedCats().filter(cat => grouped[cat]).map((cat, idx) => { const items = grouped[cat]; const secId = 'mgmt-cat-' + idx;
+        const collapsed = S.mgmtCollapsedCats.includes(secId); return `
+        <div class="card mgmt-cat-card${collapsed?' collapsed':''}" id="${secId}" style="margin-bottom:14px;">
+          <div style="display:flex;align-items:center;margin-bottom:10px;cursor:pointer;" onclick="toggleMgmtCatCollapse('${secId}')">
+            <span class="chev mgmt-chev">&#9660;</span>
+            <span class="cat-badge" style="font-size:12.5px;padding:3px 10px;margin-left:8px;${isCategoryActive(cat)?'':'opacity:.5;'}">${h(cat)}</span>
+            <span style="margin-left:8px;font-size:11.5px;color:var(--muted);">${items.length} item${items.length>1?'s':''}${!isCategoryActive(cat)?' · '+t('hidden'):''}</span>
           </div>
           <table class="data-tbl">
             <thead><tr><th>${t('code')}</th><th></th><th>${t('name')}</th><th>${t('price')}</th><th>${t('stock')}</th><th>${t('kitchen')}</th><th>${t('size')}/${t('addOns')}</th><th style="text-align:center;">${t('activeInBilling')}</th><th style="text-align:center;">${t('reduceInventory')}</th><th style="width:110px;text-align:right;"></th></tr></thead>
@@ -3010,16 +3121,42 @@ function menuMgmtHTML() {
               }).join('')}
             </tbody>
           </table>
-        </div>`).join('')
+        </div>`; }).join('')
     }`;
 }
 
 function rerenderMgmt() {
   const v = document.querySelector('.view');
   if (!v) return;
+  const scrollTop = v.scrollTop;
   v.innerHTML = menuMgmtHTML();
+  v.scrollTop = scrollTop;
   const q = document.getElementById('mgmt-q');
-  if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+  if (q) { q.focus({ preventScroll: true }); q.setSelectionRange(q.value.length, q.value.length); }
+}
+
+function setCategoryOrder(cat, val) {
+  const n = parseInt(val, 10);
+  if (!D.categoryOrder) D.categoryOrder = {};
+  if (isNaN(n)) delete D.categoryOrder[cat]; else D.categoryOrder[cat] = n;
+  save();
+  rerenderMgmt();
+}
+
+function toggleCategoryActive(cat, checked) {
+  if (!D.categoryActive) D.categoryActive = {};
+  D.categoryActive[cat] = checked;
+  save();
+  rerenderMgmt();
+}
+
+function toggleMgmtCatCollapse(secId) {
+  const el = document.getElementById(secId);
+  if (!el) return;
+  el.classList.toggle('collapsed');
+  const idx = S.mgmtCollapsedCats.indexOf(secId);
+  if (el.classList.contains('collapsed')) { if (idx < 0) S.mgmtCollapsedCats.push(secId); }
+  else if (idx >= 0) S.mgmtCollapsedCats.splice(idx, 1);
 }
 
 function showAddItemModal() {
@@ -5316,14 +5453,18 @@ function notify(msg, ms=2600) {
 //  EVENT BINDING
 // ═══════════════════════════════════════════════════════
 function bindEvents() {
-  // Category tabs
-  document.querySelectorAll('.cat-btn').forEach(btn => {
+  // Category sidebar
+  document.querySelectorAll('.cat-side-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      S.activeCat = btn.dataset.cat;
-      const o = curOrder();
-      if (!o) return;
-      const el = document.getElementById('menu-pane');
-      if (el) { const tmp = document.createElement('div'); tmp.innerHTML = menuPaneHTML(o); el.replaceWith(tmp.firstElementChild); bindEvents(); }
+      document.querySelectorAll('.cat-side-btn').forEach(b => b.classList.toggle('active', b === btn));
+      const targetId = btn.dataset.target;
+      const scroller = document.getElementById('items-scroll');
+      if (targetId === 'cat-sec-all') { if (scroller) scroller.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      const target = document.getElementById(targetId);
+      if (target) {
+        if (target.classList.contains('collapsed')) toggleCatSection(targetId);
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     });
   });
 
@@ -5334,7 +5475,7 @@ function bindEvents() {
       S.menuQ = mq.value;
       const o = curOrder();
       if (!o) return;
-      const el = document.getElementById('menu-pane');
+      const el = document.getElementById('menu-area');
       if (el) {
         const tmp = document.createElement('div'); tmp.innerHTML = menuPaneHTML(o); el.replaceWith(tmp.firstElementChild);
         const newMq = document.getElementById('menu-q');
