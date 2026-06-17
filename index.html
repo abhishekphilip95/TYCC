@@ -31,11 +31,11 @@ body.dark {
   --subtle: #1A2230;
   --hover: #2A3342;
 }
-body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; transition: background 0.2s, color 0.2s; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; height: 100dvh; overflow: hidden; transition: background 0.2s, color 0.2s; }
 input, select, textarea { background: var(--card); color: var(--text); }
 
 /* ── Layout ── */
-#app { display: flex; flex-direction: column; height: 100vh; }
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 header {
   background: var(--primary); color: #fff;
   padding: 0 20px; height: 54px;
@@ -80,6 +80,17 @@ nav button.active { background: rgba(255,255,255,0.22); color: #fff; }
 .role-manager { background: #DBEAFE; color: #1D4ED8; }
 .role-cashier { background: #DCFCE7; color: #166534; }
 .role-waiter  { background: #F3E8FF; color: #6B21A8; }
+.role-chef    { background: #FFEDD5; color: #C2410C; }
+/* KOT alert banner */
+.kot-alert-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: #DC2626; color: #fff; padding: 14px 18px;
+  border-radius: 10px; margin-bottom: 16px;
+  animation: kot-pulse 1s ease-in-out infinite alternate;
+}
+@keyframes kot-pulse { from { opacity: 1; } to { opacity: 0.82; } }
+.kot-alert-banner .alert-msg { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.kot-alert-dismiss { background: #fff; color: #DC2626; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13.5px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
 /* ── Context menu ── */
 .ctx-menu {
   position: fixed; z-index: 600; min-width: 160px;
@@ -244,10 +255,10 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
   padding: 4px 12px; border-radius: 8px;
   white-space: nowrap;
 }
-.menu-search-box { padding: 8px 12px 0; flex-shrink: 0; position: relative; }
+.menu-search-box { padding: 10px 14px 0; flex-shrink: 0; position: relative; }
 .menu-search-box input {
-  width: 100%; padding: 7px 10px 7px 28px;
-  border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px;
+  width: 100%; padding: 10px 12px 10px 34px;
+  border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px;
 }
 .menu-search-box input:focus { outline: none; border-color: var(--primary); }
 .search-ico { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); pointer-events: none; }
@@ -304,6 +315,41 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
 /* ── Mobile close button in pane-hdr ── */
 .mobile-close-btn { display: none !important; }
 
+/* ── Hamburger + Side Drawer ── */
+.hamburger-btn {
+  display: none; background: rgba(255,255,255,0.16); border: none; color: #fff;
+  width: 36px; height: 36px; border-radius: 8px; cursor: pointer; font-size: 20px;
+  align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.12s;
+}
+.hamburger-btn:hover { background: rgba(255,255,255,0.28); }
+.mobile-drawer {
+  display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 220px;
+  background: var(--card); z-index: 900; transform: translateX(-100%);
+  transition: transform 0.24s cubic-bezier(0.22,1,0.36,1);
+  flex-direction: column; box-shadow: 4px 0 24px rgba(0,0,0,0.22);
+  overflow-y: auto;
+}
+.mobile-drawer.open { transform: translateX(0); }
+.mobile-drawer-hdr {
+  background: var(--primary); color: #fff; padding: 14px 16px;
+  font-size: 16px; font-weight: 700; letter-spacing: -0.2px;
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.mobile-drawer nav { display: flex !important; flex-direction: column; gap: 2px; padding: 10px 8px; }
+.mobile-drawer nav button {
+  background: transparent; border: none; color: var(--text);
+  padding: 12px 14px; border-radius: 8px; cursor: pointer;
+  font-size: 14px; font-weight: 500; text-align: left; width: 100%;
+  display: flex; align-items: center; gap: 10px; transition: all 0.12s;
+}
+.mobile-drawer nav button:hover { background: var(--hover); }
+.mobile-drawer nav button.active { background: var(--primary); color: #fff; }
+.mobile-drawer-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.42); z-index: 899;
+}
+.mobile-drawer-backdrop.open { display: block; }
+
 /* ══════════════════════════════════════════════════
    MOBILE / TABLET  ≤ 768px
 ══════════════════════════════════════════════════ */
@@ -313,12 +359,13 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
   .logo { font-size: 15px; }
   #hdr-name { display: none; }
   #hdr-user .role-tag { display: none; }
-  nav { overflow-x: auto; scrollbar-width: none; flex-shrink: 1; }
-  nav::-webkit-scrollbar { display: none; }
-  nav button { padding: 5px 10px; font-size: 11.5px; white-space: nowrap; }
+  /* Hide desktop nav; show hamburger + drawer */
+  nav#main-nav { display: none; }
+  .hamburger-btn { display: flex; }
+  .mobile-drawer { display: flex; }
 
-  /* View padding */
-  .view { padding: 12px; }
+  /* View padding — extra bottom for mobile browser chrome */
+  .view { padding: 12px; padding-bottom: 72px; }
 
   /* Tables grid */
   .tables-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
@@ -425,7 +472,9 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
 .qbtn:hover { border-color: var(--primary); color: var(--primary); }
 .qbtn:disabled { opacity: 0.35; cursor: not-allowed; }
 .qbtn:disabled:hover { border-color: var(--border); color: inherit; }
-.qnum { font-size: 12.5px; font-weight: 700; min-width: 18px; text-align: center; }
+.qnum { font-size: 12.5px; font-weight: 700; min-width: 22px; text-align: center; cursor: pointer; border-bottom: 1.5px dashed var(--border); padding: 0 2px; }
+.qnum:hover { color: var(--primary); border-color: var(--primary); }
+.qnum-input { width: 46px; font-size: 13px; font-weight: 700; text-align: center; border: 1.5px solid var(--primary); border-radius: 6px; padding: 2px 4px; background: var(--card); color: var(--text); outline: none; }
 
 /* Bill */
 .bill-box {
@@ -644,6 +693,7 @@ body.dark .kot-pending-review { background: #3A2E10; }
 <body>
 <div id="app">
   <header>
+    <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()">&#9776;</button>
     <div class="logo">&#127374; RestoBill</div>
     <nav id="main-nav"></nav>
     <div id="hdr-right">
@@ -656,6 +706,13 @@ body.dark .kot-pending-review { background: #3A2E10; }
   </header>
   <main id="main"></main>
 </div>
+
+<!-- Mobile side drawer -->
+<div id="mobile-drawer" class="mobile-drawer">
+  <div class="mobile-drawer-hdr">&#127374; RestoBill</div>
+  <nav id="drawer-nav"></nav>
+</div>
+<div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" onclick="closeMobileMenu()"></div>
 
 <!-- Login / Sign-in screen -->
 <div id="login-screen" style="display:none;">
@@ -728,6 +785,9 @@ let S = {
   mgmtExpandedCats: [],
   mobileOrderOpen: false,
   reportPage: 0,
+  kotKnown: {},
+  kotAlertActive: false,
+  kotAlertTimer: null,
 };
 
 let D = {
@@ -747,7 +807,7 @@ let D = {
   categoryActive: {},
 };
 let editState = null;
-const ROLES = ['Owner', 'Manager', 'Cashier', 'Waiter'];
+const ROLES = ['Owner', 'Manager', 'Cashier', 'Waiter', 'Chef'];
 
 const DEF_MENU = [
   { id:'m01', name:'Espresso',            category:'Beverages',    price:80  },
@@ -1381,6 +1441,8 @@ function discardOrder(o) {
 }
 
 function go(view, extra) {
+  closeMobileMenu();
+  if (isChef() && view !== 'kot') view = 'kot';
   // leaving the order screen with an empty order: discard it & free the table
   if (S.view === 'order' && view !== 'order') {
     const o = curOrder();
@@ -1392,12 +1454,34 @@ function go(view, extra) {
   S.view = view;
   if (extra) Object.assign(S, extra);
   const navView = (view === 'vendorBills') ? 'accounts' : view;
-  document.querySelectorAll('#main-nav button').forEach(b =>
+  document.querySelectorAll('#main-nav button, #drawer-nav button').forEach(b =>
     b.classList.toggle('active', b.dataset.v === navView));
   renderMain();
 }
 
 function renderMain() {
+  if (isChef() && S.view !== 'kot') S.view = 'kot';
+  // Apply auto-accept for any enabled kitchens on every data update
+  if (S.kotAutoAccept && S.kotAutoAccept.length) {
+    let acChanged = false;
+    const activeOrders = D.orders.filter(o =>
+      (o.status === 'open' || o.status === 'paid') &&
+      o.kotStatus === 'active' && o.kotPrepStatus !== 'done'
+    );
+    S.kotAutoAccept.forEach(kid => {
+      activeOrders.forEach(o => {
+        o.items.forEach(item => {
+          const m = D.menu.find(x => x.id === item.id);
+          if (m && m.kitchenId === kid && item.qty > (item.acceptedQty || 0)) {
+            item.acceptedQty = item.qty; acChanged = true;
+          }
+        });
+        if (o.items.every(i => i.qty <= (i.acceptedQty || 0)) && o.kotPrepStatus === 'pending')
+          o.kotPrepStatus = 'preparing';
+      });
+    });
+    if (acChanged) save();
+  }
   const el = document.getElementById('main');
   el.innerHTML = '';
   if (S.view === 'order' && S.activeOrder) {
@@ -1420,6 +1504,7 @@ function renderMain() {
   document.getElementById('hdr-name').textContent = D.settings.name;
   renderHeaderUser();
   bindEvents();
+  if (isChef()) checkKotAlert();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2012,7 +2097,7 @@ function orderPaneHTML(o) {
                 </div>
                 <div class="qty-ctrl">
                   <button class="qbtn" ${minusDisabled?'disabled title="'+h(t('kitchenConfirmedNote'))+'"':''} onclick="chQty('${o.id}','${key}',-1)">&#8722;</button>
-                  <span class="qnum">${item.qty}</span>
+                  <span class="qnum" title="Tap to type quantity" onclick="openQtyInput(event,'${o.id}','${key}',${item.qty})">${item.qty}</span>
                   <button class="qbtn" onclick="chQty('${o.id}','${key}',1)">+</button>
                 </div>
                 <div class="or-price">${fmt(itemUnit(item) * item.qty)}</div>
@@ -2334,6 +2419,40 @@ function chQty(orderId, lineKey, delta) {
       printKOT(o, `${t('updatedKot')}: +${delta}× ${item.name}${extra}`.toUpperCase());
     }
   }
+}
+
+function setQtyDirect(orderId, lineKey, newQty) {
+  const o = D.orders.find(x => x.id === orderId);
+  if (!o) return;
+  const item = o.items.find(i => (i.lineId || i.id) === lineKey);
+  if (!item || newQty === item.qty) return;
+  const delta = newQty - item.qty;
+  if (delta < 0 && o.kotStatus === 'active' && newQty < (item.acceptedQty || 0)) {
+    notify(t('kitchenConfirmedNote')); refreshOrderPane(o); return;
+  }
+  chQty(orderId, lineKey, delta);
+}
+
+function openQtyInput(evt, orderId, lineKey, currentQty) {
+  evt.stopPropagation();
+  const span = evt.currentTarget;
+  const input = document.createElement('input');
+  input.type = 'number'; input.min = '1'; input.max = '9999';
+  input.value = currentQty; input.className = 'qnum-input';
+  span.replaceWith(input);
+  input.focus(); input.select();
+  let committed = false;
+  const commit = () => {
+    if (committed) return; committed = true;
+    const v = parseInt(input.value, 10);
+    if (!isNaN(v) && v >= 1) setQtyDirect(orderId, lineKey, v);
+    else refreshOrderPane(D.orders.find(x => x.id === orderId));
+  };
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { committed = true; refreshOrderPane(D.orders.find(x => x.id === orderId)); }
+  });
+  input.addEventListener('blur', commit);
 }
 
 function showCustomizeModal(orderId, itemId) {
@@ -2788,6 +2907,7 @@ function confirmPay(orderId) {
   if (!o) return;
   o.status = 'paid';
   o.paymentMethod = S.payMethod;
+  o.billedBy = currentUser()?.username || null;
   const keepSplits = S.payMethod === 'Split' || S.payMethod === 'Pay Later' ||
     (o.splitPayments && o.splitPayments.length === 1 && o.splitPayments[0].method === S.payMethod);
   if (!keepSplits) o.splitPayments = null;
@@ -3738,8 +3858,13 @@ function dismissBillingNotice(orderId, noticeId) {
 }
 
 function kotHTML() {
+  const chefMode = isChef();
+  const chefKIds = chefMode ? new Set(chefKitchens().map(k => k.id)) : null;
   let active = D.orders.filter(o => (o.status === 'open' || o.status === 'paid') && o.kotStatus === 'active' && o.kotPrepStatus !== 'done');
-  if (S.kotKitchenFilter.length) {
+  if (chefMode && chefKIds) {
+    // Chef sees only their kitchen's KOTs
+    active = active.filter(o => o.items.some(i => { const m = D.menu.find(x => x.id === i.id); return m && chefKIds.has(m.kitchenId); }));
+  } else if (S.kotKitchenFilter.length) {
     active = active.filter(o => {
       const ids = orderKitchenIds(o);
       return S.kotKitchenFilter.some(kid => ids.has(kid));
@@ -3822,15 +3947,21 @@ function kotHTML() {
     </tr>`;
   }).join('');
 
+  const chefKitchenNames = chefMode ? chefKitchens().map(k=>h(k.name)).join(', ') : '';
   return `
+    ${chefMode && S.kotAlertActive ? `
+    <div class="kot-alert-banner">
+      <div class="alert-msg">&#128276; New order / update in your kitchen!</div>
+      <button class="kot-alert-dismiss" onclick="dismissKotAlert()">&#10003; Accept</button>
+    </div>` : ''}
     <div class="sec-hdr">
-      <h2>&#128221; ${t('kot')}</h2>
+      <h2>&#128221; ${chefMode ? `Kitchen: ${chefKitchenNames||'(no kitchen assigned)'}` : t('kot')}</h2>
       <span style="margin-left:auto;display:flex;gap:10px;align-items:center;">
         <span style="font-size:12.5px;background:var(--warning);color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;">${t('activeKots')}: ${active.length}</span>
-        <span style="font-size:12.5px;background:#DC2626;color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;">${t('deletedKots')}: ${deleted.length}</span>
+        ${!chefMode ? `<span style="font-size:12.5px;background:#DC2626;color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;">${t('deletedKots')}: ${deleted.length}</span>` : ''}
       </span>
     </div>
-    ${D.kitchens.length ? `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+    ${!chefMode && D.kitchens.length ? `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
       <div class="kot-kitchen-filter" style="margin-bottom:0;">
         <strong style="color:var(--muted);">${t('filterByKitchen')}:</strong>
         ${D.kitchens.map(k => `<label><input type="checkbox" ${S.kotKitchenFilter.includes(k.id)?'checked':''} onchange="toggleKotKitchenFilter('${k.id}',this.checked)"> ${h(k.name)}</label>`).join('')}
@@ -4048,7 +4179,7 @@ function reportsHTML() {
         if (!rangeAll.length) return `<div class="empty"><div class="eico">&#128203;</div><p>${t('noOrders')}</p></div>`;
         return `
           <table class="data-tbl">
-            <thead><tr><th>${t('billNo')}</th><th>Table / Customer</th><th>Items</th><th>Method</th><th>Time</th><th style="text-align:right;">Total</th><th style="text-align:right;">${t('actions')}</th></tr></thead>
+            <thead><tr><th>${t('billNo')}</th><th>Table / Customer</th><th>Items</th><th>Method</th><th>Time</th><th>Billed By</th><th style="text-align:right;">Total</th><th style="text-align:right;">${t('actions')}</th></tr></thead>
             <tbody>
               ${slice.map(o => {
                 const b = calcBill(o);
@@ -4057,7 +4188,8 @@ function reportsHTML() {
                 const del = !!o.deleted;
                 const strike = del ? 'text-decoration:line-through;opacity:0.55;' : '';
                 const tags = (o.edited?`<span class="tag tag-open" title="${h(o.editReason||'')}">${t('edited')}</span> `:'')
-                           + (del?`<span class="tag" style="background:#FEE2E2;color:#DC2626;" title="${h(o.deleteReason||'')}">${t('deleted')}</span>`:'');
+                           + (del?`<span class="tag" style="background:#FEE2E2;color:#DC2626;" title="${h(o.deleteReason||'')}">${t('deleted')}</span>`:'')
+                const editedByStr = o.edited && o.editedBy ? `<div style="font-size:11px;color:#DC2626;font-weight:600;margin-top:2px;">edited by ${h(o.editedBy)}</div>` : '';
                 const pm = o.splitPayments && o.splitPayments.length
                   ? o.splitPayments.map(p=>p.method).join('+')
                   : (o.paymentMethod||'Cash');
@@ -4067,6 +4199,7 @@ function reportsHTML() {
                   <td>${o.items.reduce((s,i)=>s+i.qty,0)}</td>
                   <td><span class="tag tag-paid">${h(pm)}</span></td>
                   <td style="color:var(--muted);">${tm}</td>
+                  <td style="font-size:12px;color:var(--text);font-weight:500;">${h(o.billedBy||'—')}${editedByStr}</td>
                   <td style="text-align:right;font-weight:600;">${fmt(b.total)}</td>
                   <td style="text-align:right;white-space:nowrap;">
                     ${del ? '<span style="color:var(--muted);font-size:11.5px;">&mdash;</span>' : `
@@ -4135,13 +4268,6 @@ function reportsHTML() {
       </table>
     </div>` : ''}
 
-    ${cashTxns.length > 0 ? `
-    <div class="card" style="margin-bottom:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <h3 style="font-size:15px;font-weight:600;">${t('cashTransactions')} &mdash; ${rangeLabel}</h3>
-        <span style="font-size:13.5px;font-weight:700;color:var(--success);">${t('netCash')}: ${fmt(netCash)}</span>
-      </div>
-    </div>` : ''}
 
     ${rangeOrd.length > 0 ? `
     <div class="card">
@@ -5174,6 +5300,7 @@ function applyEdit() {
   o.edited = true;
   o.editReason = rsn;
   o.editedAt = new Date().toISOString();
+  o.editedBy = currentUser()?.username || null;
   save(); editState = null; closeModal(); rerenderReports(); notify(t('edited') + ' #' + billLabel(o));
 }
 
@@ -5456,6 +5583,18 @@ function showEditKitchenModal(kitchenId) {
         <option value="58mm"${k.printerSize==='58mm'?' selected':''}>58mm</option>
       </select>
     </div>
+    ${(() => {
+      const chefs = D.users.filter(u => u.role === 'Chef');
+      if (!chefs.length) return '';
+      return `<div class="form-grp" style="flex-direction:column;align-items:flex-start;gap:6px;">
+        <label>Assign Chefs</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${chefs.map(u => `<label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;cursor:pointer;">
+            <input type="checkbox" id="chef-${u.id}" ${(k.chefIds||[]).includes(u.id)?'checked':''}> ${h(u.username)}
+          </label>`).join('')}
+        </div>
+      </div>`;
+    })()}
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal()">${t('cancel')}</button>
       <button class="btn btn-primary" onclick="saveKitchen('${kitchenId}')">${t('save')}</button>
@@ -5472,6 +5611,7 @@ function saveKitchen(kitchenId) {
   k.kotRequired = document.getElementById('kt-kot').dataset.value !== 'no';
   k.printerEnabled = document.getElementById('kt-printer').dataset.value === 'yes';
   k.printerSize = document.getElementById('kt-printer-size').value;
+  k.chefIds = D.users.filter(u => u.role === 'Chef' && document.getElementById('chef-' + u.id)?.checked).map(u => u.id);
   save();
   // Auto-clear existing KOTs for kitchens that no longer require them
   let kotChanged = false;
@@ -5819,19 +5959,101 @@ function bindEvents() {
     });
   }
 
+  let nKeyPending = false, nKeyTimer = null;
   document.onkeydown = e => {
-    if (e.key !== 'Escape') return;
-    if (document.getElementById('modal-bg')) { closeModal(); return; }
-    if (S.view === 'order') { go('tables'); return; }
-    if (S.view === 'vendorBills') { S.accountsTab = 'vendors'; go('accounts'); return; }
+    // Skip when typing in inputs
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) {
+      if (e.key === 'Escape' && document.getElementById('modal-bg')) { closeModal(); return; }
+      return;
+    }
+    if (e.key === 'Escape') {
+      if (document.getElementById('modal-bg')) { closeModal(); return; }
+      if (S.view === 'order') { go('tables'); return; }
+      if (S.view === 'vendorBills') { S.accountsTab = 'vendors'; go('accounts'); return; }
+      return;
+    }
+    // n + digit shortcuts (desktop): n+0 = tables view, n+1..9 = open table by display number
+    if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (nKeyTimer) clearTimeout(nKeyTimer);
+      nKeyPending = true;
+      nKeyTimer = setTimeout(() => { nKeyPending = false; }, 800);
+      return;
+    }
+    if (nKeyPending && /^[0-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+      clearTimeout(nKeyTimer); nKeyPending = false;
+      const digit = parseInt(e.key, 10);
+      e.preventDefault();
+      if (digit === 0) { go('tables'); return; }
+      // Find the Nth table across all sections sorted by display number
+      const sorted = D.sections.slice().sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric:true}))
+        .flatMap(sec => D.tables.filter(tb => tb.sectionId === sec.id).slice().sort((a,b) => tableSortNum(a.name) - tableSortNum(b.name)));
+      const tbl = sorted[digit - 1];
+      if (tbl) openTable(tbl.id);
+      return;
+    }
   };
 }
 
 // ═══════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════
+// ── Chef helpers ──
+function isChef() { const u = currentUser(); return !!u && u.role === 'Chef'; }
+function chefKitchens() {
+  if (!S.currentUser) return [];
+  return D.kitchens.filter(k => (k.chefIds || []).includes(S.currentUser));
+}
+function chefKotOrders() {
+  const kIds = new Set(chefKitchens().map(k => k.id));
+  if (!kIds.size) return [];
+  return D.orders.filter(o =>
+    (o.status === 'open' || o.status === 'paid') &&
+    o.kotStatus === 'active' && o.kotPrepStatus !== 'done' &&
+    o.items.some(i => { const m = D.menu.find(x => x.id === i.id); return m && kIds.has(m.kitchenId); })
+  );
+}
+function kotSig(o) {
+  return `${o.items.length}:${(o.kotCancellations||[]).length}:${o.kotSavedAt||o.createdAt}`;
+}
+function playKotBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[0, 880], [0.22, 1100], [0.44, 880]].forEach(([delay, freq]) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.6, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.18);
+      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.18);
+    });
+  } catch(e) {}
+}
+function checkKotAlert() {
+  if (!isChef()) return;
+  const orders = chefKotOrders();
+  const hasNew = orders.some(o => S.kotKnown[o.id] !== kotSig(o));
+  if (hasNew && !S.kotAlertTimer) {
+    S.kotAlertActive = true;
+    playKotBeep();
+    S.kotAlertTimer = setInterval(playKotBeep, 2500);
+  } else if (!hasNew && S.kotAlertActive) {
+    S.kotAlertActive = false;
+    clearInterval(S.kotAlertTimer); S.kotAlertTimer = null;
+  }
+}
+function dismissKotAlert() {
+  chefKotOrders().forEach(o => { S.kotKnown[o.id] = kotSig(o); });
+  S.kotAlertActive = false;
+  clearInterval(S.kotAlertTimer); S.kotAlertTimer = null;
+  renderMain();
+}
+
 function buildNav() {
-  const navItems = [
+  const chefMode = isChef();
+  const navItems = chefMode ? [
+    { v:'kot', ico:'&#128221;', key:'kot' },
+  ] : [
     { v:'tables',   ico:'&#129681;', key:'tables'   },
     { v:'kot',      ico:'&#128221;', key:'kot'      },
     { v:'crm',      ico:'&#128100;', key:'crm'      },
@@ -5840,8 +6062,24 @@ function buildNav() {
     ...((D.devMode || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? [{ v:'accounts', ico:'&#128176;', key:'accounts' }] : []),
     { v:'settings', ico:'&#9881;',   key:'settings' },
   ];
-  document.getElementById('main-nav').innerHTML =
-    navItems.map(n => `<button data-v="${n.v}" class="${S.view===n.v?'active':''}" onclick="go('${n.v}')">${n.ico} ${t(n.key)}</button>`).join('');
+  const btnHTML = navItems.map(n => `<button data-v="${n.v}" class="${S.view===n.v?'active':''}" onclick="go('${n.v}')">${n.ico} ${t(n.key)}</button>`).join('');
+  document.getElementById('main-nav').innerHTML = btnHTML;
+  const drawerNav = document.getElementById('drawer-nav');
+  if (drawerNav) drawerNav.innerHTML = btnHTML;
+}
+
+function toggleMobileMenu() {
+  const drawer = document.getElementById('mobile-drawer');
+  const backdrop = document.getElementById('mobile-drawer-backdrop');
+  if (!drawer) return;
+  const isOpen = drawer.classList.contains('open');
+  drawer.classList.toggle('open', !isOpen);
+  backdrop.classList.toggle('open', !isOpen);
+}
+
+function closeMobileMenu() {
+  document.getElementById('mobile-drawer')?.classList.remove('open');
+  document.getElementById('mobile-drawer-backdrop')?.classList.remove('open');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -5901,6 +6139,7 @@ function renderHeaderUser() {
 }
 
 function startApp() {
+  if (isChef()) S.view = 'kot';
   buildNav();
   renderMain();
   renderHeaderUser();
