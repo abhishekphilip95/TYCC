@@ -5837,7 +5837,7 @@ function buildNav() {
     { v:'crm',      ico:'&#128100;', key:'crm'      },
     { v:'menu',     ico:'&#128203;', key:'menu'     },
     { v:'reports',  ico:'&#128202;', key:'reports'  },
-    ...(D.devMode ? [{ v:'accounts', ico:'&#128176;', key:'accounts' }] : []),
+    ...((D.devMode || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? [{ v:'accounts', ico:'&#128176;', key:'accounts' }] : []),
     { v:'settings', ico:'&#9881;',   key:'settings' },
   ];
   document.getElementById('main-nav').innerHTML =
