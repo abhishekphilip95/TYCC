@@ -257,7 +257,125 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
 }
 @media (min-width: 1280px) { .items-grid { grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); } }
 @media (min-width: 1600px) { .items-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); } }
-@media (max-width: 760px) { .cat-sidebar { width: 92px; } .items-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); } }
+
+/* ── Mobile category strip ── */
+.mobile-cat-strip {
+  display: none; overflow-x: auto; white-space: nowrap;
+  padding: 8px 10px; gap: 6px; border-bottom: 1px solid var(--border);
+  background: var(--card); flex-shrink: 0; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.mobile-cat-strip::-webkit-scrollbar { display: none; }
+.mobile-cat-pill {
+  display: inline-block; padding: 6px 14px; border-radius: 20px;
+  border: 1.5px solid var(--border); background: transparent;
+  font-size: 12.5px; font-weight: 500; cursor: pointer;
+  color: var(--text); white-space: nowrap; transition: background 0.12s, color 0.12s;
+}
+.mobile-cat-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* ── Mobile cart FAB ── */
+.mobile-cart-fab {
+  display: none; position: fixed; bottom: 20px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary); color: #fff;
+  padding: 14px 28px; border-radius: 30px;
+  font-size: 14px; font-weight: 700;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+  cursor: pointer; z-index: 150; border: none;
+  align-items: center; gap: 10px; white-space: nowrap;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.mobile-cart-fab:active { transform: translateX(-50%) scale(0.97); }
+
+/* ── Mobile backdrop ── */
+.mobile-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45); z-index: 190;
+}
+.mobile-backdrop.active { display: block; }
+
+/* ── Order drag handle ── */
+.order-drag-handle {
+  display: none; width: 40px; height: 4px;
+  background: var(--border); border-radius: 2px;
+  margin: 10px auto 4px; cursor: pointer; flex-shrink: 0;
+}
+
+/* ── Mobile close button in pane-hdr ── */
+.mobile-close-btn { display: none !important; }
+
+/* ══════════════════════════════════════════════════
+   MOBILE / TABLET  ≤ 768px
+══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Header */
+  header { padding: 0 10px; height: 46px; }
+  .logo { font-size: 15px; }
+  #hdr-name { display: none; }
+  #hdr-user .role-tag { display: none; }
+  nav { overflow-x: auto; scrollbar-width: none; flex-shrink: 1; }
+  nav::-webkit-scrollbar { display: none; }
+  nav button { padding: 5px 10px; font-size: 11.5px; white-space: nowrap; }
+
+  /* View padding */
+  .view { padding: 12px; }
+
+  /* Tables grid */
+  .tables-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+
+  /* Back bar */
+  .back-bar { padding: 8px 12px; gap: 8px; flex-wrap: wrap; }
+  .back-bar .order-id { margin-left: 0; }
+
+  /* ── Billing order view ── */
+  /* Hide sidebar, show mobile strip */
+  .cat-sidebar { display: none; }
+  .mobile-cat-strip { display: flex; }
+
+  /* Menu pane full width, no right border */
+  .menu-pane { border-right: none; min-width: 0; }
+  .items-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); padding-bottom: 80px; }
+
+  /* Order pane: fixed bottom sheet */
+  .order-pane {
+    position: fixed !important;
+    bottom: 0; left: 0; right: 0;
+    width: 100% !important;
+    max-height: 90vh; height: auto;
+    border-radius: 16px 16px 0 0;
+    transform: translateY(110%);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 200;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.22);
+    overflow-y: auto;
+  }
+  .order-pane.mobile-open { transform: translateY(0) !important; }
+
+  /* Show drag handle and FAB + close btn */
+  .order-drag-handle { display: block; }
+  .mobile-cart-fab { display: flex; }
+  .mobile-close-btn { display: flex !important; }
+
+  /* KOT grid stacks */
+  .kot-grid { grid-template-columns: 1fr; }
+
+  /* Data tables scroll */
+  .card > .data-tbl, .mgmt-cat-card > .data-tbl { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Form groups stack */
+  .form-grp { flex-direction: column; align-items: flex-start; }
+
+  /* Report table */
+  .rpt-table { font-size: 12px; }
+  .rpt-table th, .rpt-table td { padding: 8px 10px; }
+}
+
+/* Very small phones */
+@media (max-width: 400px) {
+  nav button { padding: 5px 8px; font-size: 11px; }
+  .items-grid { grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); }
+  .tables-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+}
 .item-card {
   background: var(--card); border: 1.5px solid var(--border);
   border-radius: 10px; padding: 12px 10px; cursor: pointer;
@@ -593,6 +711,9 @@ let S = {
   mgmtQ: '',
   crmQ: '',
   reportDate: today(),
+  reportDateFrom: today(),
+  reportDateTo: today(),
+  kotAutoAccept: [],
   payMethod: 'Cash',
   editBuf: { variants: [], addons: [] },
   custom: null,
@@ -604,7 +725,9 @@ let S = {
   billPayMethod: 'Cash',
   kotKitchenFilter: [],
   collapsedCats: [],
-  mgmtCollapsedCats: [],
+  mgmtExpandedCats: [],
+  mobileOrderOpen: false,
+  reportPage: 0,
 };
 
 let D = {
@@ -681,7 +804,7 @@ const I18N = {
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
     deleteTable:'Delete Table', deleteTableConfirm:'Delete table "%s" and its current order?', nothingToClear:'No items to clear',
     deleteOrder:'Delete Order', deleteOrderConfirm:'Delete this order for "%s"?', editDetails:'Edit Details',
-    kot:'KOT', saveConfirm:'Save & Confirm Order', updateKot:'Update KOT', openOrder:'Open', deleteKot:'Delete KOT', activeKots:'Active KOTs', deletedKots:'Deleted KOTs', noActiveKots:'No active KOTs', noDeletedKots:'No deleted KOTs yet', kotCommentPrompt:'Please add a comment explaining why this KOT is being cleared.', outletCode:'Outlet Code', kotNotPrinted:'KOT not printed',
+    kot:'KOT', saveConfirm:'Save & Confirm Order', updateKot:'Update KOT', openOrder:'Open', deleteKot:'Delete KOT', activeKots:'Active KOTs', deletedKots:'Cancelled KOTs', noActiveKots:'No active KOTs', noDeletedKots:'No cancelled KOTs yet', kotCommentPrompt:'Please add a comment explaining why this KOT is being cleared.', outletCode:'Outlet Code', kotNotPrinted:'KOT not printed',
     paymentPending:'Payment Pending', markServed:'Mark Served', paid:'Paid',
     kotPending:'Pending', kotPreparing:'Preparing', kotDone:'Done', filterByKitchen:'Filter by Kitchen', allKitchens:'All Kitchens',
     tableChanged:'Table Changed', tableChangedFrom:'Table changed from', to_:'to',
@@ -1748,7 +1871,16 @@ function buildOrderView() {
     <div class="order-split" id="order-split">
       ${menuPaneHTML(o)}
       ${orderPaneHTML(o)}
-    </div>`;
+    </div>
+    <div class="mobile-backdrop" id="mobile-backdrop" onclick="closeMobileOrder()"></div>
+    <button class="mobile-cart-fab" id="mobile-cart-fab" onclick="openMobileOrder()" style="display:none;"></button>`;
+  if (S.mobileOrderOpen) {
+    requestAnimationFrame(() => {
+      document.getElementById('order-pane')?.classList.add('mobile-open');
+      document.getElementById('mobile-backdrop')?.classList.add('active');
+    });
+  }
+  requestAnimationFrame(() => updateMobileFab(o));
   return wrap;
 }
 
@@ -1789,7 +1921,11 @@ function menuPaneHTML(o) {
         ${orderedCatList.map((cat, idx) => `<button class="cat-side-btn" data-target="cat-sec-${idx}">${h(cat)}</button>`).join('')}
       </div>
       <div class="menu-pane" id="menu-pane">
-        <div class="pane-hdr"><h3>${t('menu')}</h3></div>
+        <div class="mobile-cat-strip" id="mobile-cat-strip">
+          <button class="mobile-cat-pill active" data-target="cat-sec-all">${t('all')}</button>
+          ${mostSelling.length ? `<button class="mobile-cat-pill" data-target="cat-sec-most">\u{1F525} ${t('mostSelling')}</button>` : ''}
+          ${orderedCatList.map((cat, idx) => `<button class="mobile-cat-pill" data-target="cat-sec-${idx}">${h(cat)}</button>`).join('')}
+        </div>
         <div class="menu-search-box">
           <span class="search-ico">&#128269;</span>
           <input id="menu-q" type="text" placeholder="Search items..." value="${h(S.menuQ)}">
@@ -1829,11 +1965,13 @@ function orderPaneHTML(o) {
   const billingNotices = o.billingNotices || [];
   return `
     <div class="order-pane" id="order-pane">
+      <div class="order-drag-handle" onclick="closeMobileOrder()"></div>
       <div class="pane-hdr">
         <h3>${t('order')}</h3>
         <span class="order-pane-table">${o.type === 'dine-in' ? h(o.tableName || 'Table') : ordTypeMeta(o.type).label}</span>
         <span style="font-size:11.5px;color:var(--muted);">${o.items.reduce((s,i)=>s+i.qty,0)} ${t('items')}</span>
         ${o.items.length ? `<button class="btn btn-sm" style="background:#FEE2E2;color:#DC2626;margin-left:auto;" onclick="clearOrder('${o.id}')">${t('clear')}</button>` : ''}
+        <button class="btn btn-sm mobile-close-btn" onclick="closeMobileOrder()" style="margin-left:auto;">&#10005;</button>
       </div>
       ${unsettledRefunds.map(r => `
         <div class="kot-cancel-note" style="background:#FEF3C7;color:#92400E;">
@@ -2301,9 +2439,39 @@ function setDiscType(orderId, type) {
 function refreshOrderPane(o) {
   const el = document.getElementById('order-pane');
   if (!el) return;
+  const wasOpen = el.classList.contains('mobile-open');
   const tmp = document.createElement('div');
   tmp.innerHTML = orderPaneHTML(o);
   el.replaceWith(tmp.firstElementChild);
+  if (wasOpen) document.getElementById('order-pane')?.classList.add('mobile-open');
+  updateMobileFab(o);
+}
+
+function openMobileOrder() {
+  document.getElementById('order-pane')?.classList.add('mobile-open');
+  document.getElementById('mobile-backdrop')?.classList.add('active');
+  S.mobileOrderOpen = true;
+}
+
+function closeMobileOrder() {
+  document.getElementById('order-pane')?.classList.remove('mobile-open');
+  document.getElementById('mobile-backdrop')?.classList.remove('active');
+  S.mobileOrderOpen = false;
+}
+
+function updateMobileFab(o) {
+  const fab = document.getElementById('mobile-cart-fab');
+  if (!fab) return;
+  if (!o) o = curOrder();
+  if (!o) return;
+  const count = o.items.reduce((s, i) => s + i.qty, 0);
+  if (count > 0) {
+    const b = calcBill(o);
+    fab.innerHTML = `&#128722; ${count} item${count > 1 ? 's' : ''} &nbsp;&middot;&nbsp; ${fmt(b.total)} &nbsp;&#8250;`;
+    fab.style.display = 'flex';
+  } else {
+    fab.style.display = 'none';
+  }
 }
 
 function refreshBillBox(o) {
@@ -2662,20 +2830,37 @@ function confirmPay(orderId) {
 // ═══════════════════════════════════════════════════════
 //  KOT (Kitchen Order Ticket)
 // ═══════════════════════════════════════════════════════
+function needsKOT(o) {
+  if (!D.kitchens || D.kitchens.length === 0) return true;
+  return o.items.some(it => {
+    const m = D.menu.find(x => x.id === it.id);
+    if (!m || !m.kitchenId) return false;
+    const k = D.kitchens.find(k => k.id === m.kitchenId);
+    return k && k.kotRequired;
+  });
+}
+
 function saveKOT(orderId) {
   const o = D.orders.find(x => x.id === orderId);
   if (!o || !o.items.length) { notify(t('addItems')); return; }
   ensureSerial(o);
   o.kotStatus = 'active';
   o.kotSavedAt = new Date().toISOString();
-  o.kotPrepStatus = 'pending';
-  save();
-  notify('KOT ' + kotId(o));
+  if (needsKOT(o)) {
+    o.kotPrepStatus = 'pending';
+    save();
+    notify('KOT ' + kotId(o));
+    if (kotPrintEnabled()) printKOT(o);
+  } else {
+    o.kotPrepStatus = 'done';
+    save();
+    notify(t('saveKot') + ' ✓');
+  }
   renderMain();
 }
 
 function kotPrintEnabled() {
-  return (D.kitchens||[]).some(k => k.printerEnabled);
+  return (D.kitchens||[]).some(k => k.printerEnabled && k.kotRequired);
 }
 
 function printerWidthPx(size) {
@@ -2685,6 +2870,7 @@ function printerWidthPx(size) {
 function printKOTById(orderId) {
   const o = D.orders.find(x => x.id === orderId);
   if (!o || !o.items.length) { notify(t('addItems')); return; }
+  if (!needsKOT(o)) { notify(t('kotRequired') + ': ' + t('off')); return; }
   if (!kotPrintEnabled()) { notify(t('printer') + ': ' + t('off')); return; }
   ensureSerial(o);
   o.kotStatus = 'active';
@@ -3056,14 +3242,20 @@ function menuMgmtHTML() {
     </div>
     ${low.length ? `<div class="lowstock-banner">&#9888; <strong>${low.length}</strong> ${t('lowStockAlert')}: ${low.map(i=>h(i.name)+' ('+i.stock+')').join(', ')}</div>` : ''}
     <div class="card" style="margin-bottom:18px;">
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
         <div style="position:relative;flex:1;min-width:200px;">
           <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;">&#128269;</span>
           <input type="text" id="mgmt-q" placeholder="${t('searchPlaceholder')}" value="${h(S.mgmtQ)}"
             style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"
             oninput="S.mgmtQ=this.value;rerenderMgmt()">
         </div>
-        <span style="font-size:12.5px;color:var(--muted);">${D.menu.length} items &middot; ${cats().length} categories</span>
+        <span style="font-size:12.5px;font-weight:700;color:var(--text);">&#127869; ${D.menu.length} items &middot; ${cats().length} categories</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${orderedCats().map(cat => {
+          const count = D.menu.filter(i => i.category === cat).length;
+          return `<span style="font-size:12px;padding:4px 10px;border-radius:12px;background:var(--hover);color:var(--text);font-weight:500;">${h(cat)} <strong>${count}</strong></span>`;
+        }).join('')}
       </div>
     </div>
     ${cats().length > 0 ? `
@@ -3084,7 +3276,7 @@ function menuMgmtHTML() {
     ${Object.keys(grouped).length === 0
       ? '<div class="card empty"><div class="eico">&#127869;</div><p>No menu items yet. Add some!</p></div>'
       : orderedCats().filter(cat => grouped[cat]).map((cat, idx) => { const items = grouped[cat]; const secId = 'mgmt-cat-' + idx;
-        const collapsed = S.mgmtCollapsedCats.includes(secId); return `
+        const collapsed = !S.mgmtExpandedCats.includes(secId); return `
         <div class="card mgmt-cat-card${collapsed?' collapsed':''}" id="${secId}" style="margin-bottom:14px;">
           <div style="display:flex;align-items:center;margin-bottom:10px;cursor:pointer;" onclick="toggleMgmtCatCollapse('${secId}')">
             <span class="chev mgmt-chev">&#9660;</span>
@@ -3154,9 +3346,9 @@ function toggleMgmtCatCollapse(secId) {
   const el = document.getElementById(secId);
   if (!el) return;
   el.classList.toggle('collapsed');
-  const idx = S.mgmtCollapsedCats.indexOf(secId);
-  if (el.classList.contains('collapsed')) { if (idx < 0) S.mgmtCollapsedCats.push(secId); }
-  else if (idx >= 0) S.mgmtCollapsedCats.splice(idx, 1);
+  const idx = S.mgmtExpandedCats.indexOf(secId);
+  if (!el.classList.contains('collapsed')) { if (idx < 0) S.mgmtExpandedCats.push(secId); }
+  else if (idx >= 0) S.mgmtExpandedCats.splice(idx, 1);
 }
 
 function showAddItemModal() {
@@ -3323,9 +3515,66 @@ function toggleKotKitchenFilter(kitchenId, checked) {
   rerenderKot();
 }
 
+function autoAcceptForKitchen(kitchenId) {
+  const active = D.orders.filter(o =>
+    (o.status === 'open' || o.status === 'paid') &&
+    o.kotStatus === 'active' && o.kotPrepStatus !== 'done'
+  );
+  let changed = false;
+  active.forEach(o => {
+    o.items.forEach(item => {
+      const m = D.menu.find(x => x.id === item.id);
+      if (m && m.kitchenId === kitchenId) {
+        const pending = item.qty - (item.acceptedQty || 0);
+        if (pending > 0) { item.acceptedQty = item.qty; changed = true; }
+      }
+    });
+    const allAccepted = o.items.every(i => i.qty <= (i.acceptedQty || 0));
+    if (allAccepted && o.kotPrepStatus === 'pending') o.kotPrepStatus = 'preparing';
+  });
+  if (changed) save();
+}
+
+function toggleKotAutoAccept(kitchenId, checked) {
+  if (checked) {
+    if (!S.kotAutoAccept.includes(kitchenId)) S.kotAutoAccept.push(kitchenId);
+    autoAcceptForKitchen(kitchenId);
+  } else {
+    S.kotAutoAccept = S.kotAutoAccept.filter(id => id !== kitchenId);
+  }
+  rerenderKot();
+}
+
 function rerenderKot() {
+  // Auto-mark orders as done if their kitchens no longer require KOT
+  let changed = false;
+  D.orders.forEach(o => {
+    if (o.kotStatus === 'active' && o.kotPrepStatus !== 'done' && !needsKOT(o)) {
+      o.kotPrepStatus = 'done';
+      o.items.forEach(i => { if ((i.acceptedQty||0) < i.qty) i.acceptedQty = i.qty; });
+      changed = true;
+    }
+  });
+  if (changed) save();
+  if (S.kotAutoAccept && S.kotAutoAccept.length) S.kotAutoAccept.forEach(kid => autoAcceptForKitchen(kid));
   const v = document.querySelector('.view');
   if (v) v.innerHTML = kotHTML();
+}
+
+function clearAllKots() {
+  const active = D.orders.filter(o =>
+    (o.status === 'open' || o.status === 'paid') &&
+    o.kotStatus === 'active' && o.kotPrepStatus !== 'done'
+  );
+  if (!active.length) { notify(t('noActiveKots')); return; }
+  if (!confirm(`Mark all ${active.length} active KOT${active.length > 1 ? 's' : ''} as delivered?`)) return;
+  active.forEach(o => {
+    o.kotPrepStatus = 'done';
+    o.tableChangeNote = null;
+    o.items.forEach(i => { i.acceptedQty = i.qty; });
+  });
+  save();
+  rerenderKot();
 }
 
 function cycleKotPrep(orderId) {
@@ -3512,7 +3761,10 @@ function kotHTML() {
     const cancelCls = cancellations.length ? 'has-cancellation' : '';
     return `<div class="kot-card ${prepCls} ${cancelCls}" onclick="cycleKotPrep('${o.id}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-        <div class="kot-id">${kotId(o)}</div>
+        <div>
+          <span style="font-size:18px;font-weight:800;color:var(--primary);">#${o.serial != null ? pad4(o.serial) : '----'}</span>
+          <div class="kot-id" style="font-size:10.5px;margin-top:1px;">${kotId(o)}</div>
+        </div>
         <span class="kot-prep-badge ${prep}">${prep === 'pending' ? t('kotPending') : t('kotPreparing')}</span>
       </div>
       <div class="kot-who">${h(who)} <span style="color:var(--muted);font-weight:400;">&middot; ${tm}</span>${isPaid?` <span style="color:var(--success);font-weight:700;">&middot; ${t('paid')}</span>`:''}</div>
@@ -3571,13 +3823,29 @@ function kotHTML() {
   }).join('');
 
   return `
-    <div class="sec-hdr"><h2>&#128221; ${t('kot')}</h2></div>
-    ${D.kitchens.length ? `<div class="kot-kitchen-filter">
-      <strong style="color:var(--muted);">${t('filterByKitchen')}:</strong>
-      ${D.kitchens.map(k => `<label><input type="checkbox" ${S.kotKitchenFilter.includes(k.id)?'checked':''} onchange="toggleKotKitchenFilter('${k.id}',this.checked)"> ${h(k.name)}</label>`).join('')}
-      ${!S.kotKitchenFilter.length ? `<span style="color:var(--muted);font-size:12px;">(${t('allKitchens')})</span>` : ''}
+    <div class="sec-hdr">
+      <h2>&#128221; ${t('kot')}</h2>
+      <span style="margin-left:auto;display:flex;gap:10px;align-items:center;">
+        <span style="font-size:12.5px;background:var(--warning);color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;">${t('activeKots')}: ${active.length}</span>
+        <span style="font-size:12.5px;background:#DC2626;color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;">${t('deletedKots')}: ${deleted.length}</span>
+      </span>
+    </div>
+    ${D.kitchens.length ? `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      <div class="kot-kitchen-filter" style="margin-bottom:0;">
+        <strong style="color:var(--muted);">${t('filterByKitchen')}:</strong>
+        ${D.kitchens.map(k => `<label><input type="checkbox" ${S.kotKitchenFilter.includes(k.id)?'checked':''} onchange="toggleKotKitchenFilter('${k.id}',this.checked)"> ${h(k.name)}</label>`).join('')}
+        ${!S.kotKitchenFilter.length ? `<span style="color:var(--muted);font-size:12px;">(${t('allKitchens')})</span>` : ''}
+      </div>
+      <div class="kot-kitchen-filter" style="margin-bottom:0;background:var(--hover);padding:8px 12px;border-radius:8px;">
+        <strong style="color:var(--muted);">Auto-Accept:</strong>
+        ${D.kitchens.map(k => `<label style="background:${S.kotAutoAccept.includes(k.id)?'var(--success)':'transparent'};color:${S.kotAutoAccept.includes(k.id)?'#fff':'var(--text)'};padding:3px 10px;border-radius:12px;border:1.5px solid ${S.kotAutoAccept.includes(k.id)?'var(--success)':'var(--border)'};transition:all 0.12s;cursor:pointer;"><input type="checkbox" style="display:none;" ${S.kotAutoAccept.includes(k.id)?'checked':''} onchange="toggleKotAutoAccept('${k.id}',this.checked)"> ${h(k.name)}${S.kotAutoAccept.includes(k.id)?' ✓':''}</label>`).join('')}
+        <span style="color:var(--muted);font-size:12px;margin-left:4px;">ON = auto-mark items accepted</span>
+      </div>
     </div>` : ''}
-    <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">${t('activeKots')} (${active.length})</h3>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <h3 style="font-size:14px;font-weight:600;">${t('activeKots')} (${active.length})</h3>
+      ${active.length ? `<button class="btn btn-sm" style="background:#16A34A;color:#fff;margin-left:auto;" onclick="clearAllKots()">&#10003; Clear All</button>` : ''}
+    </div>
     ${active.length
       ? `<div class="kot-grid">${activeCards}</div>`
       : `<div class="empty"><div class="eico">&#128221;</div><p>${t('noActiveKots')}</p></div>`}
@@ -3643,74 +3911,105 @@ function applyDeleteKOT(orderId) {
 //  REPORTS
 // ═══════════════════════════════════════════════════════
 function reportsHTML() {
-  const sel = S.reportDate || today();
-  const td  = today();
-  const paid = D.orders.filter(o => o.status === 'paid' && !o.deleted);
-  const dayAll = D.orders.filter(o => o.status === 'paid' && (o.closedAt||o.createdAt).slice(0,10) === sel)
-    .sort((a,b) => ((a.serial||a.billNo||0) - (b.serial||b.billNo||0)));
-  const dayOrd = dayAll.filter(o => !o.deleted);
-  const settlements = Array.isArray(D.dueSettlements) ? D.dueSettlements : [];
-  const daySettlements = settlements.filter(x => (x.date||'').slice(0,10) === sel);
-  const daySettleAmt = daySettlements.reduce((s,x) => s + (Number(x.amount)||0), 0);
-  const totalSettleAmt = settlements.reduce((s,x) => s + (Number(x.amount)||0), 0);
+  const from = S.reportDateFrom || today();
+  const to   = S.reportDateTo   || today();
+  const td   = today();
+  const rangeLabel = from === to ? from : from + ' to ' + to;
+  const inRange = o => { const d = (o.closedAt||o.createdAt||'').slice(0,10); return d >= from && d <= to; };
   const billAmt = o => o.paidAmount != null ? o.paidAmount : calcBill(o).total;
+
+  const rangeAll = D.orders.filter(o => o.status === 'paid' && inRange(o))
+    .sort((a,b) => new Date(b.closedAt||b.createdAt) - new Date(a.closedAt||a.createdAt));
+  const rangeOrd = rangeAll.filter(o => !o.deleted);
+
+  const settlements = Array.isArray(D.dueSettlements) ? D.dueSettlements : [];
+  const rSetts = settlements.filter(x => { const d=(x.date||'').slice(0,10); return d>=from && d<=to; });
+  const rSettAmt = rSetts.reduce((s,x) => s+(Number(x.amount)||0), 0);
+
   const allRefunds = [];
   D.orders.forEach(o => (o.refunds||[]).forEach(r => { if (r.settled) allRefunds.push({...r, order:o}); }));
-  const dayRefunds = allRefunds.filter(r => (r.settledAt||'').slice(0,10) === sel);
-  const dayRefundAmt = dayRefunds.reduce((s,r) => s + (Number(r.amount)||0), 0);
-  const totalRefundAmt = allRefunds.reduce((s,r) => s + (Number(r.amount)||0), 0);
-  const totalRev = paid.reduce((s,o) => s + billAmt(o), 0) + totalSettleAmt - totalRefundAmt;
-  const dayRev   = dayOrd.reduce((s,o) => s + billAmt(o), 0) + daySettleAmt - dayRefundAmt;
-  const openCount = D.orders.filter(o => o.status === 'open').length;
-  const pendingRefunds = [];
-  D.orders.forEach(o => { if (o.status === 'paid') (o.refunds||[]).forEach(r => { if (!r.settled) pendingRefunds.push({...r, order:o}); }); });
-  const cashAmount = o => {
-    if (o.splitPayments && o.splitPayments.length) {
-      return o.splitPayments.filter(p => p.method === 'Cash').reduce((s,p) => s + (Number(p.amount)||0), 0);
-    }
-    return (o.paymentMethod || 'Cash') === 'Cash' ? billAmt(o) : 0;
+  const rRefunds = allRefunds.filter(r => { const d=(r.settledAt||'').slice(0,10); return d>=from && d<=to; });
+  const rRefundAmt = rRefunds.reduce((s,r) => s+(Number(r.amount)||0), 0);
+  const cashRefundAmt = rRefunds.filter(r => (r.method||'Cash')==='Cash').reduce((s,r) => s+(Number(r.amount)||0), 0);
+
+  const mAmt = (o, method) => {
+    if (o.splitPayments && o.splitPayments.length)
+      return o.splitPayments.filter(p => p.method===method).reduce((s,p) => s+(Number(p.amount)||0), 0);
+    return (o.paymentMethod||'Cash')===method ? billAmt(o) : 0;
   };
+
+  const totalBilled  = rangeOrd.reduce((s,o) => s + billAmt(o), 0);
+  const cashFromOrds = rangeOrd.reduce((s,o) => s + mAmt(o,'Cash'), 0);
+  const cashAmt      = cashFromOrds + rSettAmt;
+  const phonePeAmt   = rangeOrd.reduce((s,o) => s + mAmt(o,'PhonePe'), 0);
+  const gpayAmt      = rangeOrd.reduce((s,o) => s + mAmt(o,'GPay'), 0);
+  const paytmAmt     = rangeOrd.reduce((s,o) => s + mAmt(o,'Paytm'), 0);
+  const bharatPeAmt  = rangeOrd.reduce((s,o) => s + mAmt(o,'BharatPe'), 0);
+  const onlineAmt    = phonePeAmt + gpayAmt + paytmAmt + bharatPeAmt;
+  const totalRev     = cashAmt + onlineAmt - cashRefundAmt;
+  const custPLAmt    = D.orders.filter(o => inRange(o) && !o.deleted).reduce((s,o) => s+(Number(o.dueAmount)||0), 0);
+  const restPLArr    = [];
+  D.orders.forEach(o => { if (inRange(o)) (o.refunds||[]).forEach(r => { if (!r.settled && r.method==='Due') restPLArr.push(r); }); });
+  const restPLAmt    = restPLArr.reduce((s,r) => s+(Number(r.amount)||0), 0);
+
+  const activeInRange = D.orders.filter(o => { const d=(o.createdAt||'').slice(0,10); return d>=from && d<=to && o.kotStatus==='active' && o.status==='open'; });
+
+  const pendingRefunds = [];
+  D.orders.forEach(o => { if (o.status==='paid') (o.refunds||[]).forEach(r => { if (!r.settled) pendingRefunds.push({...r, order:o}); }); });
+
   const cashTxns = [];
-  dayAll.forEach(o => {
-    const amt = cashAmount(o);
-    if (amt > 0) cashTxns.push({ type:'sale', order:o, amount: amt, time: o.closedAt||o.createdAt });
-  });
-  dayRefunds.forEach(r => {
-    if ((r.method||'Cash') === 'Cash') cashTxns.push({ type:'refund', order:r.order, amount: -r.amount, time: r.settledAt, reason: r.reason });
-  });
-  cashTxns.sort((a,b) => new Date(a.time) - new Date(b.time));
-  const netCash = cashTxns.reduce((s,x) => s + x.amount, 0);
+  rangeAll.forEach(o => { const a=mAmt(o,'Cash'); if(a>0) cashTxns.push({type:'sale',order:o,amount:a,time:o.closedAt||o.createdAt}); });
+  rRefunds.forEach(r => { if((r.method||'Cash')==='Cash') cashTxns.push({type:'refund',order:r.order,amount:-r.amount,time:r.settledAt,reason:r.reason}); });
+  cashTxns.sort((a,b) => new Date(a.time)-new Date(b.time));
+  const netCash = cashTxns.reduce((s,x) => s+x.amount, 0);
+
+  const maxTo = (()=>{ const d=new Date(from); d.setDate(d.getDate()+90); const s=d.toISOString().slice(0,10); return s<td?s:td; })();
+  const mc = (label, val, sub, icon) => `
+    <div class="stat-card">
+      <div class="stat-lbl" style="display:flex;align-items:center;gap:5px;">${icon||''}${label}</div>
+      <div class="stat-val" style="color:var(--success);">${fmt(val)}</div>
+      ${sub?`<div class="stat-sub">${sub}</div>`:''}
+    </div>`;
 
   return `
     <div class="sec-hdr">
       <h2>${t('salesReports')}</h2>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <label style="font-size:12.5px;color:var(--muted);">Date:</label>
-        <input type="date" value="${sel}" max="${td}"
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <label style="font-size:12.5px;color:var(--muted);">From:</label>
+        <input type="date" value="${from}" max="${td}"
           style="padding:5px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;"
-          onchange="S.reportDate=this.value;rerenderReports()">
+          onchange="(function(v){S.reportDateFrom=v;const mx=new Date(new Date(v).getTime()+90*86400000).toISOString().slice(0,10);if(S.reportDateTo<v)S.reportDateTo=v;if(S.reportDateTo>mx)S.reportDateTo=mx;S.reportPage=0;rerenderReports();})(this.value)">
+        <label style="font-size:12.5px;color:var(--muted);">To:</label>
+        <input type="date" value="${to}" max="${maxTo}" min="${from}"
+          style="padding:5px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;"
+          onchange="S.reportDateTo=this.value;S.reportPage=0;rerenderReports()">
+        <button class="btn btn-sm btn-ghost" onclick="S.reportDateFrom=today();S.reportDateTo=today();S.reportPage=0;rerenderReports()" style="white-space:nowrap;">Today</button>
+        <span style="font-size:11.5px;color:var(--muted);">Max 90 days</span>
       </div>
     </div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-lbl">${t('revenue')} (${sel})</div>
-        <div class="stat-val" style="color:var(--success);">${fmt(dayRev)}</div>
-        <div class="stat-sub">${dayOrd.length} ${t('order').toLowerCase()}(s)</div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);margin-bottom:10px;">Payment Summary &mdash; ${rangeLabel}</div>
+      <div class="stats-grid">
+        ${mc('Total Billed', totalBilled, rangeOrd.length+' bill(s)')}
+        ${mc('Total Revenue', totalRev, 'Cash + Online − Refunds')}
+        ${mc('Cash', cashAmt, rSettAmt>0?'incl. '+fmt(rSettAmt)+' dues settled':'')}
+        ${mc('Online', onlineAmt, 'All UPI combined')}
+        ${mc('Cash Refund', cashRefundAmt, 'Cash paid out')}
+        ${mc('PhonePe', phonePeAmt, 'all-time', PAY_ICONS.PhonePe)}
+        ${mc('GPay', gpayAmt, 'all-time', PAY_ICONS.GPay)}
+        ${mc('Paytm', paytmAmt, 'all-time', PAY_ICONS.Paytm)}
+        ${mc('BharatPe', bharatPeAmt, 'all-time', PAY_ICONS.BharatPe)}
+        ${mc('Customer Pay Later', custPLAmt, 'Owes restaurant')}
+        ${mc('Restaurant Pay Later', restPLAmt, 'Owes customer')}
       </div>
+    </div>
+
+    <div class="stats-grid" style="margin-bottom:16px;">
       <div class="stat-card">
-        <div class="stat-lbl">${t('totalRevenue')}</div>
-        <div class="stat-val">${fmt(totalRev)}</div>
-        <div class="stat-sub">${paid.length} orders</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-lbl">${t('activeOrders')}</div>
-        <div class="stat-val" style="color:var(--warning);">${openCount}</div>
-        <div class="stat-sub">${D.tables.filter(x=>x.status==='occupied').length} ${t('occupied').toLowerCase()}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-lbl">${t('menuItems')}</div>
-        <div class="stat-val">${D.menu.length}</div>
-        <div class="stat-sub">${cats().length} ${t('category').toLowerCase()}</div>
+        <div class="stat-lbl">${t('activeOrders')} (${rangeLabel})</div>
+        <div class="stat-val" style="color:var(--warning);">${activeInRange.length}</div>
+        <div class="stat-sub">KOT sent &middot; bill pending</div>
       </div>
     </div>
 
@@ -3738,27 +4037,35 @@ function reportsHTML() {
 
     <div class="card" style="margin-bottom:16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <h3 style="font-size:15px;font-weight:600;">${t('order')} &mdash; ${sel}</h3>
-        <span style="font-size:12.5px;color:var(--muted);">${dayOrd.length} &middot; ${fmt(dayRev)}</span>
+        <h3 style="font-size:15px;font-weight:600;">${t('order')} &mdash; ${rangeLabel}</h3>
+        <span style="font-size:12.5px;color:var(--muted);">${rangeOrd.length} bill${rangeOrd.length!==1?'s':''} &middot; ${fmt(totalBilled)}</span>
       </div>
-      ${dayAll.length === 0
-        ? `<div class="empty"><div class="eico">&#128203;</div><p>${t('noOrders')}</p></div>`
-        : `<table class="data-tbl">
-            <thead><tr><th>${t('billNo')}</th><th>Table</th><th>Items</th><th>Method</th><th>Time</th><th style="text-align:right;">Total</th><th style="text-align:right;">${t('actions')}</th></tr></thead>
+      ${(()=>{
+        const PAGE = 20;
+        const page = Math.max(0, Math.min(S.reportPage||0, Math.ceil(rangeAll.length/PAGE)-1));
+        const totalPages = Math.ceil(rangeAll.length/PAGE) || 1;
+        const slice = rangeAll.slice(page*PAGE, (page+1)*PAGE);
+        if (!rangeAll.length) return `<div class="empty"><div class="eico">&#128203;</div><p>${t('noOrders')}</p></div>`;
+        return `
+          <table class="data-tbl">
+            <thead><tr><th>${t('billNo')}</th><th>Table / Customer</th><th>Items</th><th>Method</th><th>Time</th><th style="text-align:right;">Total</th><th style="text-align:right;">${t('actions')}</th></tr></thead>
             <tbody>
-              ${dayAll.map(o => {
+              ${slice.map(o => {
                 const b = calcBill(o);
                 const tm = new Date(o.closedAt||o.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-                const who = o.type === 'dine-in' ? h(o.tableName||'') : (o.type[0].toUpperCase()+o.type.slice(1)+': '+h(o.customer&&o.customer.name||'Guest'));
+                const who = o.type==='dine-in' ? h(o.tableName||'') : (o.type[0].toUpperCase()+o.type.slice(1)+': '+h(o.customer&&o.customer.name||'Guest'));
                 const del = !!o.deleted;
                 const strike = del ? 'text-decoration:line-through;opacity:0.55;' : '';
-                const tags = (o.edited ? `<span class="tag tag-open" title="${h(o.editReason||'')}">${t('edited')}</span> ` : '')
-                           + (del ? `<span class="tag" style="background:#FEE2E2;color:#DC2626;" title="${h(o.deleteReason||'')}">${t('deleted')}</span>` : '');
+                const tags = (o.edited?`<span class="tag tag-open" title="${h(o.editReason||'')}">${t('edited')}</span> `:'')
+                           + (del?`<span class="tag" style="background:#FEE2E2;color:#DC2626;" title="${h(o.deleteReason||'')}">${t('deleted')}</span>`:'');
+                const pm = o.splitPayments && o.splitPayments.length
+                  ? o.splitPayments.map(p=>p.method).join('+')
+                  : (o.paymentMethod||'Cash');
                 return `<tr style="${strike}">
                   <td style="font-family:monospace;font-weight:700;">#${billLabel(o)}</td>
                   <td>${who} ${tags}</td>
                   <td>${o.items.reduce((s,i)=>s+i.qty,0)}</td>
-                  <td><span class="tag tag-paid">${o.paymentMethod||'Cash'}</span></td>
+                  <td><span class="tag tag-paid">${h(pm)}</span></td>
                   <td style="color:var(--muted);">${tm}</td>
                   <td style="text-align:right;font-weight:600;">${fmt(b.total)}</td>
                   <td style="text-align:right;white-space:nowrap;">
@@ -3769,20 +4076,28 @@ function reportsHTML() {
                 </tr>`;
               }).join('')}
             </tbody>
-          </table>`
-      }
+          </table>
+          ${totalPages > 1 ? `
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap;">
+            <button class="btn btn-sm btn-ghost" ${page===0?'disabled':''} onclick="S.reportPage=${page-1};rerenderReports()">&#8592; Prev</button>
+            ${Array.from({length:totalPages},(_,i)=>`<button class="btn btn-sm${i===page?' btn-primary':' btn-ghost'}" onclick="S.reportPage=${i};rerenderReports()" style="${i===page?'background:var(--primary);color:#fff;':''}">${i+1}</button>`).join('')}
+            <button class="btn btn-sm btn-ghost" ${page===totalPages-1?'disabled':''} onclick="S.reportPage=${page+1};rerenderReports()">Next &#8594;</button>
+          </div>
+          <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:6px;">Showing ${page*PAGE+1}&#8211;${Math.min((page+1)*PAGE,rangeAll.length)} of ${rangeAll.length} bills</div>
+          ` : ''}`;
+      })()}
     </div>
 
-    ${daySettlements.length > 0 ? `
+    ${rSetts.length > 0 ? `
     <div class="card" style="margin-bottom:16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <h3 style="font-size:15px;font-weight:600;">${t('clearDue')} &mdash; ${sel}</h3>
-        <span style="font-size:12.5px;color:var(--muted);">${daySettlements.length} &middot; ${fmt(daySettleAmt)}</span>
+        <h3 style="font-size:15px;font-weight:600;">${t('clearDue')} &mdash; ${rangeLabel}</h3>
+        <span style="font-size:12.5px;color:var(--muted);">${rSetts.length} &middot; ${fmt(rSettAmt)}</span>
       </div>
       <table class="data-tbl">
         <thead><tr><th>${t('customerName')}</th><th>Method</th><th>Time</th><th style="text-align:right;">${t('amount')}</th></tr></thead>
         <tbody>
-          ${daySettlements.map(s => {
+          ${rSetts.map(s => {
             const tm = new Date(s.date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
             return `<tr>
               <td>${h(s.customerName||'')}</td>
@@ -3795,25 +4110,25 @@ function reportsHTML() {
       </table>
     </div>` : ''}
 
-    ${dayRefunds.length > 0 ? `
+    ${rRefunds.length > 0 ? `
     <div class="card" style="margin-bottom:16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <h3 style="font-size:15px;font-weight:600;">${t('refunds')} &mdash; ${sel}</h3>
-        <span style="font-size:12.5px;color:var(--danger);">${dayRefunds.length} &middot; −${fmt(dayRefundAmt)}</span>
+        <h3 style="font-size:15px;font-weight:600;">${t('refunds')} &mdash; ${rangeLabel}</h3>
+        <span style="font-size:12.5px;color:var(--danger);">${rRefunds.length} &middot; &#8722;${fmt(rRefundAmt)}</span>
       </div>
       <table class="data-tbl">
         <thead><tr><th>${t('billNo')}</th><th>${t('reason')}</th><th>Method</th><th>Time</th><th style="text-align:right;">${t('amount')}</th></tr></thead>
         <tbody>
-          ${dayRefunds.map(r => {
+          ${rRefunds.map(r => {
             const tm = new Date(r.settledAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-            const isDue = r.method === 'Due';
-            const methodLabel = isDue ? t('dueToCustomer') : (r.method || 'Cash');
+            const isDue = r.method==='Due';
+            const methodLabel = isDue ? t('dueToCustomer') : (r.method||'Cash');
             return `<tr>
               <td style="font-family:monospace;font-weight:700;">#${billLabel(r.order)}</td>
               <td>${h(r.reason||'')}</td>
               <td><span class="tag" style="background:${isDue?'#DBEAFE':'#FEE2E2'};color:${isDue?'#1E40AF':'#DC2626'};">${h(methodLabel)}</span></td>
               <td style="color:var(--muted);">${tm}</td>
-              <td style="text-align:right;font-weight:600;color:var(--danger);">−${fmt(r.amount)}</td>
+              <td style="text-align:right;font-weight:600;color:var(--danger);">&#8722;${fmt(r.amount)}</td>
             </tr>`;
           }).join('')}
         </tbody>
@@ -3822,41 +4137,31 @@ function reportsHTML() {
 
     ${cashTxns.length > 0 ? `
     <div class="card" style="margin-bottom:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <h3 style="font-size:15px;font-weight:600;">${t('cashTransactions')} &mdash; ${sel}</h3>
-        <span style="font-size:12.5px;color:var(--muted);">${t('netCash')}: ${fmt(netCash)}</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <h3 style="font-size:15px;font-weight:600;">${t('cashTransactions')} &mdash; ${rangeLabel}</h3>
+        <span style="font-size:13.5px;font-weight:700;color:var(--success);">${t('netCash')}: ${fmt(netCash)}</span>
       </div>
-      <table class="data-tbl">
-        <thead><tr><th>${t('billNo')}</th><th>${t('reason')}</th><th>Time</th><th style="text-align:right;">${t('amount')}</th></tr></thead>
-        <tbody>
-          ${cashTxns.map(x => {
-            const tm = new Date(x.time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-            const isRefund = x.type === 'refund';
-            return `<tr>
-              <td style="font-family:monospace;font-weight:700;">#${billLabel(x.order)}</td>
-              <td>${isRefund ? `${t('refund')}: ${h(x.reason||'')}` : t('sale')}</td>
-              <td style="color:var(--muted);">${tm}</td>
-              <td style="text-align:right;font-weight:600;${isRefund?'color:var(--danger);':''}">${isRefund?'−':''}${fmt(Math.abs(x.amount))}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
     </div>` : ''}
 
-    ${paid.length > 0 ? `
+    ${rangeOrd.length > 0 ? `
     <div class="card">
       <h3 style="font-size:15px;font-weight:600;margin-bottom:14px;">${t('topSelling')}</h3>
-      ${topItemsHTML()}
+      ${topItemsHTML(from, to)}
     </div>` : ''}`;
 }
 
-function topItemsHTML() {
+function topItemsHTML(from, to) {
   const cnt = {};
-  D.orders.filter(o => o.status === 'paid' && !o.deleted).forEach(o =>
+  D.orders.filter(o => {
+    if (o.status !== 'paid' || o.deleted) return false;
+    if (!from || !to) return true;
+    const d = (o.closedAt||o.createdAt||'').slice(0,10);
+    return d >= from && d <= to;
+  }).forEach(o =>
     o.items.forEach(i => {
       cnt[i.name] = cnt[i.name] || { qty:0, rev:0 };
       cnt[i.name].qty += i.qty;
-      cnt[i.name].rev += i.price * i.qty;
+      cnt[i.name].rev += (i.unitPrice||i.price||0) * i.qty;
     })
   );
   const sorted = Object.entries(cnt).sort((a,b) => b[1].qty - a[1].qty).slice(0,10);
@@ -4997,6 +5302,20 @@ function settingsHTML() {
           <button class="btn btn-ghost" style="color:var(--danger);border-color:#FCA5A5;" onclick="resetAll()">&#128465; Reset All Data</button>
         </div>
       </div>
+
+      <div class="card">
+        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">&#128736; Developer</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:13.5px;font-weight:500;">Show Accounts Tab</div>
+            <div style="font-size:12px;color:var(--muted);">Enable to access the Accounts section (dev only)</div>
+          </div>
+          <div class="pay-methods">
+            <button class="pay-btn${D.devMode?' active':''}" onclick="D.devMode=true;save();buildNav();rerenderSettings()">On</button>
+            <button class="pay-btn${!D.devMode?' active':''}" onclick="D.devMode=false;save();buildNav();rerenderSettings()">Off</button>
+          </div>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -5153,7 +5472,18 @@ function saveKitchen(kitchenId) {
   k.kotRequired = document.getElementById('kt-kot').dataset.value !== 'no';
   k.printerEnabled = document.getElementById('kt-printer').dataset.value === 'yes';
   k.printerSize = document.getElementById('kt-printer-size').value;
-  save(); closeModal(); rerenderSettings(); notify(t('kitchenSaved'));
+  save();
+  // Auto-clear existing KOTs for kitchens that no longer require them
+  let kotChanged = false;
+  D.orders.forEach(o => {
+    if (o.kotStatus === 'active' && o.kotPrepStatus !== 'done' && !needsKOT(o)) {
+      o.kotPrepStatus = 'done';
+      o.items.forEach(i => { if ((i.acceptedQty||0) < i.qty) i.acceptedQty = i.qty; });
+      kotChanged = true;
+    }
+  });
+  if (kotChanged) save();
+  closeModal(); rerenderSettings(); notify(t('kitchenSaved'));
 }
 
 function deleteKitchen(kitchenId) {
@@ -5453,20 +5783,24 @@ function notify(msg, ms=2600) {
 //  EVENT BINDING
 // ═══════════════════════════════════════════════════════
 function bindEvents() {
-  // Category sidebar
-  document.querySelectorAll('.cat-side-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.cat-side-btn').forEach(b => b.classList.toggle('active', b === btn));
-      const targetId = btn.dataset.target;
-      const scroller = document.getElementById('items-scroll');
-      if (targetId === 'cat-sec-all') { if (scroller) scroller.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-      const target = document.getElementById(targetId);
-      if (target) {
-        if (target.classList.contains('collapsed')) toggleCatSection(targetId);
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+  // Category sidebar + mobile pill strip (shared scroll logic)
+  function bindCatBtns(selector, activeSelector) {
+    document.querySelectorAll(selector).forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll(activeSelector).forEach(b => b.classList.toggle('active', b === btn));
+        const targetId = btn.dataset.target;
+        const scroller = document.getElementById('items-scroll');
+        if (targetId === 'cat-sec-all') { if (scroller) scroller.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+        const target = document.getElementById(targetId);
+        if (target) {
+          if (target.classList.contains('collapsed')) toggleCatSection(targetId);
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
     });
-  });
+  }
+  bindCatBtns('.cat-side-btn', '.cat-side-btn');
+  bindCatBtns('.mobile-cat-pill', '.mobile-cat-pill');
 
   // Menu search
   const mq = document.getElementById('menu-q');
@@ -5503,7 +5837,7 @@ function buildNav() {
     { v:'crm',      ico:'&#128100;', key:'crm'      },
     { v:'menu',     ico:'&#128203;', key:'menu'     },
     { v:'reports',  ico:'&#128202;', key:'reports'  },
-    { v:'accounts', ico:'&#128176;', key:'accounts' },
+    ...(D.devMode ? [{ v:'accounts', ico:'&#128176;', key:'accounts' }] : []),
     { v:'settings', ico:'&#9881;',   key:'settings' },
   ];
   document.getElementById('main-nav').innerHTML =
