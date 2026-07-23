@@ -1009,8 +1009,55 @@ function toggleTheme() {
 //  STORAGE
 // ═══════════════════════════════════════════════════════
 function save() {
-  localStorage.setItem('rb2_data', JSON.stringify(D));
+  persistLocal();
   scheduleFirebaseSync();
+}
+
+// Local cache is best-effort: Firestore is the source of truth and is fully
+// re-fetched on load, so if the quota is exceeded we can safely shrink what
+// we keep in localStorage without losing any real data.
+function persistLocal() {
+  const tryStore = (obj) => {
+    try { localStorage.setItem('rb2_data', JSON.stringify(obj)); return true; }
+    catch (e) { return e; }
+  };
+  let res = tryStore(D);
+  if (res === true) return;
+  if (!(res instanceof Error) || res.name !== 'QuotaExceededError') { console.error('Local cache save failed', res); return; }
+  const lite1 = { ...D, expenses: (D.expenses || []).map(x => x.attachment ? { ...x, attachment: { name: x.attachment.name, type: x.attachment.type } } : x) };
+  res = tryStore(lite1);
+  if (res === true) return;
+  const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const lite2 = { ...lite1, orders: (D.orders || []).filter(o => o.status === 'open' || new Date(o.closedAt || o.createdAt).getTime() >= cutoff) };
+  res = tryStore(lite2);
+  if (res !== true) console.error('Local cache save failed even after trimming', res);
+}
+
+// Downscale/compress images before storing as base64 so attachments stay
+// well under Firestore's 1MB document limit and don't blow the localStorage quota.
+function compressImageFile(file, maxDim, quality) {
+  return new Promise(resolve => {
+    if (!file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ name: file.name, type: file.type, dataUrl: reader.result });
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+      return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve({ name: file.name, type: 'image/jpeg', dataUrl: canvas.toDataURL('image/jpeg', quality) });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
 }
 
 // ── Firebase (Firestore) real-time sync ──
@@ -1119,7 +1166,7 @@ function setupFirebaseListeners() {
       let changed = false;
       snap.docChanges().forEach(ch => { if (applyFbSnapshotChange(key, ch)) changed = true; });
       if (changed) {
-        localStorage.setItem('rb2_data', JSON.stringify(D));
+        persistLocal();
         renderMain();
       }
     }, err => { console.error('Firebase listener error', err); fbSetStatus('error'); });
@@ -1131,7 +1178,7 @@ function setupFirebaseListeners() {
     if (json === fbLastMetaJson) return;
     fbLastMetaJson = json;
     FB_META_KEYS.forEach(k => { if (data[k] !== undefined) D[k] = data[k]; });
-    localStorage.setItem('rb2_data', JSON.stringify(D));
+    persistLocal();
     applyTheme();
     renderMain();
   }, err => { console.error('Firebase meta listener error', err); fbSetStatus('error'); });
@@ -1173,7 +1220,7 @@ async function initFirebaseSync() {
     } else {
       ensureMenuItemDefaults();
       const renumbered = fixTableNumbering();
-      localStorage.setItem('rb2_data', JSON.stringify(D));
+      persistLocal();
       if (renumbered) scheduleFirebaseSync();
       applyTheme();
       renderMain();
@@ -4970,10 +5017,7 @@ function addExpenseBill() {
   };
 
   if (file) {
-    const reader = new FileReader();
-    reader.onload = () => finish({ name: file.name, type: file.type, dataUrl: reader.result });
-    reader.onerror = () => finish(null);
-    reader.readAsDataURL(file);
+    compressImageFile(file, 1600, 0.7).then(finish);
   } else {
     finish(null);
   }
@@ -5091,10 +5135,7 @@ function saveEditBill(expId) {
   };
 
   if (file) {
-    const reader = new FileReader();
-    reader.onload = () => finish({ name: file.name, type: file.type, dataUrl: reader.result });
-    reader.onerror = () => finish(null);
-    reader.readAsDataURL(file);
+    compressImageFile(file, 1600, 0.7).then(finish);
   } else {
     finish(null);
   }
