@@ -599,6 +599,18 @@ body.dark .kot-pending-review { background: #3A2E10; }
 .stat-val { font-size: 26px; font-weight: 700; margin-top: 3px; }
 .stat-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
+/* ── Hub (Owner / Master Login landing screen) ── */
+.hub-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px 16px; }
+.hub-title { font-size: 18px; font-weight: 600; margin-bottom: 28px; }
+.hub-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 720px; }
+.hub-card {
+  width: 190px; padding: 28px 16px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; text-align: center; cursor: pointer; transition: transform .12s, box-shadow .12s;
+}
+.hub-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.08); border-color: var(--primary); }
+.hub-ico { font-size: 34px; margin-bottom: 10px; }
+.hub-label { font-size: 14px; font-weight: 600; }
+
 /* ── Settings ── */
 .settings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
 .form-grp { margin-bottom: 14px; }
@@ -694,7 +706,7 @@ body.dark .kot-pending-review { background: #3A2E10; }
 <div id="app">
   <header>
     <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()">&#9776;</button>
-    <div class="logo">&#127374; RestoBill</div>
+    <div class="logo" onclick="goHome()" style="cursor:pointer;">&#127374; RestoBill</div>
     <nav id="main-nav"></nav>
     <div id="hdr-right">
       <span id="hdr-name"></span>
@@ -709,7 +721,7 @@ body.dark .kot-pending-review { background: #3A2E10; }
 
 <!-- Mobile side drawer -->
 <div id="mobile-drawer" class="mobile-drawer">
-  <div class="mobile-drawer-hdr">&#127374; RestoBill</div>
+  <div class="mobile-drawer-hdr" onclick="goHome();closeMobileMenu();" style="cursor:pointer;">&#127374; RestoBill</div>
   <nav id="drawer-nav"></nav>
 </div>
 <div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" onclick="closeMobileMenu()"></div>
@@ -862,7 +874,8 @@ const I18N = {
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting…',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
-    masterLogin:'Master Login', protectedAccount:'Protected', masterProtected:'The master login can\'t be deleted here',
+    masterLogin:'Master Login', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
+    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
     deleteTable:'Delete Table', deleteTableConfirm:'Delete table "%s" and its current order?', nothingToClear:'No items to clear',
@@ -938,7 +951,8 @@ const I18N = {
     username:'\u092F\u0942\u091C\u0930 \u0906\u0908\u0921\u0940', password:'\u092A\u093E\u0938\u0935\u0930\u094D\u0921', signIn:'\u0938\u093E\u0907\u0928 \u0907\u0928', wrongCreds:'\u0917\u0932\u0924 \u092F\u0942\u091C\u0930 \u0906\u0908\u0921\u0940 \u092F\u093E \u092A\u093E\u0938\u0935\u0930\u094D\u0921', loggedInAs:'\u0938\u093E\u0907\u0928 \u0907\u0928:', logout:'\u0938\u093E\u0907\u0928 \u0906\u0909\u091F',
     outletName:'\u0906\u0909\u091F\u0932\u0947\u091F \u0915\u093E \u0928\u093E\u092E', outletRequired:'\u0905\u092A\u0928\u093E \u0906\u0909\u091F\u0932\u0947\u091F \u0928\u093E\u092E \u0926\u0930\u094D\u091C \u0915\u0930\u0947\u0902', outletNotFound:'\u0906\u0909\u091F\u0932\u0947\u091F \u0928\u0939\u0940\u0902 \u092E\u093F\u0932\u093E\u0964 \u0928\u093E\u092E \u091C\u093E\u0902\u091A\u0947\u0902 \u0914\u0930 \u092A\u0941\u0928\u0903 \u092A\u094D\u0930\u092F\u093E\u0938 \u0915\u0930\u0947\u0902\u0964', connecting:'\u0915\u0928\u0947\u0915\u094D\u091F \u0939\u094B \u0930\u0939\u093E \u0939\u0948\u2026',
     userManagement:'\u092F\u0942\u091C\u0930 \u092A\u094D\u0930\u092C\u0902\u0927\u0928', addUser:'\u092F\u0942\u091C\u0930 \u091C\u094B\u0921\u093C\u0947\u0902', editUser:'\u092F\u0942\u091C\u0930 \u0938\u0902\u092A\u093E\u0926\u093F\u0924 \u0915\u0930\u0947\u0902', deleteUser:'\u092F\u0942\u091C\u0930 \u0939\u091F\u093E\u090F\u0902', role:'\u092D\u0942\u092E\u093F\u0915\u093E', userExists:'\u092F\u0942\u091C\u0930 \u0906\u0908\u0921\u0940 \u092A\u0939\u0932\u0947 \u0938\u0947 \u092E\u094C\u091C\u0942\u0926 \u0939\u0948', lastOwner:'\u0915\u0947\u0935\u0932 \u090F\u0915 \u092E\u093E\u0932\u093F\u0915 \u0915\u094B \u0939\u091F\u093E \u0928\u0939\u0940\u0902 \u0938\u0915\u0924\u0947', cantDeleteSelf:'\u0905\u092A\u0928\u093E \u0916\u093E\u0924\u093E \u0939\u091F\u093E \u0928\u0939\u0940\u0902 \u0938\u0915\u0924\u0947',
-    masterLogin:'\u092E\u093E\u0938\u094D\u091F\u0930 \u0932\u0949\u0917\u093F\u0928', protectedAccount:'\u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924', masterProtected:'\u092E\u093E\u0938\u094D\u091F\u0930 \u0932\u0949\u0917\u093F\u0928 \u0915\u094B \u092F\u0939\u093E\u0902 \u0938\u0947 \u0939\u091F\u093E\u092F\u093E \u0928\u0939\u0940\u0902 \u091C\u093E \u0938\u0915\u0924\u093E',
+    masterLogin:'\u092E\u093E\u0938\u094D\u091F\u0930 \u0932\u0949\u0917\u093F\u0928', protectedAccount:'\u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924', masterProtected:'\u092E\u093E\u0938\u094D\u091F\u0930 \u0932\u0949\u0917\u093F\u0928 \u092F\u0939\u093E\u0902 \u0938\u0947 \u092C\u0928\u093E\u092F\u093E, \u092C\u0926\u0932\u093E \u092F\u093E \u0939\u091F\u093E\u092F\u093E \u0928\u0939\u0940\u0902 \u091C\u093E \u0938\u0915\u0924\u093E',
+    chooseArea:'\u0906\u092A \u0915\u094D\u092F\u093E \u0915\u0930\u0928\u093E \u091A\u093E\u0939\u0947\u0902\u0917\u0947?', billingPos:'\u092C\u093F\u0932\u093F\u0902\u0917 POS', userSettings:'\u092F\u0942\u091C\u0930 \u0938\u0947\u091F\u093F\u0902\u0917\u094D\u0938', backToMenu:'\u092E\u0947\u0928\u0942 \u092A\u0930 \u0935\u093E\u092A\u0938 \u091C\u093E\u090F\u0902',
     rename:'\u0928\u093E\u092E \u092C\u0926\u0932\u0947\u0902', split:'\u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u0915\u0930\u0947\u0902', splitOccupied:'\u0935\u093F\u092D\u093E\u091C\u0928 \u0938\u0947 \u092A\u0939\u0932\u0947 \u091F\u0947\u092C\u0932 \u0916\u093E\u0932\u0940 \u0915\u0930\u0947\u0902', splitConfirm:'"%s" \u0915\u094B \u0926\u094B \u091F\u0947\u092C\u0932\u094B\u0902 \u092E\u0947\u0902 \u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u0915\u0930\u0947\u0902?',
     merge:'\u092E\u0930\u094D\u091C \u0915\u0930\u0947\u0902', selected:'\u091A\u092F\u0928\u093F\u0924', onlySplitMerge:'\u0915\u0947\u0935\u0932 \u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u091F\u0947\u092C\u0932 \u092E\u0930\u094D\u091C \u0915\u093F\u090F \u091C\u093E \u0938\u0915\u0924\u0947 \u0939\u0948\u0902', mergeSameGroup:'\u090F\u0915 \u0939\u0940 \u0935\u093F\u092D\u093E\u091C\u0928 \u0915\u0940 \u091F\u0947\u092C\u0932 \u091A\u0941\u0928\u0947\u0902', mergeConfirm:'\u091A\u092F\u0928\u093F\u0924 \u091F\u0947\u092C\u0932\u094B\u0902 \u0915\u094B "%s" \u092E\u0947\u0902 \u092E\u0930\u094D\u091C \u0915\u0930\u0947\u0902?', mergeHint:'Ctrl \u0926\u092C\u093E\u0915\u0930 \u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u091F\u0947\u092C\u0932 \u091A\u0941\u0928\u0947\u0902, \u092B\u093F\u0930 \u092E\u0930\u094D\u091C \u0915\u0930\u0947\u0902\u0964',
     deleteTable:'\u091F\u0947\u092C\u0932 \u0939\u091F\u093E\u090F\u0902', deleteTableConfirm:'\u091F\u0947\u092C\u0932 "%s" \u0914\u0930 \u0907\u0938\u0915\u093E \u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u0911\u0930\u094D\u0921\u0930 \u0939\u091F\u093E\u090F\u0902?', nothingToClear:'\u0939\u091F\u093E\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F \u0915\u094B\u0908 \u0906\u0907\u091F\u092E \u0928\u0939\u0940\u0902',
@@ -1624,9 +1638,11 @@ function renderMain() {
     else if (S.view === 'crm') d.innerHTML = crmHTML();
     else if (S.view === 'menu') d.innerHTML = menuMgmtHTML();
     else if (S.view === 'reports') d.innerHTML = reportsHTML();
-    else if (S.view === 'accounts') d.innerHTML = accountsHTML();
-    else if (S.view === 'vendorBills') d.innerHTML = vendorBillsHTML();
+    else if (S.view === 'accounts') d.innerHTML = backToHubHTML() + accountsHTML();
+    else if (S.view === 'vendorBills') d.innerHTML = backToHubHTML() + vendorBillsHTML();
     else if (S.view === 'settings') d.innerHTML = settingsHTML();
+    else if (S.view === 'hub') d.innerHTML = hubHTML();
+    else if (S.view === 'user-settings') d.innerHTML = backToHubHTML() + userSettingsHTML();
     el.appendChild(d);
   }
   document.getElementById('hdr-name').textContent = D.settings.name;
@@ -4555,7 +4571,7 @@ function accountsHTML() {
 
 function rerenderAccounts() {
   const v = document.querySelector('.view');
-  if (v) v.innerHTML = accountsHTML();
+  if (v) v.innerHTML = backToHubHTML() + accountsHTML();
 }
 
 function refreshExpenseView() {
@@ -4799,7 +4815,7 @@ function vendorBillRowHTML(e) {
 
 function rerenderVendorBills() {
   const v = document.querySelector('.view');
-  if (v) v.innerHTML = vendorBillsHTML();
+  if (v) v.innerHTML = backToHubHTML() + vendorBillsHTML();
 }
 
 function showSettleVendorDueModal(vendorId) {
@@ -5559,20 +5575,76 @@ function settingsHTML() {
         </div>
       </div>
 
-      <div class="card">
-        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">&#128736; Developer</h3>
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <div style="font-size:13.5px;font-weight:500;">Show Accounts Tab</div>
-            <div style="font-size:12px;color:var(--muted);">Enable to access the Accounts section (dev only)</div>
-          </div>
-          <div class="pay-methods">
-            <button class="pay-btn${D.devMode?' active':''}" onclick="D.devMode=true;save();buildNav();rerenderSettings()">On</button>
-            <button class="pay-btn${!D.devMode?' active':''}" onclick="D.devMode=false;save();buildNav();rerenderSettings()">Off</button>
-          </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  HUB (Owner / Master Login landing screen) & USER SETTINGS
+// ═══════════════════════════════════════════════════════
+function hubHTML() {
+  return `
+    <div class="hub-wrap">
+      <h2 class="hub-title">${t('chooseArea')}</h2>
+      <div class="hub-grid">
+        <div class="hub-card" onclick="enterHub('tables')">
+          <div class="hub-ico">&#128722;</div>
+          <div class="hub-label">${t('billingPos')}</div>
+        </div>
+        <div class="hub-card" onclick="enterHub('accounts')">
+          <div class="hub-ico">&#128176;</div>
+          <div class="hub-label">${t('accounts')}</div>
+        </div>
+        <div class="hub-card" onclick="enterHub('user-settings')">
+          <div class="hub-ico">&#9881;</div>
+          <div class="hub-label">${t('userSettings')}</div>
         </div>
       </div>
     </div>`;
+}
+
+function enterHub(view) {
+  go(view);
+  buildNav();
+}
+
+function backToHubHTML() {
+  if (!isOwner()) return '';
+  return `<button class="btn btn-ghost btn-sm" style="margin-bottom:14px;" onclick="goHome()">&larr; ${t('backToMenu')}</button>`;
+}
+
+// Header logo click: Owner/Master goes back to the hub, everyone else is unaffected.
+function goHome() {
+  if (!isOwner()) return;
+  go('hub');
+  buildNav();
+}
+
+function userSettingsHTML() {
+  const u = currentUser();
+  if (!u) return '';
+  return `
+    <div class="sec-hdr"><h2>${t('userSettings')}</h2></div>
+    <div class="settings-grid">
+      <div class="card">
+        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('masterLogin')}</h3>
+        <div class="form-grp"><label>${t('username')}</label><input id="us-name" type="text" value="${h(u.username)}"></div>
+        <div class="form-grp"><label>${t('password')}</label><input id="us-pass" type="text" value="${h(u.password)}"></div>
+        <button class="btn btn-primary" onclick="saveOwnLogin()">${t('saveSettings')}</button>
+      </div>
+    </div>`;
+}
+
+function saveOwnLogin() {
+  const u = currentUser();
+  if (!u) return;
+  const name = document.getElementById('us-name').value.trim();
+  const pass = document.getElementById('us-pass').value.trim();
+  if (!name) { notify(t('username') + '?'); return; }
+  if (!pass) { notify(t('password') + '?'); return; }
+  const dup = D.users.find(x => x.username.toLowerCase() === name.toLowerCase() && x.id !== u.id);
+  if (dup) { notify(t('userExists')); return; }
+  u.username = name; u.password = pass;
+  save(); renderMain(); notify(t('save'));
 }
 
 function saveSettings() {
@@ -6180,6 +6252,14 @@ function dismissKotAlert() {
 
 function buildNav() {
   const chefMode = isChef();
+  // The hub, Accounts and User Settings are entered from the hub screen
+  // (Owner/Master only) rather than the regular tab bar.
+  if (!chefMode && (S.view === 'hub' || S.view === 'accounts' || S.view === 'vendorBills' || S.view === 'user-settings')) {
+    document.getElementById('main-nav').innerHTML = '';
+    const drawerNav0 = document.getElementById('drawer-nav');
+    if (drawerNav0) drawerNav0.innerHTML = '';
+    return;
+  }
   const navItems = chefMode ? [
     { v:'kot', ico:'&#128221;', key:'kot' },
   ] : [
@@ -6188,7 +6268,6 @@ function buildNav() {
     { v:'crm',      ico:'&#128100;', key:'crm'      },
     { v:'menu',     ico:'&#128203;', key:'menu'     },
     { v:'reports',  ico:'&#128202;', key:'reports'  },
-    ...((D.devMode || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? [{ v:'accounts', ico:'&#128176;', key:'accounts' }] : []),
     { v:'settings', ico:'&#9881;',   key:'settings' },
   ];
   const btnHTML = navItems.map(n => `<button data-v="${n.v}" class="${S.view===n.v?'active':''}" onclick="go('${n.v}')">${n.ico} ${t(n.key)}</button>`).join('');
@@ -6291,6 +6370,7 @@ function renderHeaderUser() {
 
 function startApp() {
   if (isChef()) S.view = 'kot';
+  else if (isOwner()) S.view = 'hub';
   buildNav();
   renderMain();
   renderHeaderUser();
@@ -6301,7 +6381,9 @@ function startApp() {
 // ═══════════════════════════════════════════════════════
 function showUserModal(userId) {
   const u = userId ? D.users.find(x => x.id === userId) : null;
-  const roleOpts = ROLES.map(r => `<option value="${r}"${u && u.role === r ? ' selected' : ''}>${r}</option>`).join('');
+  // Owner/Master accounts are created and deleted only via the admin panel,
+  // never through this staff-management screen.
+  const roleOpts = ROLES.filter(r => r !== 'Owner').map(r => `<option value="${r}"${u && u.role === r ? ' selected' : ''}>${r}</option>`).join('');
   showModal(`
     <h3>${u ? t('editUser') : t('addUser')}</h3>
     <div class="form-grp"><label>${t('username')}</label><input id="u-name" type="text" value="${u ? h(u.username) : ''}" autofocus></div>
@@ -6317,6 +6399,7 @@ function saveUser(userId) {
   const name = document.getElementById('u-name').value.trim();
   const pass = document.getElementById('u-pass').value.trim();
   const role = document.getElementById('u-role').value;
+  if (role === 'Owner') { notify(t('masterProtected')); return; }
   if (!name) { notify(t('username') + '?'); return; }
   if (!pass) { notify(t('password') + '?'); return; }
   const dup = D.users.find(x => x.username.toLowerCase() === name.toLowerCase() && x.id !== userId);
