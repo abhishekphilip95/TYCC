@@ -1,0 +1,8 @@
+# GitHub Pages (Jekyll) build configuration.
+#
+# admin.html provisions outlets and writes to the live Firebase project.
+# Its password gate is client-side only, so it must never be published.
+# Excluding it here keeps it out of the deployed site while leaving it
+# fully usable locally at http://localhost:3000/admin.html
+exclude:
+  - admin.html
