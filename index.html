@@ -1264,6 +1264,10 @@ async function connectToOutlet(code) {
     persistLocal();
     fbReady = true;
     setupFirebaseListeners();
+    // D was just replaced wholesale by the outlet's Firebase data, so any role
+    // sync done at startup is gone. Redo it here, where save() can push the
+    // corrected roles up and later snapshots carry them back down.
+    syncOutletRoles();
     applyTheme();
     return true;
   } catch (e) {
@@ -6461,28 +6465,40 @@ function deleteUser(userId) {
   save(); renderMain(); notify(t('deleted'));
 }
 
+// One-time role sync for outlets that predate the Master/Owner split, when
+// every elevated account was stored as 'Owner'. Exactly one account per outlet
+// is the RestoBill-issued master; everyone the restaurant created itself is an
+// owner. It stays dormant until a master can actually be identified, so it
+// still applies when the outlet's data only arrives from Firebase after login,
+// and it repairs an outlet an earlier build left with several masters.
+function syncOutletRoles() {
+  if (localStorage.getItem('rb2_roles_v3')) return;
+  const norm = s => (s || '').trim().toLowerCase();
+  // An outlet's Firestore code is the slug of the outlet name typed at login,
+  // so it does not have to equal the master's user id — check every name this
+  // outlet is known by. TYCC is the single outlet that existed before RestoBill
+  // began issuing master logins, and its master is the login of the same name.
+  const names = [
+    D.settings && D.settings.outletCode,
+    localStorage.getItem('rb2_outlet'),
+    D.settings && D.settings.name,
+    'TYCC',
+  ].map(norm).filter(Boolean);
+  const elevated = D.users.filter(u => u.role === 'Master' || u.role === 'Owner');
+  const master = elevated.find(u => names.includes(norm(u.username)));
+  if (!master) return;
+  let moved = false;
+  elevated.forEach(u => {
+    const want = u === master ? 'Master' : 'Owner';
+    if (u.role !== want) { u.role = want; moved = true; }
+  });
+  localStorage.setItem('rb2_roles_v3', '1');
+  if (moved) save();
+}
+
 function init() {
   load();
-  // One-time role sync. Before Master and Owner were separate roles, every
-  // elevated account was stored as 'Owner'. Exactly one account per outlet is
-  // the RestoBill-issued master — the login matching the outlet code — and
-  // everyone the restaurant created itself is an owner. Runs only once a
-  // matching login is present, so it still applies after data syncs in, and it
-  // repairs an outlet that an earlier build left with several masters.
-  if (!localStorage.getItem('rb2_roles_v3')) {
-    const code = (localStorage.getItem('rb2_outlet') || (D.settings && D.settings.outletCode) || '').trim().toLowerCase();
-    const elevated = D.users.filter(u => u.role === 'Master' || u.role === 'Owner');
-    const master = code && elevated.find(u => (u.username || '').trim().toLowerCase() === code);
-    if (master) {
-      let moved = false;
-      elevated.forEach(u => {
-        const want = u === master ? 'Master' : 'Owner';
-        if (u.role !== want) { u.role = want; moved = true; }
-      });
-      localStorage.setItem('rb2_roles_v3', '1');
-      if (moved) save();
-    }
-  }
+  syncOutletRoles();
   applyTheme();
   // One-time migration: a device that already has local data was already
   // bound to an outlet before this feature existed, so keep it auto-connecting
