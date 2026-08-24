@@ -719,6 +719,7 @@ body.dark .kot-pending-review { background: #3A2E10; }
   <div class="login-card">
     <div class="login-logo">&#127374; RestoBill</div>
     <p class="login-sub" id="login-sub"></p>
+    <div class="form-grp"><label id="lbl-outlet"></label><input id="login-outlet" type="text" autocomplete="organization"></div>
     <div class="form-grp"><label id="lbl-uid"></label><input id="login-user" type="text" autocomplete="username" autofocus></div>
     <div class="form-grp"><label id="lbl-pwd"></label><input id="login-pass" type="password" autocomplete="current-password"></div>
     <div id="login-err" class="login-err"></div>
@@ -859,6 +860,7 @@ const I18N = {
     newOrder:'New Order', counter:'Counter', moveToTable:'Move to Table', selectTable:'Select an available table', noTables:'No tables available', movedToTable:'Order moved to',
     billNo:'Bill No', reason:'Reason', enterPin:'Enter 4-digit PIN', wrongPin:'Wrong PIN', deleted:'Deleted', edited:'Edited', managerPin:'Manager PIN (4 digits)', apply:'Apply', deleteBill:'Delete Bill', editBill:'Edit Bill', actions:'Actions', security:'Security',
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
+    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting…',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
@@ -933,6 +935,7 @@ const I18N = {
     newOrder:'\u0928\u092F\u093E \u0911\u0930\u094D\u0921\u0930', counter:'\u0915\u093E\u0909\u0902\u091F\u0930', moveToTable:'\u091F\u0947\u092C\u0932 \u092A\u0930 \u0932\u0947 \u091C\u093E\u090F\u0902', selectTable:'\u0909\u092A\u0932\u092C\u094D\u0927 \u091F\u0947\u092C\u0932 \u091A\u0941\u0928\u0947\u0902', noTables:'\u0915\u094B\u0908 \u091F\u0947\u092C\u0932 \u0909\u092A\u0932\u092C\u094D\u0927 \u0928\u0939\u0940\u0902', movedToTable:'\u0911\u0930\u094D\u0921\u0930 \u0938\u094D\u0925\u093E\u0928\u093E\u0902\u0924\u0930\u093F\u0924:',
     billNo:'\u092C\u093F\u0932 \u0928\u0902', reason:'\u0915\u093E\u0930\u0923', enterPin:'4 \u0905\u0902\u0915\u094B\u0902 \u0915\u093E \u092A\u093F\u0928 \u0921\u093E\u0932\u0947\u0902', wrongPin:'\u0917\u0932\u0924 \u092A\u093F\u0928', deleted:'\u0939\u091F\u093E\u092F\u093E \u0917\u092F\u093E', edited:'\u0938\u0902\u092A\u093E\u0926\u093F\u0924', managerPin:'\u092E\u0948\u0928\u0947\u091C\u0930 \u092A\u093F\u0928 (4 \u0905\u0902\u0915)', apply:'\u0932\u093E\u0917\u0942 \u0915\u0930\u0947\u0902', deleteBill:'\u092C\u093F\u0932 \u0939\u091F\u093E\u090F\u0902', editBill:'\u092C\u093F\u0932 \u0938\u0902\u092A\u093E\u0926\u093F\u0924 \u0915\u0930\u0947\u0902', actions:'\u0915\u093E\u0930\u094D\u0930\u0935\u093E\u0908', security:'\u0938\u0941\u0930\u0915\u094D\u0937\u093E',
     username:'\u092F\u0942\u091C\u0930 \u0906\u0908\u0921\u0940', password:'\u092A\u093E\u0938\u0935\u0930\u094D\u0921', signIn:'\u0938\u093E\u0907\u0928 \u0907\u0928', wrongCreds:'\u0917\u0932\u0924 \u092F\u0942\u091C\u0930 \u0906\u0908\u0921\u0940 \u092F\u093E \u092A\u093E\u0938\u0935\u0930\u094D\u0921', loggedInAs:'\u0938\u093E\u0907\u0928 \u0907\u0928:', logout:'\u0938\u093E\u0907\u0928 \u0906\u0909\u091F',
+    outletName:'\u0906\u0909\u091F\u0932\u0947\u091F \u0915\u093E \u0928\u093E\u092E', outletRequired:'\u0905\u092A\u0928\u093E \u0906\u0909\u091F\u0932\u0947\u091F \u0928\u093E\u092E \u0926\u0930\u094D\u091C \u0915\u0930\u0947\u0902', outletNotFound:'\u0906\u0909\u091F\u0932\u0947\u091F \u0928\u0939\u0940\u0902 \u092E\u093F\u0932\u093E\u0964 \u0928\u093E\u092E \u091C\u093E\u0902\u091A\u0947\u0902 \u0914\u0930 \u092A\u0941\u0928\u0903 \u092A\u094D\u0930\u092F\u093E\u0938 \u0915\u0930\u0947\u0902\u0964', connecting:'\u0915\u0928\u0947\u0915\u094D\u091F \u0939\u094B \u0930\u0939\u093E \u0939\u0948\u2026',
     userManagement:'\u092F\u0942\u091C\u0930 \u092A\u094D\u0930\u092C\u0902\u0927\u0928', addUser:'\u092F\u0942\u091C\u0930 \u091C\u094B\u0921\u093C\u0947\u0902', editUser:'\u092F\u0942\u091C\u0930 \u0938\u0902\u092A\u093E\u0926\u093F\u0924 \u0915\u0930\u0947\u0902', deleteUser:'\u092F\u0942\u091C\u0930 \u0939\u091F\u093E\u090F\u0902', role:'\u092D\u0942\u092E\u093F\u0915\u093E', userExists:'\u092F\u0942\u091C\u0930 \u0906\u0908\u0921\u0940 \u092A\u0939\u0932\u0947 \u0938\u0947 \u092E\u094C\u091C\u0942\u0926 \u0939\u0948', lastOwner:'\u0915\u0947\u0935\u0932 \u090F\u0915 \u092E\u093E\u0932\u093F\u0915 \u0915\u094B \u0939\u091F\u093E \u0928\u0939\u0940\u0902 \u0938\u0915\u0924\u0947', cantDeleteSelf:'\u0905\u092A\u0928\u093E \u0916\u093E\u0924\u093E \u0939\u091F\u093E \u0928\u0939\u0940\u0902 \u0938\u0915\u0924\u0947',
     rename:'\u0928\u093E\u092E \u092C\u0926\u0932\u0947\u0902', split:'\u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u0915\u0930\u0947\u0902', splitOccupied:'\u0935\u093F\u092D\u093E\u091C\u0928 \u0938\u0947 \u092A\u0939\u0932\u0947 \u091F\u0947\u092C\u0932 \u0916\u093E\u0932\u0940 \u0915\u0930\u0947\u0902', splitConfirm:'"%s" \u0915\u094B \u0926\u094B \u091F\u0947\u092C\u0932\u094B\u0902 \u092E\u0947\u0902 \u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u0915\u0930\u0947\u0902?',
     merge:'\u092E\u0930\u094D\u091C \u0915\u0930\u0947\u0902', selected:'\u091A\u092F\u0928\u093F\u0924', onlySplitMerge:'\u0915\u0947\u0935\u0932 \u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u091F\u0947\u092C\u0932 \u092E\u0930\u094D\u091C \u0915\u093F\u090F \u091C\u093E \u0938\u0915\u0924\u0947 \u0939\u0948\u0902', mergeSameGroup:'\u090F\u0915 \u0939\u0940 \u0935\u093F\u092D\u093E\u091C\u0928 \u0915\u0940 \u091F\u0947\u092C\u0932 \u091A\u0941\u0928\u0947\u0902', mergeConfirm:'\u091A\u092F\u0928\u093F\u0924 \u091F\u0947\u092C\u0932\u094B\u0902 \u0915\u094B "%s" \u092E\u0947\u0902 \u092E\u0930\u094D\u091C \u0915\u0930\u0947\u0902?', mergeHint:'Ctrl \u0926\u092C\u093E\u0915\u0930 \u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u091F\u0947\u092C\u0932 \u091A\u0941\u0928\u0947\u0902, \u092B\u093F\u0930 \u092E\u0930\u094D\u091C \u0915\u0930\u0947\u0902\u0964',
@@ -1158,10 +1161,16 @@ function applyFbSnapshotChange(key, change) {
   return true;
 }
 
+let fbUnsubs = [];
+function detachFirebaseListeners() {
+  fbUnsubs.forEach(unsub => { try { unsub(); } catch (e) {} });
+  fbUnsubs = [];
+}
+
 function setupFirebaseListeners() {
   const { fbDb, collection, doc, onSnapshot } = window.__fb;
   FB_SYNC_COLLECTIONS.forEach(key => {
-    onSnapshot(collection(fbDb, 'outlets', fbOutlet, key), snap => {
+    const unsub = onSnapshot(collection(fbDb, 'outlets', fbOutlet, key), snap => {
       if (snap.metadata.hasPendingWrites) return;
       let changed = false;
       snap.docChanges().forEach(ch => { if (applyFbSnapshotChange(key, ch)) changed = true; });
@@ -1170,8 +1179,9 @@ function setupFirebaseListeners() {
         renderMain();
       }
     }, err => { console.error('Firebase listener error', err); fbSetStatus('error'); });
+    fbUnsubs.push(unsub);
   });
-  onSnapshot(doc(fbDb, 'outlets', fbOutlet, 'meta', 'main'), snap => {
+  const unsubMeta = onSnapshot(doc(fbDb, 'outlets', fbOutlet, 'meta', 'main'), snap => {
     if (snap.metadata.hasPendingWrites || !snap.exists()) return;
     const data = snap.data();
     const json = JSON.stringify(data);
@@ -1182,6 +1192,66 @@ function setupFirebaseListeners() {
     applyTheme();
     renderMain();
   }, err => { console.error('Firebase meta listener error', err); fbSetStatus('error'); });
+  fbUnsubs.push(unsubMeta);
+}
+
+// Slugify an outlet name into a deterministic Firestore-safe outlet code.
+// Used both to resolve the Outlet Name typed at login and by the (separate,
+// local-only) admin panel when provisioning a new outlet.
+function slugifyOutlet(name) {
+  return (name || '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30) || 'OUTLET';
+}
+
+// Connect this session to a specific outlet by code, replacing whatever
+// outlet (if any) was previously loaded. Returns false if the outlet
+// doesn't exist in Firestore (never silently creates one from the login
+// screen — provisioning is the admin panel's job).
+async function connectToOutlet(code) {
+  const { fbDb, collection, getDocs } = window.__fb;
+  try {
+    const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('fb timeout')), ms))]);
+    const fresh = {
+      settings: { name: code, taxRate: 10, currency: '₹', tableCount: 10, theme: 'light', lang: 'en', lowStock: 5, pin: '1234', outletCode: code, billPrinter: { enabled: true, size: '80mm' } },
+      menu: [], tables: [], orders: [], billSeq: 1, kotSeq: { day: null, next: 1 }, users: [],
+      customers: [], dueSettlements: [], vendors: [], expenses: [], kitchens: [], categoryOrder: {}, categoryActive: {}, sections: [],
+    };
+    let found = false;
+    const freshSynced = {};
+    for (const key of FB_SYNC_COLLECTIONS) {
+      const snap = await withTimeout(getDocs(collection(fbDb, 'outlets', code, key)), 15000);
+      if (!snap.empty) {
+        found = true;
+        fresh[key] = snap.docs.map(d => d.data());
+        freshSynced[key] = new Map(snap.docs.map(d => [d.id, JSON.stringify(d.data())]));
+      }
+    }
+    const metaSnap = await withTimeout(getDocs(collection(fbDb, 'outlets', code, 'meta')), 12000);
+    const metaDoc = metaSnap.docs.find(d => d.id === 'main');
+    let metaJson = null;
+    if (metaDoc) {
+      found = true;
+      const data = metaDoc.data();
+      FB_META_KEYS.forEach(k => { if (data[k] !== undefined) fresh[k] = data[k]; });
+      metaJson = JSON.stringify(data);
+    }
+    if (!found) return false;
+    detachFirebaseListeners();
+    D = fresh;
+    D.settings.outletCode = code;
+    fbOutlet = code;
+    fbLastSynced = freshSynced;
+    fbLastMetaJson = metaJson;
+    ensureMenuItemDefaults();
+    fixTableNumbering();
+    persistLocal();
+    fbReady = true;
+    setupFirebaseListeners();
+    applyTheme();
+    return true;
+  } catch (e) {
+    console.error('connectToOutlet failed', e);
+    return false;
+  }
 }
 
 async function initFirebaseSync() {
@@ -1236,7 +1306,16 @@ async function initFirebaseSync() {
   }
 }
 
-window.addEventListener('fb-ready', () => { initFirebaseSync(); });
+window.addEventListener('fb-ready', () => {
+  // Only auto-connect if this device already knows which outlet it belongs
+  // to. A brand-new device has no saved outlet, so it waits for the owner
+  // to type their Outlet Name at login instead of guessing one.
+  const savedOutlet = localStorage.getItem('rb2_outlet');
+  if (savedOutlet) {
+    D.settings.outletCode = savedOutlet;
+    initFirebaseSync();
+  }
+});
 
 function load() {
   const raw = localStorage.getItem('rb2_data');
@@ -6135,21 +6214,43 @@ function showLogin() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-sub').textContent = D.settings.name;
+  document.getElementById('lbl-outlet').textContent = t('outletName');
   document.getElementById('lbl-uid').textContent = t('username');
   document.getElementById('lbl-pwd').textContent = t('password');
   document.getElementById('login-btn').textContent = t('signIn');
   document.getElementById('login-err').textContent = '';
-  const u = document.getElementById('login-user'), p = document.getElementById('login-pass');
+  const o = document.getElementById('login-outlet'), u = document.getElementById('login-user'), p = document.getElementById('login-pass');
+  o.value = fbOutlet || (D.settings && D.settings.outletCode) || '';
   u.value = ''; p.value = '';
-  u.onkeydown = p.onkeydown = e => { if (e.key === 'Enter') doLogin(); };
-  setTimeout(() => u.focus(), 50);
+  o.onkeydown = u.onkeydown = p.onkeydown = e => { if (e.key === 'Enter') doLogin(); };
+  setTimeout(() => (fbReady ? u : o).focus(), 50);
 }
 
-function doLogin() {
+function setLoginBusy(busy) {
+  const btn = document.getElementById('login-btn');
+  btn.disabled = busy;
+  btn.textContent = busy ? t('connecting') : t('signIn');
+}
+
+async function doLogin() {
+  const outletVal = document.getElementById('login-outlet').value.trim();
   const uname = document.getElementById('login-user').value.trim();
   const pass  = document.getElementById('login-pass').value;
-  const user  = D.users.find(u => u.username.toLowerCase() === uname.toLowerCase() && u.password === pass);
-  if (!user) { document.getElementById('login-err').textContent = t('wrongCreds'); return; }
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+  if (!fbReady) {
+    // First connection this session: resolve which outlet to load before
+    // any credentials can be checked.
+    if (!outletVal) { errEl.textContent = t('outletRequired'); return; }
+    setLoginBusy(true);
+    const code = slugifyOutlet(outletVal);
+    const ok = await connectToOutlet(code);
+    setLoginBusy(false);
+    if (!ok) { errEl.textContent = t('outletNotFound'); return; }
+    localStorage.setItem('rb2_outlet', code);
+  }
+  const user = D.users.find(u => u.username.toLowerCase() === uname.toLowerCase() && u.password === pass);
+  if (!user) { errEl.textContent = t('wrongCreds'); return; }
   S.currentUser = user.id;
   localStorage.setItem('rb2_session', user.id);
   document.getElementById('login-screen').style.display = 'none';
@@ -6233,6 +6334,12 @@ function deleteUser(userId) {
 function init() {
   load();
   applyTheme();
+  // One-time migration: a device that already has local data was already
+  // bound to an outlet before this feature existed, so keep it auto-connecting
+  // to that same outlet instead of asking for its Outlet Name at login.
+  if (!localStorage.getItem('rb2_outlet') && localStorage.getItem('rb2_data')) {
+    localStorage.setItem('rb2_outlet', (D.settings && D.settings.outletCode) || 'TYCC');
+  }
   const sess = localStorage.getItem('rb2_session');
   const valid = sess && D.users.find(u => u.id === sess);
   if (valid) {

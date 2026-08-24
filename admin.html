@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RestoBill Admin</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #4B5563; --primary-dk: #374151; --success: #16A34A; --danger: #DC2626;
+    --bg: #F3F4F6; --card: #FFFFFF; --text: #111827; --muted: #6B7280; --border: #E5E7EB; --subtle: #FAFAFA;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .topbar { background: var(--primary-dk); color: #fff; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar .brand { font-weight: 700; font-size: 18px; }
+  .topbar .brand span { opacity: .7; font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 24px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  h2 { font-size: 16px; margin-bottom: 14px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 14px; cursor: pointer; font-size: 13.5px; color: var(--muted); border-bottom: 2px solid transparent; }
+  .tab.active { color: var(--primary-dk); border-bottom-color: var(--primary-dk); font-weight: 600; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grp { display: flex; flex-direction: column; gap: 4px; }
+  .form-grp.full { grid-column: 1 / -1; }
+  label { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+  input, select { padding: 9px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: var(--subtle); color: var(--text); }
+  input:focus, select:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+  .hint { font-size: 11.5px; color: var(--muted); }
+  .row-actions { display: flex; gap: 10px; margin-top: 16px; align-items: center; }
+  .btn { padding: 9px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-size: 13.5px; font-weight: 500; }
+  .btn-primary { background: var(--primary-dk); color: #fff; border-color: var(--primary-dk); }
+  .btn-primary:disabled { opacity: .6; cursor: default; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .err { color: var(--danger); font-size: 13px; min-height: 18px; }
+  .ok { color: var(--success); font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; }
+  .pill { display: inline-block; background: var(--subtle); border: 1px solid var(--border); border-radius: 20px; padding: 2px 9px; font-size: 11.5px; }
+  .mono { font-family: 'Courier New', monospace; }
+  .search { width: 260px; }
+  .creds-box { background: var(--subtle); border: 1px dashed var(--border); border-radius: 8px; padding: 14px; margin-top: 14px; font-size: 13.5px; line-height: 1.9; }
+  .creds-box b { color: var(--primary-dk); }
+  #gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+  #gate .card { width: 320px; }
+  .hidden { display: none !important; }
+  .top-actions { display:flex; justify-content: space-between; align-items:center; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="card">
+    <h2>RestoBill Admin — Sign In</h2>
+    <div class="form-grp"><label>Admin Password</label><input id="gate-pass" type="password"></div>
+    <div class="err" id="gate-err"></div>
+    <div class="row-actions"><button class="btn btn-primary" onclick="checkGate()">Enter</button></div>
+    <p class="hint" style="margin-top:10px;">Basic local access gate only — this tool is meant to be run locally by RestoBill staff, not hosted publicly.</p>
+  </div>
+</div>
+
+<div id="main" class="hidden">
+  <div class="topbar">
+    <div class="brand">🅰🅱 RestoBill <span>Admin Panel (local)</span></div>
+    <button class="btn btn-sm" onclick="location.reload()">Lock</button>
+  </div>
+  <div class="wrap">
+
+    <div class="card">
+      <h2>Create New Outlet</h2>
+      <div class="tabs">
+        <div class="tab active" data-tab="client" onclick="switchTab('client')">1. Client Details</div>
+        <div class="tab" data-tab="outlet" onclick="switchTab('outlet')">2. Outlet</div>
+        <div class="tab" data-tab="login" onclick="switchTab('login')">3. Login Credentials</div>
+      </div>
+
+      <div class="tab-panel active" data-panel="client">
+        <div class="form-grp"><label>Restaurant Owner Name *</label><input id="f-ownerName"></div>
+        <div class="form-grp"><label>Registered Email *</label><input id="f-email" type="email"></div>
+        <div class="form-grp"><label>Phone Number *</label><input id="f-phone" type="tel"></div>
+        <div class="form-grp"><label>Brand Name</label><input id="f-brandName" placeholder="Optional, if different from outlet name"></div>
+        <div class="form-grp full"><label>Company Name</label><input id="f-companyName" placeholder="Optional, legal/company name"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="outlet">
+        <div class="form-grp"><label>Outlet Name *</label><input id="f-outletName" oninput="onOutletNameInput()" placeholder="e.g. Cafe Mocha - MG Road"></div>
+        <div class="form-grp"><label>Outlet Code (auto)</label><input id="f-outletCode" class="mono" oninput="f_codeTouched=true"></div>
+        <div class="form-grp full hint">The Outlet Code is derived from the Outlet Name and must be unique. The outlet owner will type the <b>Outlet Name</b> (not the code) into the POS login screen, so make sure it's what they'll remember.</div>
+      </div>
+
+      <div class="tab-panel" data-panel="login">
+        <div class="form-grp"><label>User ID *</label><input id="f-userId" placeholder="e.g. owner name or a short id"></div>
+        <div class="form-grp"><label>Password *</label><input id="f-password"></div>
+        <div class="form-grp full"><button class="btn btn-sm" onclick="genPassword()">Generate Password</button></div>
+      </div>
+
+      <div class="err" id="form-err"></div>
+      <div class="row-actions">
+        <button class="btn" onclick="switchTabRel(-1)">Back</button>
+        <button class="btn" onclick="switchTabRel(1)" id="next-btn">Next</button>
+        <button class="btn btn-primary hidden" id="create-btn" onclick="createOutlet()">Create Outlet</button>
+      </div>
+
+      <div class="creds-box hidden" id="creds-box"></div>
+    </div>
+
+    <div class="card">
+      <div class="top-actions">
+        <h2 style="margin:0;">Existing Outlets</h2>
+        <input class="search" id="client-search" placeholder="Search by name, outlet, email…" oninput="renderClients()">
+      </div>
+      <table>
+        <thead><tr><th>Outlet</th><th>Owner</th><th>Contact</th><th>User ID</th><th>Password</th><th>Created</th></tr></thead>
+        <tbody id="clients-tbody"></tbody>
+      </table>
+      <p class="hint" id="clients-empty">No outlets created yet.</p>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import {
+    getFirestore, collection, doc, setDoc, getDoc, getDocs, writeBatch, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBZoKA9WNUkdWfykPKP0pUw1wuka7PI0yk",
+    authDomain: "tycc-9a6d2.firebaseapp.com",
+    projectId: "tycc-9a6d2",
+    storageBucket: "tycc-9a6d2.firebasestorage.app",
+    messagingSenderId: "521992294111",
+    appId: "1:521992294111:web:642daa9b0675e565b1236a"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const fbDb = getFirestore(fbApp);
+  window.__fb = { fbDb, collection, doc, setDoc, getDoc, getDocs, writeBatch, query, orderBy };
+  window.dispatchEvent(new Event('fb-ready'));
+</script>
+
+<script>
+// Basic local-only access gate. Not real security — this tool is intended
+// to run on a trusted machine, not be hosted publicly.
+const ADMIN_PASSWORD = 'restobill-admin';
+
+function checkGate() {
+  const val = document.getElementById('gate-pass').value;
+  if (val === ADMIN_PASSWORD) {
+    document.getElementById('gate').classList.add('hidden');
+    document.getElementById('main').classList.remove('hidden');
+    loadClients();
+  } else {
+    document.getElementById('gate-err').textContent = 'Wrong password.';
+  }
+}
+document.getElementById('gate-pass').addEventListener('keydown', e => { if (e.key === 'Enter') checkGate(); });
+
+// ── Outlet code helper (kept identical in spirit to index.html's slugifyOutlet) ──
+function slugifyOutlet(name) {
+  return (name || '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30) || 'OUTLET';
+}
+
+let f_codeTouched = false;
+function onOutletNameInput() {
+  if (f_codeTouched) return;
+  document.getElementById('f-outletCode').value = slugifyOutlet(document.getElementById('f-outletName').value);
+}
+
+function genPassword() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let out = '';
+  for (let i = 0; i < 10; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('f-password').value = out;
+}
+
+// ── Tabs ──
+const TAB_ORDER = ['client', 'outlet', 'login'];
+let curTab = 0;
+function switchTab(name) { curTab = TAB_ORDER.indexOf(name); renderTabs(); }
+function switchTabRel(delta) { curTab = Math.max(0, Math.min(TAB_ORDER.length - 1, curTab + delta)); renderTabs(); }
+function renderTabs() {
+  TAB_ORDER.forEach((name, i) => {
+    document.querySelector(`.tab[data-tab="${name}"]`).classList.toggle('active', i === curTab);
+    document.querySelector(`.tab-panel[data-panel="${name}"]`).classList.toggle('active', i === curTab);
+  });
+  document.getElementById('next-btn').classList.toggle('hidden', curTab === TAB_ORDER.length - 1);
+  document.getElementById('create-btn').classList.toggle('hidden', curTab !== TAB_ORDER.length - 1);
+}
+renderTabs();
+
+// ── Create outlet ──
+async function createOutlet() {
+  const errEl = document.getElementById('form-err');
+  errEl.textContent = '';
+  const ownerName = document.getElementById('f-ownerName').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const brandName = document.getElementById('f-brandName').value.trim();
+  const companyName = document.getElementById('f-companyName').value.trim();
+  const outletName = document.getElementById('f-outletName').value.trim();
+  const outletCode = document.getElementById('f-outletCode').value.trim().toUpperCase();
+  const userId = document.getElementById('f-userId').value.trim();
+  const password = document.getElementById('f-password').value;
+
+  if (!ownerName || !email || !phone) { switchTab('client'); errEl.textContent = 'Owner name, email and phone are required.'; return; }
+  if (!outletName || !outletCode) { switchTab('outlet'); errEl.textContent = 'Outlet name is required.'; return; }
+  if (!userId || !password) { switchTab('login'); errEl.textContent = 'User ID and password are required.'; return; }
+
+  const { fbDb, collection, doc, setDoc, getDoc, writeBatch } = window.__fb;
+  const createBtn = document.getElementById('create-btn');
+  createBtn.disabled = true; createBtn.textContent = 'Creating…';
+  try {
+    // Uniqueness check: outlet code must not already exist.
+    const existing = await getDoc(doc(fbDb, 'outlets', outletCode, 'meta', 'main'));
+    if (existing.exists()) {
+      errEl.textContent = `Outlet code "${outletCode}" is already in use. Try a more specific outlet name (e.g. add city/branch).`;
+      switchTab('outlet');
+      return;
+    }
+
+    const clientId = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const userDocId = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const now = new Date().toISOString();
+
+    const batch = writeBatch(fbDb);
+    batch.set(doc(fbDb, 'clients', clientId), {
+      id: clientId, ownerName, email, phone, brandName, companyName,
+      outletName, outletCode, userId, password, createdAt: now,
+    });
+    batch.set(doc(fbDb, 'outlets', outletCode, 'users', userDocId), {
+      id: userDocId, username: userId, password, role: 'Owner',
+    });
+    batch.set(doc(fbDb, 'outlets', outletCode, 'meta', 'main'), {
+      settings: {
+        name: outletName, taxRate: 10, currency: '₹', tableCount: 10,
+        theme: 'light', lang: 'en', lowStock: 5, pin: '1234', outletCode,
+        billPrinter: { enabled: true, size: '80mm' },
+      },
+      billSeq: 1, kotSeq: { day: null, next: 1 }, categoryOrder: {}, categoryActive: {},
+    });
+    batch.set(doc(fbDb, 'outlets', outletCode, 'sections', 'sec1'), { id: 'sec1', name: 'Main' });
+    for (let i = 1; i <= 10; i++) {
+      batch.set(doc(fbDb, 'outlets', outletCode, 'tables', 't' + i), {
+        id: 't' + i, name: 'Table ' + i, status: 'available', orderId: null, sectionId: 'sec1',
+      });
+    }
+    await batch.commit();
+
+    document.getElementById('creds-box').classList.remove('hidden');
+    document.getElementById('creds-box').innerHTML = `
+      <div class="ok">Outlet created successfully. Share these with the owner:</div>
+      <div><b>Outlet Name to type at POS login:</b> ${escapeHtml(outletName)}</div>
+      <div><b>User ID:</b> ${escapeHtml(userId)}</div>
+      <div><b>Password:</b> ${escapeHtml(password)}</div>
+    `;
+    ['f-ownerName','f-email','f-phone','f-brandName','f-companyName','f-outletName','f-outletCode','f-userId','f-password']
+      .forEach(id => document.getElementById(id).value = '');
+    f_codeTouched = false;
+    curTab = 0; renderTabs();
+    loadClients();
+  } catch (e) {
+    console.error(e);
+    errEl.textContent = 'Failed to create outlet: ' + e.message;
+  } finally {
+    createBtn.disabled = false; createBtn.textContent = 'Create Outlet';
+  }
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── Client list ──
+let allClients = [];
+async function loadClients() {
+  const { fbDb, collection, getDocs } = window.__fb;
+  try {
+    const snap = await getDocs(collection(fbDb, 'clients'));
+    allClients = snap.docs.map(d => d.data()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  } catch (e) {
+    console.error('Failed to load clients', e);
+  }
+  renderClients();
+}
+
+function togglePass(id) {
+  const el = document.getElementById('pw-' + id);
+  if (!el) return;
+  el.textContent = el.dataset.shown === '1' ? '••••••••' : el.dataset.pw;
+  el.dataset.shown = el.dataset.shown === '1' ? '0' : '1';
+}
+
+function renderClients() {
+  const q = (document.getElementById('client-search').value || '').toLowerCase();
+  const rows = allClients.filter(c => !q || [c.outletName, c.ownerName, c.email, c.brandName, c.companyName, c.userId]
+    .some(v => (v || '').toLowerCase().includes(q)));
+  document.getElementById('clients-empty').classList.toggle('hidden', rows.length > 0);
+  document.getElementById('clients-tbody').innerHTML = rows.map(c => `
+    <tr>
+      <td><b>${escapeHtml(c.outletName)}</b><br><span class="pill mono">${escapeHtml(c.outletCode)}</span></td>
+      <td>${escapeHtml(c.ownerName)}</td>
+      <td>${escapeHtml(c.email)}<br>${escapeHtml(c.phone)}</td>
+      <td class="mono">${escapeHtml(c.userId)}</td>
+      <td class="mono"><span id="pw-${escapeHtml(c.id)}" data-pw="${escapeHtml(c.password)}" data-shown="0">••••••••</span>
+        <button class="btn btn-sm" onclick="togglePass('${escapeHtml(c.id)}')">👁</button></td>
+      <td>${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ''}</td>
+    </tr>
+  `).join('');
+}
+
+window.checkGate = checkGate;
+window.onOutletNameInput = onOutletNameInput;
+window.genPassword = genPassword;
+window.switchTab = switchTab;
+window.switchTabRel = switchTabRel;
+window.createOutlet = createOutlet;
+window.togglePass = togglePass;
+window.renderClients = renderClients;
+</script>
+</body>
+</html>
