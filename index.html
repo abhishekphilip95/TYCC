@@ -908,6 +908,10 @@ let D = {
 };
 let editState = null;
 const ROLES = ['Master', 'Owner', 'Manager', 'Cashier', 'Waiter', 'Chef'];
+// Accounts is not ready to ship yet. Set this back to true to bring it back —
+// the hub card, the nav tab and vendor bills all route through go(), so the
+// single guard there covers every way in.
+const ACCOUNTS_ENABLED = false;
 
 const DEF_MENU = [
   { id:'m01', name:'Espresso',            category:'Beverages',    price:80  },
@@ -959,7 +963,7 @@ const I18N = {
     newOrder:'New Order', counter:'Counter', moveToTable:'Move to Table', selectTable:'Select an available table', noTables:'No tables available', movedToTable:'Order moved to',
     billNo:'Bill No', reason:'Reason', enterPin:'Enter 4-digit PIN', wrongPin:'Wrong PIN', deleted:'Deleted', edited:'Edited', managerPin:'Manager PIN (4 digits)', apply:'Apply', deleteBill:'Delete Bill', editBill:'Edit Bill', actions:'Actions', security:'Security',
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
-    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', goodMorning:'good morning', goodAfternoon:'good afternoon', goodEvening:'good evening', goodNight:'good night',
+    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', goodMorning:'good morning', goodAfternoon:'good afternoon', goodEvening:'good evening', goodNight:'good night',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
     chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
@@ -1719,6 +1723,12 @@ function discardOrder(o) {
 
 function go(view, extra) {
   closeMobileMenu();
+  // Bail before anything is touched, so a blocked tap leaves the current
+  // screen and any open order exactly as they were.
+  if (!ACCOUNTS_ENABLED && (view === 'accounts' || view === 'vendorBills')) {
+    showUnavailable();
+    return;
+  }
   if (isChef() && view !== 'kot') view = 'kot';
   // leaving the order screen with an empty order: discard it & free the table
   if (S.view === 'order' && view !== 'order') {
@@ -5850,6 +5860,15 @@ function hubHTML() {
         </div>
       </div>
     </div>`;
+}
+
+function showUnavailable() {
+  showModal(`
+    <h3>${t('featureUnavailable')}</h3>
+    <p style="margin:12px 0 4px;font-size:13.5px;line-height:1.5;color:var(--muted);">${t('featureUnavailableMsg')}</p>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="closeModal()">${t('ok')}</button>
+    </div>`);
 }
 
 function enterHub(view) {
