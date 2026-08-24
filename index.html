@@ -610,7 +610,53 @@ body.dark .kot-pending-review { background: #3A2E10; }
 .stat-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
 /* ── Hub (Owner / Master Login landing screen) ── */
+/* Loading overlay: a cup that fills while work is in flight and is topped up
+   the moment it finishes, so the animation ends on purpose rather than being
+   cut off mid-pour. Everything animates through opacity and transform only. */
+#app-loader {
+  position: fixed; inset: 0; z-index: 400;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(15, 23, 42, .58);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  opacity: 0; visibility: hidden;
+  transition: opacity .34s ease, visibility 0s linear .34s;
+}
+#app-loader.on { opacity: 1; visibility: visible; transition: opacity .34s ease, visibility 0s; }
+.loader-box { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.loader-cup { width: 122px; height: 132px; overflow: visible; }
+.loader-cup .body, .loader-cup .handle {
+  fill: none; stroke: #fff; stroke-width: 4.5; stroke-linejoin: round; stroke-linecap: round;
+}
+.loader-cup .saucer { fill: #fff; }
+.loader-cup .coffee {
+  fill: #B4713C;
+  transform-box: fill-box; transform-origin: bottom;
+  transform: scaleY(var(--fill, 0));
+  transition: transform .6s cubic-bezier(.4, 0, .2, 1);
+}
+.loader-cup .steam path {
+  fill: none; stroke: rgba(255, 255, 255, .6); stroke-width: 3; stroke-linecap: round;
+  opacity: 0; animation: loader-steam 2.8s ease-in-out infinite;
+}
+.loader-cup .steam path:nth-child(2) { animation-delay: .5s; }
+.loader-cup .steam path:nth-child(3) { animation-delay: 1s; }
+@keyframes loader-steam {
+  0%   { opacity: 0; transform: translateY(4px)  scaleY(.7); }
+  35%  { opacity: .75; }
+  100% { opacity: 0; transform: translateY(-9px) scaleY(1.15); }
+}
+.loader-text {
+  color: #fff; font-size: 13.5px; font-weight: 600; letter-spacing: .2px;
+  text-align: center; max-width: 260px;
+}
+/* Someone who asked for less motion still gets the cup and the fill level,
+   just none of the drifting steam. */
+@media (prefers-reduced-motion: reduce) {
+  .loader-cup .steam path { animation: none; opacity: .45; }
+  .loader-cup .coffee { transition-duration: .01s; }
+}
 .hub-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px 16px; }
+.hub-greet { font-size: 22px; font-weight: 700; margin-bottom: 6px; text-align: center; }
 .hub-title { font-size: 18px; font-weight: 600; margin-bottom: 28px; }
 .hub-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 720px; }
 .hub-card {
@@ -714,6 +760,29 @@ body.dark .kot-pending-review { background: #3A2E10; }
 </head>
 <body>
 <div id="offline-bar" role="alert" aria-live="assertive" style="display:none;"></div>
+<div id="app-loader" role="status" aria-live="polite" aria-hidden="true">
+  <div class="loader-box">
+    <svg class="loader-cup" viewBox="0 0 120 128" aria-hidden="true">
+      <defs>
+        <clipPath id="loader-cup-inside">
+          <path d="M30 36 h60 l-6 58 a11 11 0 0 1 -11 10 h-26 a11 11 0 0 1 -11 -10 z"/>
+        </clipPath>
+      </defs>
+      <g class="steam">
+        <path d="M52 26 c0 -6 6 -8 6 -14 c0 -6 -6 -8 -6 -13"/>
+        <path d="M64 26 c0 -6 6 -8 6 -14 c0 -6 -6 -8 -6 -13"/>
+        <path d="M76 26 c0 -6 6 -8 6 -14 c0 -6 -6 -8 -6 -13"/>
+      </g>
+      <g clip-path="url(#loader-cup-inside)">
+        <rect class="coffee" x="28" y="34" width="64" height="72"/>
+      </g>
+      <path class="body" d="M30 36 h60 l-6 58 a11 11 0 0 1 -11 10 h-26 a11 11 0 0 1 -11 -10 z"/>
+      <path class="handle" d="M90 48 h7 a13 13 0 0 1 0 26 h-4"/>
+      <rect class="saucer" x="22" y="112" width="76" height="6" rx="3"/>
+    </svg>
+    <div class="loader-text" id="app-loader-text"></div>
+  </div>
+</div>
 <div id="app">
   <header>
     <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()">&#9776;</button>
@@ -884,7 +953,7 @@ const I18N = {
     newOrder:'New Order', counter:'Counter', moveToTable:'Move to Table', selectTable:'Select an available table', noTables:'No tables available', movedToTable:'Order moved to',
     billNo:'Bill No', reason:'Reason', enterPin:'Enter 4-digit PIN', wrongPin:'Wrong PIN', deleted:'Deleted', edited:'Edited', managerPin:'Manager PIN (4 digits)', apply:'Apply', deleteBill:'Delete Bill', editBill:'Edit Bill', actions:'Actions', security:'Security',
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
-    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting…',
+    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', goodMorning:'good morning', goodAfternoon:'good afternoon', goodEvening:'good evening', goodNight:'good night',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
     chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
@@ -1359,7 +1428,8 @@ window.addEventListener('fb-ready', () => {
   const savedOutlet = localStorage.getItem('rb2_outlet');
   if (savedOutlet) {
     D.settings.outletCode = savedOutlet;
-    initFirebaseSync();
+    showLoader(t('connecting'));
+    Promise.resolve(initFirebaseSync()).finally(hideLoader);
   }
 });
 
@@ -1635,6 +1705,67 @@ function go(view, extra) {
 // afterwards, so this has to be impossible to miss without blocking the till —
 // a modal here would halt billing mid-order, and staff would learn to dismiss
 // it on sight.
+// ── Loading overlay ────────────────────────────────────────────────────────
+// Reference-counted, because more than one thing can be in flight at once and
+// whichever finishes first must not pull the overlay out from under the other.
+let loaderCount = 0, loaderTimer = null, loaderSafety = null;
+// A loader that never closes is worse than none: it dims and blocks the whole
+// till. Whatever we are waiting for, give up covering the screen after this.
+const LOADER_MAX_MS = 12000;
+
+function closeLoader(el) {
+  loaderCount = 0;
+  clearInterval(loaderTimer); loaderTimer = null;
+  clearTimeout(loaderSafety); loaderSafety = null;
+  el.style.setProperty('--fill', '1');
+  el.setAttribute('aria-hidden', 'true');
+  setTimeout(() => { if (loaderCount === 0) el.classList.remove('on'); }, 520);
+}
+
+function showLoader(text) {
+  const el = document.getElementById('app-loader');
+  if (!el) return;
+  const label = document.getElementById('app-loader-text');
+  if (label) label.textContent = text || t('loadingMsg');
+  if (++loaderCount > 1) return;
+  el.setAttribute('aria-hidden', 'false');
+  el.style.setProperty('--fill', '0');
+  el.classList.add('on');
+  // Creep towards nearly full while waiting. The last stretch is deliberately
+  // held back for hideLoader, so the pour always finishes rather than stopping
+  // wherever the work happened to end.
+  let level = 0;
+  clearInterval(loaderTimer);
+  loaderTimer = setInterval(() => {
+    level += (0.88 - level) * 0.16;
+    el.style.setProperty('--fill', level.toFixed(3));
+  }, 260);
+  clearTimeout(loaderSafety);
+  loaderSafety = setTimeout(() => closeLoader(el), LOADER_MAX_MS);
+  setTimeout(() => el.style.setProperty('--fill', '0.22'), 30);
+}
+
+function hideLoader() {
+  const el = document.getElementById('app-loader');
+  if (!el) return;
+  if (--loaderCount > 0) return;
+  // Tops the cup up, then clears once it has reached the brim.
+  closeLoader(el);
+}
+
+// Greeting for the hub. Pinned to IST so every outlet reads the same clock as
+// the business day, whatever the device's own timezone says.
+function greetingFor(name) {
+  const hour = Number(new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata', hour: '2-digit', hour12: false,
+  }).format(new Date()));
+  const part = hour >= 5 && hour < 12 ? t('goodMorning')
+             : hour >= 12 && hour < 17 ? t('goodAfternoon')
+             : hour >= 17 && hour < 21 ? t('goodEvening')
+             : t('goodNight');
+  return `Hej ${name}, ${part}`;
+}
+
 function refreshOfflineBar() {
   const bar = document.getElementById('offline-bar');
   if (!bar) return;
@@ -5652,6 +5783,7 @@ function settingsHTML() {
 function hubHTML() {
   return `
     <div class="hub-wrap">
+      <div class="hub-greet">${h(greetingFor(currentUser()?.username || ''))}</div>
       <h2 class="hub-title">${t('chooseArea')}</h2>
       <div class="hub-grid">
         <div class="hub-card" onclick="enterHub('tables')">
@@ -6374,6 +6506,7 @@ function setLoginBusy(busy) {
   const btn = document.getElementById('login-btn');
   btn.disabled = busy;
   btn.textContent = busy ? t('connecting') : t('signIn');
+  if (busy) showLoader(t('connecting')); else hideLoader();
 }
 
 async function doLogin() {
