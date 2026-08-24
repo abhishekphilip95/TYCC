@@ -979,7 +979,7 @@ const I18N = {
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', comingSoon:'Coming soon', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', 
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
-    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', outletProfile:'Outlet Profile', outletDetails:'Outlet Details', ownerName:'Owner Name', email:'Email', phone:'Phone', brandName:'Brand Name', companyName:'Company Name', address:'Address', billing:'Billing', notSet:'Not set', profileManaged:'These details come from your RestoBill registration. Contact support to change them.', backToMenu:'Back to menu',
+    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', outletProfile:'Outlet Profile', outletDetails:'Outlet Details', noAccess:'You do not have access to this', ownerName:'Owner Name', email:'Email', phone:'Phone', brandName:'Brand Name', companyName:'Company Name', address:'Address', billing:'Billing', notSet:'Not set', profileManaged:'These details come from your RestoBill registration. Contact support to change them.', backToMenu:'Back to menu',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
     deleteTable:'Delete Table', deleteTableConfirm:'Delete table "%s" and its current order?', nothingToClear:'No items to clear',
@@ -1743,6 +1743,12 @@ function go(view, extra) {
   // screen and any open order exactly as they were.
   if (!ACCOUNTS_ENABLED && (view === 'accounts' || view === 'vendorBills')) {
     showUnavailable();
+    return;
+  }
+  // The outlet's registration, its PIN and the backup tools belong to whoever
+  // runs the outlet, not to the staff working a shift.
+  if (view === 'outlet-profile' && !hasOwnerAccess()) {
+    notify(t('noAccess'));
     return;
   }
   if (isChef() && view !== 'kot') view = 'kot';
@@ -5839,6 +5845,7 @@ function settingsHTML() {
 // it is the outlet's own operational detail, so it can be corrected on the
 // spot and syncs back.
 function outletProfileHTML() {
+  if (!hasOwnerAccess()) return '';
   const p = D.profile || {};
   const row = (label, value) => `
     <div class="form-grp">
@@ -6570,7 +6577,7 @@ function buildNav() {
   const chefMode = isChef();
   // The hub, Accounts and User Settings are entered from the hub screen
   // (Owner/Master only) rather than the regular tab bar.
-  if (!chefMode && (S.view === 'hub' || S.view === 'accounts' || S.view === 'vendorBills' || S.view === 'user-settings')) {
+  if (!chefMode && (S.view === 'hub' || S.view === 'accounts' || S.view === 'vendorBills' || S.view === 'user-settings' || S.view === 'outlet-profile')) {
     document.getElementById('main-nav').innerHTML = '';
     const drawerNav0 = document.getElementById('drawer-nav');
     if (drawerNav0) drawerNav0.innerHTML = '';
