@@ -1306,6 +1306,9 @@ async function initFirebaseSync() {
       }
     } catch (e) { console.error('Firebase meta fetch failed', e); }
     fbReady = true;
+    // D now holds the outlet's server data, and this is the first point where
+    // save() can push a role correction back up.
+    syncOutletRoles();
     if (!remoteHasData) {
       // first run: seed Firestore with current local data
       await syncToFirebase();
@@ -6472,7 +6475,7 @@ function deleteUser(userId) {
 // still applies when the outlet's data only arrives from Firebase after login,
 // and it repairs an outlet an earlier build left with several masters.
 function syncOutletRoles() {
-  if (localStorage.getItem('rb2_roles_v3')) return;
+  if (localStorage.getItem('rb2_roles_v4')) return;
   const norm = s => (s || '').trim().toLowerCase();
   // An outlet's Firestore code is the slug of the outlet name typed at login,
   // so it does not have to equal the master's user id — check every name this
@@ -6492,7 +6495,11 @@ function syncOutletRoles() {
     const want = u === master ? 'Master' : 'Owner';
     if (u.role !== want) { u.role = want; moved = true; }
   });
-  localStorage.setItem('rb2_roles_v3', '1');
+  // Only count this as done once it has run against the outlet's authoritative
+  // data. Until Firebase is ready D is just the local cache, which the server's
+  // copy is about to replace, and save() cannot push a correction up yet — so
+  // consuming the flag then would strand the outlet on its old roles.
+  if (fbReady) localStorage.setItem('rb2_roles_v4', '1');
   if (moved) save();
 }
 
