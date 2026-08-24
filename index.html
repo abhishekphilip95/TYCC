@@ -876,7 +876,7 @@ const I18N = {
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting…',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
-    masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
+    masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', lastMaster:'The outlet must keep one master login', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
     chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
@@ -5454,15 +5454,18 @@ function usersCardHTML() {
     const masterRow = u.role === 'Master';
     const ownerRow  = u.role === 'Owner';
     const roleLabel = masterRow ? t('masterLogin') : (ownerRow ? t('owner') : h(u.role));
-    // Master logins are provisioned in the admin panel and are untouchable here.
-    // Owner rows are always editable, but only a master login may delete one —
-    // owners can remove neither each other nor themselves.
-    const canDelete = ownerRow ? (viewerIsMaster && u.id !== S.currentUser) : true;
+    // RestoBill issues the master login, so it is never deleted from inside the
+    // outlet — but a master may edit the master row to correct it. Owner rows
+    // are always editable, while only a master may delete one, so owners can
+    // remove neither each other nor themselves.
+    const canDelete = masterRow ? false
+                    : ownerRow  ? (viewerIsMaster && u.id !== S.currentUser)
+                    : true;
+    const canEdit = masterRow ? viewerIsMaster : true;
     const editBtn = `<button class="btn btn-ghost btn-sm" onclick="showUserModal('${u.id}')">${t('edit')}</button>`;
     const delBtn  = `<button class="btn btn-sm" style="background:#FEE2E2;color:#DC2626;margin-left:4px;" onclick="deleteUser('${u.id}')">${t('delete')}</button>`;
-    const actions = masterRow
-      ? `<span style="color:var(--muted);font-size:12px;">${t('protectedAccount')}</span>`
-      : editBtn + (canDelete ? delBtn : '');
+    const actions = (canEdit ? editBtn : '') + (canDelete ? delBtn : '')
+      || `<span style="color:var(--muted);font-size:12px;">${t('protectedAccount')}</span>`;
     return `
     <tr>
       <td style="font-weight:600;">${h(u.username)}</td>
@@ -6399,8 +6402,12 @@ function showUserModal(userId) {
   // here. Owner may be granted, but only by a master login — an existing owner
   // keeps the option so editing their own row does not silently demote them.
   const canAssignOwner = isMaster() || (u && u.role === 'Owner');
+  // Master is never created here — RestoBill issues it. It stays in the list
+  // only while editing an existing master, so saving that row cannot silently
+  // demote them.
+  const editingMaster = !!(u && u.role === 'Master');
   const roleOpts = ROLES
-    .filter(r => r !== 'Master' && (r !== 'Owner' || canAssignOwner))
+    .filter(r => (r !== 'Master' || editingMaster) && (r !== 'Owner' || canAssignOwner))
     .map(r => `<option value="${r}"${u && u.role === r ? ' selected' : ''}>${r}</option>`).join('');
   showModal(`
     <h3>${u ? t('editUser') : t('addUser')}</h3>
@@ -6418,7 +6425,15 @@ function saveUser(userId) {
   const pass = document.getElementById('u-pass').value.trim();
   const role = document.getElementById('u-role').value;
   const target = userId ? D.users.find(x => x.id === userId) : null;
-  if (role === 'Master' || (target && target.role === 'Master')) { notify(t('masterProtected')); return; }
+  const targetIsMaster = !!(target && target.role === 'Master');
+  // The master login is issued by RestoBill, so it can never be created here.
+  // An existing master row may be edited, but only by another master.
+  if (targetIsMaster && !isMaster()) { notify(t('masterProtected')); return; }
+  if (role === 'Master' && !targetIsMaster) { notify(t('masterProtected')); return; }
+  // The outlet would be left with nobody able to manage owners.
+  if (targetIsMaster && role !== 'Master' && D.users.filter(x => x.role === 'Master').length <= 1) {
+    notify(t('lastMaster')); return;
+  }
   // Only a master login may create an owner or promote someone into one.
   if (role === 'Owner' && !isMaster() && !(target && target.role === 'Owner')) { notify(t('ownerProtected')); return; }
   if (!name) { notify(t('username') + '?'); return; }
@@ -6448,13 +6463,25 @@ function deleteUser(userId) {
 
 function init() {
   load();
-  // One-time migration: before Master and Owner were separate roles, every
-  // admin-panel account was stored as 'Owner'. Those are all master logins.
-  if (!localStorage.getItem('rb2_roles_v2')) {
-    let moved = false;
-    D.users.forEach(u => { if (u.role === 'Owner') { u.role = 'Master'; moved = true; } });
-    localStorage.setItem('rb2_roles_v2', '1');
-    if (moved) save();
+  // One-time role sync. Before Master and Owner were separate roles, every
+  // elevated account was stored as 'Owner'. Exactly one account per outlet is
+  // the RestoBill-issued master — the login matching the outlet code — and
+  // everyone the restaurant created itself is an owner. Runs only once a
+  // matching login is present, so it still applies after data syncs in, and it
+  // repairs an outlet that an earlier build left with several masters.
+  if (!localStorage.getItem('rb2_roles_v3')) {
+    const code = (localStorage.getItem('rb2_outlet') || (D.settings && D.settings.outletCode) || '').trim().toLowerCase();
+    const elevated = D.users.filter(u => u.role === 'Master' || u.role === 'Owner');
+    const master = code && elevated.find(u => (u.username || '').trim().toLowerCase() === code);
+    if (master) {
+      let moved = false;
+      elevated.forEach(u => {
+        const want = u === master ? 'Master' : 'Owner';
+        if (u.role !== want) { u.role = want; moved = true; }
+      });
+      localStorage.setItem('rb2_roles_v3', '1');
+      if (moved) save();
+    }
   }
   applyTheme();
   // One-time migration: a device that already has local data was already
