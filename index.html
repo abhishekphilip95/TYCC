@@ -1816,12 +1816,12 @@ function hideLoader() {
 }
 
 // Greeting for the hub. Logins get typed every which way — YELLOWCUP, philip,
-// tYCC — so the first letter is raised and the rest lowered, and the greeting
-// reads the same however the account was created.
+// mc donald — so every word is raised and the rest of it lowered, and the
+// greeting reads the same however the account was created.
 function greetingFor(name) {
-  const n = (name || '').trim();
+  const n = (name || '').trim().replace(/\s+/g, ' ');
   if (!n) return 'Hej';
-  return 'Hej ' + n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
+  return 'Hej ' + n.toLowerCase().replace(/(^|[\s'-])(\S)/g, (_, sep, ch) => sep + ch.toUpperCase());
 }
 
 function refreshOfflineBar() {
