@@ -467,7 +467,19 @@ async function syncMasterLogin(outletCode, prevUserId, userId, password) {
   const prev = target ? target.data() : {};
   await setDoc(doc(fbDb, 'outlets', outletCode, 'users', docId),
     { ...prev, id: docId, username: userId, password, role: 'Master' });
-  return { docId, created: !target };
+  // An outlet has exactly one master login. Whoever held it before this call
+  // drops back to being an ordinary owner, so pointing the record at a
+  // different account — or at one that no longer exists — cannot leave the
+  // outlet with two masters and nobody able to tell which one RestoBill issued.
+  const demoted = [];
+  for (const d of snap.docs) {
+    if (d.id === docId) continue;
+    const other = d.data();
+    if (other.role !== 'Master') continue;
+    await setDoc(doc(fbDb, 'outlets', outletCode, 'users', d.id), { ...other, role: 'Owner' });
+    demoted.push(other.username);
+  }
+  return { docId, created: !target, demoted, promoted: !!target && prev.role !== 'Master' };
 }
 
 window.checkGate = checkGate;
