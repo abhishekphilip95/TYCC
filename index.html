@@ -670,6 +670,15 @@ body.dark .kot-pending-review { background: #3A2E10; }
   border-radius: 14px; text-align: center; cursor: pointer; transition: transform .12s, box-shadow .12s;
 }
 .hub-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.08); border-color: var(--primary); }
+/* A held-back feature reads as inactive, but stays tappable — tapping it is
+   what explains why it is greyed out, so it must not look inert. */
+.hub-card.soon { opacity: .55; }
+.hub-card.soon:hover { transform: none; box-shadow: none; border-color: var(--border); }
+.hub-soon {
+  display: inline-block; margin-top: 8px; padding: 2px 9px; border-radius: 10px;
+  background: var(--border); color: var(--muted);
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+}
 .hub-ico { font-size: 34px; margin-bottom: 10px; }
 .hub-label { font-size: 14px; font-weight: 600; }
 
@@ -963,7 +972,7 @@ const I18N = {
     newOrder:'New Order', counter:'Counter', moveToTable:'Move to Table', selectTable:'Select an available table', noTables:'No tables available', movedToTable:'Order moved to',
     billNo:'Bill No', reason:'Reason', enterPin:'Enter 4-digit PIN', wrongPin:'Wrong PIN', deleted:'Deleted', edited:'Edited', managerPin:'Manager PIN (4 digits)', apply:'Apply', deleteBill:'Delete Bill', editBill:'Edit Bill', actions:'Actions', security:'Security',
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
-    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', goodMorning:'good morning', goodAfternoon:'good afternoon', goodEvening:'good evening', goodNight:'good night',
+    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', comingSoon:'Coming soon', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', goodMorning:'good morning', goodAfternoon:'good afternoon', goodEvening:'good evening', goodNight:'good night',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
     chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
@@ -5850,9 +5859,10 @@ function hubHTML() {
           <div class="hub-ico">&#128722;</div>
           <div class="hub-label">${t('billingPos')}</div>
         </div>
-        <div class="hub-card" onclick="enterHub('accounts')">
+        <div class="hub-card${ACCOUNTS_ENABLED ? '' : ' soon'}" onclick="enterHub('accounts')">
           <div class="hub-ico">&#128176;</div>
           <div class="hub-label">${t('accounts')}</div>
+          ${ACCOUNTS_ENABLED ? '' : `<div class="hub-soon">${t('comingSoon')}</div>`}
         </div>
         <div class="hub-card" onclick="enterHub('user-settings')">
           <div class="hub-ico">&#9881;</div>
