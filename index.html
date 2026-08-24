@@ -5637,34 +5637,15 @@ function goHome() {
 }
 
 function userSettingsHTML() {
-  const u = currentUser();
-  if (!u) return '';
+  if (!currentUser()) return '';
   return `
     <div class="sec-hdr"><h2>${t('userSettings')}</h2></div>
     <div class="settings-grid">
-      <div class="card">
-        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('masterLogin')}</h3>
-        <div class="form-grp"><label>${t('username')}</label><input id="us-name" type="text" value="${h(u.username)}"></div>
-        <div class="form-grp"><label>${t('password')}</label><input id="us-pass" type="text" value="${h(u.password)}"></div>
-        <button class="btn btn-primary" onclick="saveOwnLogin()">${t('saveSettings')}</button>
-      </div>
-
       ${usersCardHTML()}
     </div>`;
 }
 
-function saveOwnLogin() {
-  const u = currentUser();
-  if (!u) return;
-  const name = document.getElementById('us-name').value.trim();
-  const pass = document.getElementById('us-pass').value.trim();
-  if (!name) { notify(t('username') + '?'); return; }
-  if (!pass) { notify(t('password') + '?'); return; }
-  const dup = D.users.find(x => x.username.toLowerCase() === name.toLowerCase() && x.id !== u.id);
-  if (dup) { notify(t('userExists')); return; }
-  u.username = name; u.password = pass;
-  save(); renderMain(); notify(t('save'));
-}
+
 
 function saveSettings() {
   D.settings.name    = document.getElementById('s-nm').value.trim() || 'My Restaurant';
