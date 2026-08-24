@@ -972,7 +972,7 @@ const I18N = {
     newOrder:'New Order', counter:'Counter', moveToTable:'Move to Table', selectTable:'Select an available table', noTables:'No tables available', movedToTable:'Order moved to',
     billNo:'Bill No', reason:'Reason', enterPin:'Enter 4-digit PIN', wrongPin:'Wrong PIN', deleted:'Deleted', edited:'Edited', managerPin:'Manager PIN (4 digits)', apply:'Apply', deleteBill:'Delete Bill', editBill:'Edit Bill', actions:'Actions', security:'Security',
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
-    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', comingSoon:'Coming soon', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', goodMorning:'good morning', goodAfternoon:'good afternoon', goodEvening:'good evening', goodNight:'good night',
+    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', comingSoon:'Coming soon', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', 
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
     chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
@@ -1815,17 +1815,13 @@ function hideLoader() {
   closeLoader(el);
 }
 
-// Greeting for the hub. Pinned to IST so every outlet reads the same clock as
-// the business day, whatever the device's own timezone says.
+// Greeting for the hub. Logins get typed every which way — YELLOWCUP, philip,
+// tYCC — so the first letter is raised and the rest lowered, and the greeting
+// reads the same however the account was created.
 function greetingFor(name) {
-  const hour = Number(new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Kolkata', hour: '2-digit', hour12: false,
-  }).format(new Date()));
-  const part = hour >= 5 && hour < 12 ? t('goodMorning')
-             : hour >= 12 && hour < 17 ? t('goodAfternoon')
-             : hour >= 17 && hour < 21 ? t('goodEvening')
-             : t('goodNight');
-  return `Hej ${name}, ${part}`;
+  const n = (name || '').trim();
+  if (!n) return 'Hej';
+  return 'Hej ' + n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
 }
 
 function refreshOfflineBar() {
