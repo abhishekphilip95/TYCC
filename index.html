@@ -862,6 +862,7 @@ const I18N = {
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting…',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
+    masterLogin:'Master Login', protectedAccount:'Protected', masterProtected:'The master login can\'t be deleted here',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
     deleteTable:'Delete Table', deleteTableConfirm:'Delete table "%s" and its current order?', nothingToClear:'No items to clear',
@@ -937,6 +938,7 @@ const I18N = {
     username:'\u092F\u0942\u091C\u0930 \u0906\u0908\u0921\u0940', password:'\u092A\u093E\u0938\u0935\u0930\u094D\u0921', signIn:'\u0938\u093E\u0907\u0928 \u0907\u0928', wrongCreds:'\u0917\u0932\u0924 \u092F\u0942\u091C\u0930 \u0906\u0908\u0921\u0940 \u092F\u093E \u092A\u093E\u0938\u0935\u0930\u094D\u0921', loggedInAs:'\u0938\u093E\u0907\u0928 \u0907\u0928:', logout:'\u0938\u093E\u0907\u0928 \u0906\u0909\u091F',
     outletName:'\u0906\u0909\u091F\u0932\u0947\u091F \u0915\u093E \u0928\u093E\u092E', outletRequired:'\u0905\u092A\u0928\u093E \u0906\u0909\u091F\u0932\u0947\u091F \u0928\u093E\u092E \u0926\u0930\u094D\u091C \u0915\u0930\u0947\u0902', outletNotFound:'\u0906\u0909\u091F\u0932\u0947\u091F \u0928\u0939\u0940\u0902 \u092E\u093F\u0932\u093E\u0964 \u0928\u093E\u092E \u091C\u093E\u0902\u091A\u0947\u0902 \u0914\u0930 \u092A\u0941\u0928\u0903 \u092A\u094D\u0930\u092F\u093E\u0938 \u0915\u0930\u0947\u0902\u0964', connecting:'\u0915\u0928\u0947\u0915\u094D\u091F \u0939\u094B \u0930\u0939\u093E \u0939\u0948\u2026',
     userManagement:'\u092F\u0942\u091C\u0930 \u092A\u094D\u0930\u092C\u0902\u0927\u0928', addUser:'\u092F\u0942\u091C\u0930 \u091C\u094B\u0921\u093C\u0947\u0902', editUser:'\u092F\u0942\u091C\u0930 \u0938\u0902\u092A\u093E\u0926\u093F\u0924 \u0915\u0930\u0947\u0902', deleteUser:'\u092F\u0942\u091C\u0930 \u0939\u091F\u093E\u090F\u0902', role:'\u092D\u0942\u092E\u093F\u0915\u093E', userExists:'\u092F\u0942\u091C\u0930 \u0906\u0908\u0921\u0940 \u092A\u0939\u0932\u0947 \u0938\u0947 \u092E\u094C\u091C\u0942\u0926 \u0939\u0948', lastOwner:'\u0915\u0947\u0935\u0932 \u090F\u0915 \u092E\u093E\u0932\u093F\u0915 \u0915\u094B \u0939\u091F\u093E \u0928\u0939\u0940\u0902 \u0938\u0915\u0924\u0947', cantDeleteSelf:'\u0905\u092A\u0928\u093E \u0916\u093E\u0924\u093E \u0939\u091F\u093E \u0928\u0939\u0940\u0902 \u0938\u0915\u0924\u0947',
+    masterLogin:'\u092E\u093E\u0938\u094D\u091F\u0930 \u0932\u0949\u0917\u093F\u0928', protectedAccount:'\u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924', masterProtected:'\u092E\u093E\u0938\u094D\u091F\u0930 \u0932\u0949\u0917\u093F\u0928 \u0915\u094B \u092F\u0939\u093E\u0902 \u0938\u0947 \u0939\u091F\u093E\u092F\u093E \u0928\u0939\u0940\u0902 \u091C\u093E \u0938\u0915\u0924\u093E',
     rename:'\u0928\u093E\u092E \u092C\u0926\u0932\u0947\u0902', split:'\u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u0915\u0930\u0947\u0902', splitOccupied:'\u0935\u093F\u092D\u093E\u091C\u0928 \u0938\u0947 \u092A\u0939\u0932\u0947 \u091F\u0947\u092C\u0932 \u0916\u093E\u0932\u0940 \u0915\u0930\u0947\u0902', splitConfirm:'"%s" \u0915\u094B \u0926\u094B \u091F\u0947\u092C\u0932\u094B\u0902 \u092E\u0947\u0902 \u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u0915\u0930\u0947\u0902?',
     merge:'\u092E\u0930\u094D\u091C \u0915\u0930\u0947\u0902', selected:'\u091A\u092F\u0928\u093F\u0924', onlySplitMerge:'\u0915\u0947\u0935\u0932 \u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u091F\u0947\u092C\u0932 \u092E\u0930\u094D\u091C \u0915\u093F\u090F \u091C\u093E \u0938\u0915\u0924\u0947 \u0939\u0948\u0902', mergeSameGroup:'\u090F\u0915 \u0939\u0940 \u0935\u093F\u092D\u093E\u091C\u0928 \u0915\u0940 \u091F\u0947\u092C\u0932 \u091A\u0941\u0928\u0947\u0902', mergeConfirm:'\u091A\u092F\u0928\u093F\u0924 \u091F\u0947\u092C\u0932\u094B\u0902 \u0915\u094B "%s" \u092E\u0947\u0902 \u092E\u0930\u094D\u091C \u0915\u0930\u0947\u0902?', mergeHint:'Ctrl \u0926\u092C\u093E\u0915\u0930 \u0935\u093F\u092D\u093E\u091C\u093F\u0924 \u091F\u0947\u092C\u0932 \u091A\u0941\u0928\u0947\u0902, \u092B\u093F\u0930 \u092E\u0930\u094D\u091C \u0915\u0930\u0947\u0902\u0964',
     deleteTable:'\u091F\u0947\u092C\u0932 \u0939\u091F\u093E\u090F\u0902', deleteTableConfirm:'\u091F\u0947\u092C\u0932 "%s" \u0914\u0930 \u0907\u0938\u0915\u093E \u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u0911\u0930\u094D\u0921\u0930 \u0939\u091F\u093E\u090F\u0902?', nothingToClear:'\u0939\u091F\u093E\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F \u0915\u094B\u0908 \u0906\u0907\u091F\u092E \u0928\u0939\u0940\u0902',
@@ -5429,15 +5431,22 @@ function applyEdit() {
 // ═══════════════════════════════════════════════════════
 function usersCardHTML() {
   if (!isOwner()) return '';
-  const rows = D.users.map(u => `
+  const rows = D.users.map(u => {
+    const isMaster = u.role === 'Owner';
+    const roleLabel = isMaster ? t('masterLogin') : h(u.role);
+    const actions = isMaster
+      ? `<span style="color:var(--muted);font-size:12px;">${t('protectedAccount')}</span>`
+      : `<button class="btn btn-ghost btn-sm" onclick="showUserModal('${u.id}')">${t('edit')}</button>
+         <button class="btn btn-sm" style="background:#FEE2E2;color:#DC2626;margin-left:4px;" onclick="deleteUser('${u.id}')">${t('delete')}</button>`;
+    return `
     <tr>
       <td style="font-weight:600;">${h(u.username)}</td>
-      <td><span class="role-pill role-${u.role.toLowerCase()}">${h(u.role)}</span></td>
+      <td><span class="role-pill role-${u.role.toLowerCase()}">${roleLabel}</span></td>
       <td style="text-align:right;white-space:nowrap;">
-        <button class="btn btn-ghost btn-sm" onclick="showUserModal('${u.id}')">${t('edit')}</button>
-        <button class="btn btn-sm" style="background:#FEE2E2;color:#DC2626;margin-left:4px;" onclick="deleteUser('${u.id}')">${t('delete')}</button>
+        ${actions}
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
   return `
     <div class="card" style="grid-column:1/-1;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
@@ -6324,7 +6333,7 @@ function saveUser(userId) {
 function deleteUser(userId) {
   const u = D.users.find(x => x.id === userId);
   if (!u) return;
-  if (u.role === 'Owner' && D.users.filter(x => x.role === 'Owner').length <= 1) { notify(t('lastOwner')); return; }
+  if (u.role === 'Owner') { notify(t('masterProtected')); return; }
   if (u.id === S.currentUser) { notify(t('cantDeleteSelf')); return; }
   if (!confirm(t('deleteUser') + ' "' + u.username + '"?')) return;
   D.users = D.users.filter(x => x.id !== userId);
