@@ -304,7 +304,7 @@ async function createOutlet() {
       outletName, outletCode, userId, password, createdAt: now,
     });
     batch.set(doc(fbDb, 'outlets', outletCode, 'users', userDocId), {
-      id: userDocId, username: userId, password, role: 'Owner',
+      id: userDocId, username: userId, password, role: 'Master',
     });
     batch.set(doc(fbDb, 'outlets', outletCode, 'meta', 'main'), {
       settings: {

@@ -76,7 +76,8 @@ nav button.active { background: rgba(255,255,255,0.22); color: #fff; }
 .login-card input { width: 100%; padding: 11px 13px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; }
 .login-err { color: var(--danger); font-size: 12.5px; margin-bottom: 12px; min-height: 16px; text-align: center; }
 .role-pill { padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
-.role-owner   { background: #FEF3C7; color: #92400E; }
+.role-master  { background: #FEF3C7; color: #92400E; }
+.role-owner   { background: #EDE9FE; color: #6D28D9; }
 .role-manager { background: #DBEAFE; color: #1D4ED8; }
 .role-cashier { background: #DCFCE7; color: #166534; }
 .role-waiter  { background: #F3E8FF; color: #6B21A8; }
@@ -811,7 +812,7 @@ let D = {
   orders: [],
   billSeq: 1,
   kotSeq: { day: null, next: 1 },
-  users: [{ id: 'u1', username: 'Philip', password: '1234', role: 'Owner' }],
+  users: [{ id: 'u1', username: 'Philip', password: '1234', role: 'Master' }],
   customers: [],
   dueSettlements: [],
   vendors: [],
@@ -821,7 +822,7 @@ let D = {
   categoryActive: {},
 };
 let editState = null;
-const ROLES = ['Owner', 'Manager', 'Cashier', 'Waiter', 'Chef'];
+const ROLES = ['Master', 'Owner', 'Manager', 'Cashier', 'Waiter', 'Chef'];
 
 const DEF_MENU = [
   { id:'m01', name:'Espresso',            category:'Beverages',    price:80  },
@@ -875,7 +876,7 @@ const I18N = {
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting…',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
-    masterLogin:'Master Login', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
+    masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
     chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
@@ -1349,7 +1350,7 @@ function load() {
       if (!D.kotSeq || typeof D.kotSeq !== 'object') D.kotSeq = { day: null, next: 1 };
       // ensure at least the default Owner account exists
       if (!Array.isArray(D.users) || D.users.length === 0) {
-        D.users = [{ id: 'u1', username: 'Philip', password: '1234', role: 'Owner' }];
+        D.users = [{ id: 'u1', username: 'Philip', password: '1234', role: 'Master' }];
       }
       if (!Array.isArray(D.customers)) D.customers = [];
       if (!Array.isArray(D.dueSettlements)) D.dueSettlements = [];
@@ -5447,14 +5448,21 @@ function applyEdit() {
 //  SETTINGS
 // ═══════════════════════════════════════════════════════
 function usersCardHTML() {
-  if (!isOwner()) return '';
+  if (!hasOwnerAccess()) return '';
+  const viewerIsMaster = isMaster();
   const rows = D.users.map(u => {
-    const isMaster = u.role === 'Owner';
-    const roleLabel = isMaster ? t('masterLogin') : h(u.role);
-    const actions = isMaster
+    const masterRow = u.role === 'Master';
+    const ownerRow  = u.role === 'Owner';
+    const roleLabel = masterRow ? t('masterLogin') : (ownerRow ? t('owner') : h(u.role));
+    // Master logins are provisioned in the admin panel and are untouchable here.
+    // Owner rows are always editable, but only a master login may delete one —
+    // owners can remove neither each other nor themselves.
+    const canDelete = ownerRow ? (viewerIsMaster && u.id !== S.currentUser) : true;
+    const editBtn = `<button class="btn btn-ghost btn-sm" onclick="showUserModal('${u.id}')">${t('edit')}</button>`;
+    const delBtn  = `<button class="btn btn-sm" style="background:#FEE2E2;color:#DC2626;margin-left:4px;" onclick="deleteUser('${u.id}')">${t('delete')}</button>`;
+    const actions = masterRow
       ? `<span style="color:var(--muted);font-size:12px;">${t('protectedAccount')}</span>`
-      : `<button class="btn btn-ghost btn-sm" onclick="showUserModal('${u.id}')">${t('edit')}</button>
-         <button class="btn btn-sm" style="background:#FEE2E2;color:#DC2626;margin-left:4px;" onclick="deleteUser('${u.id}')">${t('delete')}</button>`;
+      : editBtn + (canDelete ? delBtn : '');
     return `
     <tr>
       <td style="font-weight:600;">${h(u.username)}</td>
@@ -5607,13 +5615,13 @@ function enterHub(view) {
 }
 
 function backToHubHTML() {
-  if (!isOwner()) return '';
+  if (!hasOwnerAccess()) return '';
   return `<button class="btn btn-ghost btn-sm" style="margin-bottom:14px;" onclick="goHome()">&larr; ${t('backToMenu')}</button>`;
 }
 
 // Header logo click: Owner/Master goes back to the hub, everyone else is unaffected.
 function goHome() {
-  if (!isOwner()) return;
+  if (!hasOwnerAccess()) return;
   go('hub');
   buildNav();
 }
@@ -5853,7 +5861,7 @@ function importData(input) {
       if (!D.settings.pin) D.settings.pin = '1234';
       if (!D.settings.outletCode) D.settings.outletCode = 'TYCC';
       if (!D.kotSeq || typeof D.kotSeq !== 'object') D.kotSeq = { day: null, next: 1 };
-      if (!Array.isArray(D.users) || D.users.length === 0) D.users = [{ id:'u1', username:'Philip', password:'1234', role:'Owner' }];
+      if (!Array.isArray(D.users) || D.users.length === 0) D.users = [{ id:'u1', username:'Philip', password:'1234', role:'Master' }];
       if (!Array.isArray(D.kitchens)) D.kitchens = [];
       if (!D.settings.billPrinter) D.settings.billPrinter = { enabled: true, size: '80mm' };
       if (D.billSeq == null) {
@@ -6295,8 +6303,13 @@ function closeMobileMenu() {
 //  AUTHENTICATION & SESSION
 // ═══════════════════════════════════════════════════════
 function currentUser() { return S.currentUser ? D.users.find(u => u.id === S.currentUser) : null; }
-function isOwner() { const u = currentUser(); return u && u.role === 'Owner'; }
-function canManage() { const u = currentUser(); return !!u && (u.role === 'Owner' || u.role === 'Manager'); }
+function isOwner() { const u = currentUser(); return !!u && u.role === 'Owner'; }
+function isMaster() { const u = currentUser(); return !!u && u.role === 'Master'; }
+// Master and Owner see and can do exactly the same things across the app. They
+// differ only inside User Management: a master may add or delete owners, an
+// owner may not — not each other, not themselves.
+function hasOwnerAccess() { const u = currentUser(); return !!u && (u.role === 'Master' || u.role === 'Owner'); }
+function canManage() { const u = currentUser(); return !!u && (u.role === 'Master' || u.role === 'Owner' || u.role === 'Manager'); }
 
 function showLogin() {
   S.currentUser = null;
@@ -6371,7 +6384,7 @@ function renderHeaderUser() {
 
 function startApp() {
   if (isChef()) S.view = 'kot';
-  else if (isOwner()) S.view = 'hub';
+  else if (hasOwnerAccess()) S.view = 'hub';
   buildNav();
   renderMain();
   renderHeaderUser();
@@ -6382,9 +6395,13 @@ function startApp() {
 // ═══════════════════════════════════════════════════════
 function showUserModal(userId) {
   const u = userId ? D.users.find(x => x.id === userId) : null;
-  // Owner/Master accounts are created and deleted only via the admin panel,
-  // never through this staff-management screen.
-  const roleOpts = ROLES.filter(r => r !== 'Owner').map(r => `<option value="${r}"${u && u.role === r ? ' selected' : ''}>${r}</option>`).join('');
+  // Master accounts come from the admin panel only, so they are never offered
+  // here. Owner may be granted, but only by a master login — an existing owner
+  // keeps the option so editing their own row does not silently demote them.
+  const canAssignOwner = isMaster() || (u && u.role === 'Owner');
+  const roleOpts = ROLES
+    .filter(r => r !== 'Master' && (r !== 'Owner' || canAssignOwner))
+    .map(r => `<option value="${r}"${u && u.role === r ? ' selected' : ''}>${r}</option>`).join('');
   showModal(`
     <h3>${u ? t('editUser') : t('addUser')}</h3>
     <div class="form-grp"><label>${t('username')}</label><input id="u-name" type="text" value="${u ? h(u.username) : ''}" autofocus></div>
@@ -6400,7 +6417,10 @@ function saveUser(userId) {
   const name = document.getElementById('u-name').value.trim();
   const pass = document.getElementById('u-pass').value.trim();
   const role = document.getElementById('u-role').value;
-  if (role === 'Owner') { notify(t('masterProtected')); return; }
+  const target = userId ? D.users.find(x => x.id === userId) : null;
+  if (role === 'Master' || (target && target.role === 'Master')) { notify(t('masterProtected')); return; }
+  // Only a master login may create an owner or promote someone into one.
+  if (role === 'Owner' && !isMaster() && !(target && target.role === 'Owner')) { notify(t('ownerProtected')); return; }
   if (!name) { notify(t('username') + '?'); return; }
   if (!pass) { notify(t('password') + '?'); return; }
   const dup = D.users.find(x => x.username.toLowerCase() === name.toLowerCase() && x.id !== userId);
@@ -6417,7 +6437,9 @@ function saveUser(userId) {
 function deleteUser(userId) {
   const u = D.users.find(x => x.id === userId);
   if (!u) return;
-  if (u.role === 'Owner') { notify(t('masterProtected')); return; }
+  if (u.role === 'Master') { notify(t('masterProtected')); return; }
+  // Owners cannot delete one another; only a master login can remove an owner.
+  if (u.role === 'Owner' && !isMaster()) { notify(t('ownerProtected')); return; }
   if (u.id === S.currentUser) { notify(t('cantDeleteSelf')); return; }
   if (!confirm(t('deleteUser') + ' "' + u.username + '"?')) return;
   D.users = D.users.filter(x => x.id !== userId);
@@ -6426,6 +6448,14 @@ function deleteUser(userId) {
 
 function init() {
   load();
+  // One-time migration: before Master and Owner were separate roles, every
+  // admin-panel account was stored as 'Owner'. Those are all master logins.
+  if (!localStorage.getItem('rb2_roles_v2')) {
+    let moved = false;
+    D.users.forEach(u => { if (u.role === 'Owner') { u.role = 'Master'; moved = true; } });
+    localStorage.setItem('rb2_roles_v2', '1');
+    if (moved) save();
+  }
   applyTheme();
   // One-time migration: a device that already has local data was already
   // bound to an outlet before this feature existed, so keep it auto-connecting
