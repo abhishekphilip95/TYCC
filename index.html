@@ -5497,8 +5497,6 @@ function settingsHTML() {
         <button class="btn btn-primary" onclick="savePin()">${t('saveSettings')}</button>
       </div>
 
-      ${usersCardHTML()}
-
       <div class="card">
         <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('appearance')}</h3>
         <div class="form-grp">
@@ -5632,6 +5630,8 @@ function userSettingsHTML() {
         <div class="form-grp"><label>${t('password')}</label><input id="us-pass" type="text" value="${h(u.password)}"></div>
         <button class="btn btn-primary" onclick="saveOwnLogin()">${t('saveSettings')}</button>
       </div>
+
+      ${usersCardHTML()}
     </div>`;
 }
 
