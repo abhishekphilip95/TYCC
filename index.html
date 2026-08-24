@@ -617,11 +617,17 @@ body.dark .kot-pending-review { background: #3A2E10; }
   position: fixed; inset: 0; z-index: 400;
   display: flex; align-items: center; justify-content: center;
   background: rgba(15, 23, 42, .58);
-  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
   opacity: 0; visibility: hidden;
+  /* Off means completely out of the way: no blur to recompute behind, and no
+     invisible layer left over the page to swallow taps and keystrokes. */
+  pointer-events: none;
   transition: opacity .34s ease, visibility 0s linear .34s;
 }
-#app-loader.on { opacity: 1; visibility: visible; transition: opacity .34s ease, visibility 0s; }
+#app-loader.on {
+  opacity: 1; visibility: visible; pointer-events: auto;
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  transition: opacity .34s ease, visibility 0s;
+}
 .loader-box { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .loader-cup { width: 122px; height: 132px; overflow: visible; }
 .loader-cup .body, .loader-cup .handle {
@@ -953,7 +959,7 @@ const I18N = {
     newOrder:'New Order', counter:'Counter', moveToTable:'Move to Table', selectTable:'Select an available table', noTables:'No tables available', movedToTable:'Order moved to',
     billNo:'Bill No', reason:'Reason', enterPin:'Enter 4-digit PIN', wrongPin:'Wrong PIN', deleted:'Deleted', edited:'Edited', managerPin:'Manager PIN (4 digits)', apply:'Apply', deleteBill:'Delete Bill', editBill:'Edit Bill', actions:'Actions', security:'Security',
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
-    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', goodMorning:'good morning', goodAfternoon:'good afternoon', goodEvening:'good evening', goodNight:'good night',
+    outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', goodMorning:'good morning', goodAfternoon:'good afternoon', goodEvening:'good evening', goodNight:'good night',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
     chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
@@ -1242,10 +1248,36 @@ async function syncToFirebase() {
     }
     fbLastMetaJson = metaJson;
     fbSetStatus('connected');
+    settleSyncWaiters('synced');
   } catch (e) {
     console.error('Firebase sync failed', e);
     fbSetStatus('error');
+    settleSyncWaiters('failed');
   }
+}
+
+// Anyone waiting to hear that a save reached the cloud. Resolved rather than
+// rejected on failure: the bill is already safe on the device, and the warning
+// bar is what tells staff the cloud is unreachable.
+let fbSyncWaiters = [];
+function settleSyncWaiters(result) {
+  const waiting = fbSyncWaiters;
+  fbSyncWaiters = [];
+  waiting.forEach(resolve => resolve(result));
+}
+function whenSynced() {
+  if (!fbReady) return Promise.resolve('local');
+  return new Promise(resolve => fbSyncWaiters.push(resolve));
+}
+
+// save() returns as soon as the device has the data; the cloud write is
+// debounced behind it. For something as consequential as settling a bill, hold
+// the overlay until that write actually lands.
+async function saveAndConfirm(text) {
+  save();
+  if (!fbReady) return 'local';
+  showLoader(text);
+  try { return await whenSynced(); } finally { hideLoader(); }
 }
 
 function applyFbSnapshotChange(key, change) {
@@ -1428,8 +1460,11 @@ window.addEventListener('fb-ready', () => {
   const savedOutlet = localStorage.getItem('rb2_outlet');
   if (savedOutlet) {
     D.settings.outletCode = savedOutlet;
-    showLoader(t('connecting'));
-    Promise.resolve(initFirebaseSync()).finally(hideLoader);
+    // Deliberately no overlay here. This runs on its own while the user is
+    // trying to sign in, and covering the login form with a blurred, click
+    // -swallowing layer for as long as a slow connection takes made typing
+    // stutter. Connection trouble is already reported by the warning bar.
+    initFirebaseSync();
   }
 });
 
@@ -1708,7 +1743,8 @@ function go(view, extra) {
 // ── Loading overlay ────────────────────────────────────────────────────────
 // Reference-counted, because more than one thing can be in flight at once and
 // whichever finishes first must not pull the overlay out from under the other.
-let loaderCount = 0, loaderTimer = null, loaderSafety = null;
+let loaderCount = 0, loaderTimer = null, loaderSafety = null, loaderReveal = null;
+const LOADER_REVEAL_MS = 180;
 // A loader that never closes is worse than none: it dims and blocks the whole
 // till. Whatever we are waiting for, give up covering the screen after this.
 const LOADER_MAX_MS = 12000;
@@ -1717,6 +1753,9 @@ function closeLoader(el) {
   loaderCount = 0;
   clearInterval(loaderTimer); loaderTimer = null;
   clearTimeout(loaderSafety); loaderSafety = null;
+  clearTimeout(loaderReveal); loaderReveal = null;
+  // Never revealed, so there is nothing to animate away.
+  if (!el.classList.contains('on')) { el.setAttribute('aria-hidden', 'true'); return; }
   el.style.setProperty('--fill', '1');
   el.setAttribute('aria-hidden', 'true');
   setTimeout(() => { if (loaderCount === 0) el.classList.remove('on'); }, 520);
@@ -1730,7 +1769,11 @@ function showLoader(text) {
   if (++loaderCount > 1) return;
   el.setAttribute('aria-hidden', 'false');
   el.style.setProperty('--fill', '0');
-  el.classList.add('on');
+  // Hold off before dimming the screen. Most saves and re-renders finish in a
+  // few dozen milliseconds, and an overlay that appears and vanishes again
+  // reads as a glitch — so if the work beats this, it never shows at all.
+  clearTimeout(loaderReveal);
+  loaderReveal = setTimeout(() => el.classList.add('on'), LOADER_REVEAL_MS);
   // Creep towards nearly full while waiting. The last stretch is deliberately
   // held back for hideLoader, so the pour always finishes rather than stopping
   // wherever the work happened to end.
@@ -3276,7 +3319,7 @@ function confirmPay(orderId) {
       }
     }
   }
-  save();
+  saveAndConfirm(t('savingBill'));
   closeModal();
   notify('Payment confirmed!');
   go('tables');
@@ -4637,7 +4680,14 @@ function topItemsHTML(from, to) {
 
 function rerenderReports() {
   const v = document.querySelector('.view');
-  if (v) v.innerHTML = reportsHTML();
+  if (!v) return;
+  // Building a range walks every order in it, which blocks the main thread —
+  // so paint the overlay first, then do the work on the next turn. Anything
+  // quick finishes before the overlay is ever revealed.
+  showLoader(t('loadingReports'));
+  setTimeout(() => {
+    try { v.innerHTML = reportsHTML(); } finally { hideLoader(); }
+  }, 0);
 }
 
 // ═══════════════════════════════════════════════════════
