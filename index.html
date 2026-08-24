@@ -886,7 +886,7 @@ const I18N = {
     username:'User ID', password:'Password', signIn:'Sign In', wrongCreds:'Invalid user ID or password', loggedInAs:'Signed in as', logout:'Sign Out',
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting…',
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
-    masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
+    masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
     chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
@@ -1099,9 +1099,20 @@ let fbLastSynced = {};
 let fbLastMetaJson = null;
 let fbSyncTimer = null;
 let fbReady = false;
+// Set once Firestore has actually failed to answer, cleared when it answers
+// again. Distinct from fbReady, which only says the first connection attempt
+// has finished, success or not.
+let fbUnreachable = false;
 let fbStatusEl = null;
 
 function fbSetStatus(state) {
+  // Remember whether the backend is answering, so the warning bar can tell a
+  // dead connection apart from a live one that cannot reach Firestore. Only
+  // these two states are conclusive: 'syncing' is still in flight, and
+  // 'offline' just means this device has not connected yet.
+  if (state === 'error') fbUnreachable = true;
+  else if (state === 'connected') fbUnreachable = false;
+  refreshOfflineBar();
   if (!fbStatusEl) fbStatusEl = document.getElementById('fb-status');
   if (!fbStatusEl) return;
   const map = { connected: ['#16A34A','Cloud sync on'], syncing: ['#D97706','Syncing…'], offline: ['#9CA3AF','Local only'], error: ['#DC2626','Sync error'] };
@@ -1627,8 +1638,13 @@ function go(view, extra) {
 function refreshOfflineBar() {
   const bar = document.getElementById('offline-bar');
   if (!bar) return;
-  const offline = !navigator.onLine;
-  bar.textContent = t('offlineMsg');
+  // Two different failures, two different things for staff to do. No internet
+  // is something the outlet can fix itself; a reachable network whose backend
+  // still will not answer is not, so that one points at support instead.
+  const noInternet = !navigator.onLine;
+  const offline = noInternet || fbUnreachable;
+  bar.textContent = noInternet ? t('offlineMsg') : t('supportMsg');
+  bar.style.background = noInternet ? '#DC2626' : '#B45309';
   bar.style.display = offline ? '' : 'none';
   // The app flows below the bar on its own, but the login screen is fixed to
   // the viewport and would sit underneath it, hiding the user id field. Offset
@@ -1639,7 +1655,6 @@ function refreshOfflineBar() {
     login.style.top = offline ? bar.offsetHeight + 'px' : '';
     login.style.overflowY = offline ? 'auto' : '';
   }
-  if (offline) fbSetStatus('offline');
 }
 window.addEventListener('online', refreshOfflineBar);
 window.addEventListener('offline', refreshOfflineBar);
