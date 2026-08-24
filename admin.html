@@ -266,7 +266,8 @@ async function createOutlet() {
       }
       // The admin panel owns the master login, so the client record and the
       // outlet's actual POS user must never drift apart.
-      await syncMasterLogin(outletCode, userId, userId, password);
+      const sync = await syncMasterLogin(outletCode, userId, userId, password);
+      if (sync.cancelled) return;
       const clientId = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       await setDoc(doc(fbDb, 'clients', clientId), {
         id: clientId, ownerName, email, phone, brandName, companyName,
@@ -433,15 +434,17 @@ async function saveEdit() {
   try {
     // If the login changed, softly verify it against the outlet's actual users
     // (this record is just a reference — it never creates/changes POS data).
+    // Settle the POS side first, matching on the previous user id so a rename
+    // edits that account rather than stranding it and creating a second one.
+    // If the operator backs out there, the client record must not be saved
+    // either, or the two sides drift apart again.
+    if (userId !== c.userId || password !== c.password) {
+      const sync = await syncMasterLogin(c.outletCode, c.userId, userId, password);
+      if (sync.cancelled) return;
+    }
     await setDoc(doc(fbDb, 'clients', editingClientId), {
       ...c, ownerName, email, phone, brandName, companyName, userId, password,
     });
-    // Push the login through to the outlet's master user as well, matching on
-    // the previous user id so a rename edits that account rather than stranding
-    // it and creating a second one.
-    if (userId !== c.userId || password !== c.password) {
-      await syncMasterLogin(c.outletCode, c.userId, userId, password);
-    }
     closeEditModal();
     loadClients();
   } catch (e) {
@@ -465,21 +468,33 @@ async function syncMasterLogin(outletCode, prevUserId, userId, password) {
               || snap.docs.find(d => norm(d.data().username) === norm(userId));
   const docId = target ? target.id : 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const prev = target ? target.data() : {};
+
+  // An outlet has exactly one master login, so handing it to a different
+  // account takes it away from whoever holds it now. None of that is visible
+  // from the form being saved, so spell it out and get an answer before
+  // writing anything — a half-applied change is what let the two sides drift
+  // apart in the first place.
+  const toDemote = snap.docs.filter(d => d.id !== docId && d.data().role === 'Master');
+  const promoting = !!target && prev.role !== 'Master';
+  if (toDemote.length || promoting) {
+    const lines = [];
+    if (promoting) lines.push(`"${prev.username}" is already ${/^[aeiou]/i.test(prev.role || '') ? 'an' : 'a'} ${prev.role || 'account'} in this outlet and will become its master login.`);
+    if (toDemote.length) {
+      const names = toDemote.map(d => `"${d.data().username}"`).join(', ');
+      lines.push(`${names} will stop being the master login and become ${toDemote.length > 1 ? 'ordinary owners' : 'an ordinary owner'}.`);
+    }
+    if (!confirm(lines.join('\n\n') + '\n\nContinue?')) return { cancelled: true };
+  }
+
   await setDoc(doc(fbDb, 'outlets', outletCode, 'users', docId),
     { ...prev, id: docId, username: userId, password, role: 'Master' });
-  // An outlet has exactly one master login. Whoever held it before this call
-  // drops back to being an ordinary owner, so pointing the record at a
-  // different account — or at one that no longer exists — cannot leave the
-  // outlet with two masters and nobody able to tell which one RestoBill issued.
   const demoted = [];
-  for (const d of snap.docs) {
-    if (d.id === docId) continue;
+  for (const d of toDemote) {
     const other = d.data();
-    if (other.role !== 'Master') continue;
     await setDoc(doc(fbDb, 'outlets', outletCode, 'users', d.id), { ...other, role: 'Owner' });
     demoted.push(other.username);
   }
-  return { docId, created: !target, demoted, promoted: !!target && prev.role !== 'Master' };
+  return { docId, created: !target, demoted, promoted: promoting, cancelled: false };
 }
 
 window.checkGate = checkGate;
