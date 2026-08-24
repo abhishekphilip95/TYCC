@@ -88,12 +88,17 @@
         <div class="form-grp"><label>Outlet Name *</label><input id="f-outletName" oninput="onOutletNameInput()" placeholder="e.g. Cafe Mocha - MG Road"></div>
         <div class="form-grp"><label>Outlet Code (auto)</label><input id="f-outletCode" class="mono" oninput="f_codeTouched=true"></div>
         <div class="form-grp full hint">The Outlet Code is derived from the Outlet Name and must be unique. The outlet owner will type the <b>Outlet Name</b> (not the code) into the POS login screen, so make sure it's what they'll remember.</div>
+        <div class="form-grp full" style="flex-direction:row;align-items:center;gap:8px;">
+          <input type="checkbox" id="f-existingOutlet" style="width:auto;" onchange="onExistingToggle()">
+          <label for="f-existingOutlet" style="font-size:13px;color:var(--text);">This outlet already exists (register only — don't touch its POS data)</label>
+        </div>
       </div>
 
       <div class="tab-panel" data-panel="login">
         <div class="form-grp"><label>User ID *</label><input id="f-userId" placeholder="e.g. owner name or a short id"></div>
         <div class="form-grp"><label>Password *</label><input id="f-password"></div>
-        <div class="form-grp full"><button class="btn btn-sm" onclick="genPassword()">Generate Password</button></div>
+        <div class="form-grp full hidden" id="login-tab-existing-hint">Enter the outlet's <b>existing</b> master login exactly as it already works in the POS — this just records it here, it won't be created or changed.</div>
+        <div class="form-grp full" id="gen-password-grp"><button class="btn btn-sm" onclick="genPassword()">Generate Password</button></div>
       </div>
 
       <div class="err" id="form-err"></div>
@@ -192,7 +197,14 @@ function renderTabs() {
 }
 renderTabs();
 
-// ── Create outlet ──
+function onExistingToggle() {
+  const existing = document.getElementById('f-existingOutlet').checked;
+  document.getElementById('create-btn').textContent = existing ? 'Register Outlet' : 'Create Outlet';
+  document.getElementById('login-tab-existing-hint').classList.toggle('hidden', !existing);
+  document.getElementById('gen-password-grp').classList.toggle('hidden', existing);
+}
+
+// ── Create / register outlet ──
 async function createOutlet() {
   const errEl = document.getElementById('form-err');
   errEl.textContent = '';
@@ -205,19 +217,60 @@ async function createOutlet() {
   const outletCode = document.getElementById('f-outletCode').value.trim().toUpperCase();
   const userId = document.getElementById('f-userId').value.trim();
   const password = document.getElementById('f-password').value;
+  const isExisting = document.getElementById('f-existingOutlet').checked;
 
   if (!ownerName || !email || !phone) { switchTab('client'); errEl.textContent = 'Owner name, email and phone are required.'; return; }
   if (!outletName || !outletCode) { switchTab('outlet'); errEl.textContent = 'Outlet name is required.'; return; }
   if (!userId || !password) { switchTab('login'); errEl.textContent = 'User ID and password are required.'; return; }
 
-  const { fbDb, collection, doc, setDoc, getDoc, writeBatch } = window.__fb;
+  const { fbDb, collection, doc, setDoc, getDoc, getDocs, writeBatch } = window.__fb;
   const createBtn = document.getElementById('create-btn');
-  createBtn.disabled = true; createBtn.textContent = 'Creating…';
+  createBtn.disabled = true; createBtn.textContent = isExisting ? 'Registering…' : 'Creating…';
   try {
+    const metaSnap = await getDoc(doc(fbDb, 'outlets', outletCode, 'meta', 'main'));
+
+    if (isExisting) {
+      // Register-only: don't touch the outlet's existing POS data at all.
+      if (!metaSnap.exists()) {
+        errEl.textContent = `No existing outlet found for "${outletCode}". Uncheck the box above to create it fresh, or check the outlet name spelling.`;
+        switchTab('outlet');
+        return;
+      }
+      const usersSnap = await getDocs(collection(fbDb, 'outlets', outletCode, 'users'));
+      const matches = usersSnap.docs.some(d => {
+        const u = d.data();
+        return (u.username || '').toLowerCase() === userId.toLowerCase() && u.password === password;
+      });
+      if (!matches) {
+        const proceed = confirm(`No matching login for "${userId}" was found in this outlet's existing users. Save this record anyway?`);
+        if (!proceed) return;
+      }
+      const clientId = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      await setDoc(doc(fbDb, 'clients', clientId), {
+        id: clientId, ownerName, email, phone, brandName, companyName,
+        outletName, outletCode, userId, password, createdAt: new Date().toISOString(),
+        registeredExisting: true,
+      });
+      document.getElementById('creds-box').classList.remove('hidden');
+      document.getElementById('creds-box').innerHTML = `
+        <div class="ok">Outlet registered — its existing POS data was left untouched.</div>
+        <div><b>Outlet Name (POS login):</b> ${escapeHtml(outletName)}</div>
+        <div><b>User ID:</b> ${escapeHtml(userId)}</div>
+        <div><b>Password:</b> ${escapeHtml(password)}</div>
+      `;
+      ['f-ownerName','f-email','f-phone','f-brandName','f-companyName','f-outletName','f-outletCode','f-userId','f-password']
+        .forEach(id => document.getElementById(id).value = '');
+      document.getElementById('f-existingOutlet').checked = false;
+      onExistingToggle();
+      f_codeTouched = false;
+      curTab = 0; renderTabs();
+      loadClients();
+      return;
+    }
+
     // Uniqueness check: outlet code must not already exist.
-    const existing = await getDoc(doc(fbDb, 'outlets', outletCode, 'meta', 'main'));
-    if (existing.exists()) {
-      errEl.textContent = `Outlet code "${outletCode}" is already in use. Try a more specific outlet name (e.g. add city/branch).`;
+    if (metaSnap.exists()) {
+      errEl.textContent = `Outlet code "${outletCode}" is already in use. Try a more specific outlet name (e.g. add city/branch), or check "this outlet already exists" above if you're registering it.`;
       switchTab('outlet');
       return;
     }
@@ -320,6 +373,7 @@ window.switchTabRel = switchTabRel;
 window.createOutlet = createOutlet;
 window.togglePass = togglePass;
 window.renderClients = renderClients;
+window.onExistingToggle = onExistingToggle;
 </script>
 </body>
 </html>
