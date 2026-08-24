@@ -664,7 +664,8 @@ body.dark .kot-pending-review { background: #3A2E10; }
 .hub-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px 16px; }
 .hub-greet { font-size: 22px; font-weight: 700; margin-bottom: 6px; text-align: center; }
 .hub-title { font-size: 18px; font-weight: 600; margin-bottom: 28px; }
-.hub-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 720px; }
+/* Wide enough for four cards in a row before wrapping. */
+.hub-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 860px; }
 .hub-card {
   width: 190px; padding: 28px 16px; background: var(--card); border: 1px solid var(--border);
   border-radius: 14px; text-align: center; cursor: pointer; transition: transform .12s, box-shadow .12s;
@@ -975,7 +976,7 @@ const I18N = {
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', comingSoon:'Coming soon', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', 
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
-    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', backToMenu:'Back to menu',
+    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', outletProfile:'Outlet Profile', backToMenu:'Back to menu',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
     deleteTable:'Delete Table', deleteTableConfirm:'Delete table "%s" and its current order?', nothingToClear:'No items to clear',
@@ -1889,7 +1890,7 @@ function renderMain() {
     else if (S.view === 'reports') d.innerHTML = reportsHTML();
     else if (S.view === 'accounts') d.innerHTML = backToHubHTML() + accountsHTML();
     else if (S.view === 'vendorBills') d.innerHTML = backToHubHTML() + vendorBillsHTML();
-    else if (S.view === 'settings') d.innerHTML = settingsHTML();
+    else if (S.view === 'settings') d.innerHTML = backToHubHTML() + settingsHTML();
     else if (S.view === 'hub') d.innerHTML = hubHTML();
     else if (S.view === 'user-settings') d.innerHTML = backToHubHTML() + userSettingsHTML();
     el.appendChild(d);
@@ -5859,6 +5860,10 @@ function hubHTML() {
           <div class="hub-ico">&#128176;</div>
           <div class="hub-label">${t('accounts')}</div>
           ${ACCOUNTS_ENABLED ? '' : `<div class="hub-soon">${t('comingSoon')}</div>`}
+        </div>
+        <div class="hub-card" onclick="enterHub('settings')">
+          <div class="hub-ico">&#127978;</div>
+          <div class="hub-label">${t('outletProfile')}</div>
         </div>
         <div class="hub-card" onclick="enterHub('user-settings')">
           <div class="hub-ico">&#9881;</div>
