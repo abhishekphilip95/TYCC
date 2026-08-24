@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RestoBill - Restaurant & Cafe Billing</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#4B5563">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -663,6 +668,17 @@ body.dark .kot-pending-review { background: #3A2E10; }
 }
 .hub-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px 16px; }
 .hub-greet { font-size: 22px; font-weight: 700; margin-bottom: 6px; text-align: center; }
+/* Kitchen alert preferences */
+.kot-prefs { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center;
+  background: var(--hover); padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; }
+.kot-pref { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+.kot-pref-note { flex-basis: 100%; font-size: 11.5px; color: var(--muted); }
+.alert-toggle { width: 40px; height: 22px; border-radius: 11px; border: none; cursor: pointer;
+  background: #9CA3AF; position: relative; transition: background .2s ease; padding: 0; }
+.alert-toggle.on { background: #16A34A; }
+.alert-toggle .knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+  border-radius: 50%; background: #fff; transition: transform .2s ease; }
+.alert-toggle.on .knob { transform: translateX(18px); }
 /* Read-only profile value: reads as content, not as a field you can type in. */
 .profile-val { font-size: 13.5px; font-weight: 600; padding: 2px 0 1px; word-break: break-word; }
 .profile-empty { color: var(--muted); font-weight: 500; font-style: italic; }
@@ -979,7 +995,7 @@ const I18N = {
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', comingSoon:'Coming soon', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', 
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
-    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', outletProfile:'Outlet Profile', outletDetails:'Outlet Details', noAccess:'You do not have access to this', ownerName:'Owner Name', email:'Email', phone:'Phone', brandName:'Brand Name', companyName:'Company Name', address:'Address', billing:'Billing', notSet:'Not set', profileManaged:'These details come from your RestoBill registration. Contact support to change them.', backToMenu:'Back to menu',
+    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', outletProfile:'Outlet Profile', outletDetails:'Outlet Details', noAccess:'You do not have access to this', soundAlert:'Sound alert', pushAlert:'Notifications', newKotTitle:'New KOT', newKotOne:'One order is waiting in your kitchen.', newKotMany:'orders are waiting in your kitchen.', notifBlocked:'Notifications are blocked for this site. Allow them in your browser settings to turn this on.', notifUnsupported:'This browser cannot show notifications.', ownerName:'Owner Name', email:'Email', phone:'Phone', brandName:'Brand Name', companyName:'Company Name', address:'Address', billing:'Billing', notSet:'Not set', profileManaged:'These details come from your RestoBill registration. Contact support to change them.', backToMenu:'Back to menu',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
     deleteTable:'Delete Table', deleteTableConfirm:'Delete table "%s" and its current order?', nothingToClear:'No items to clear',
@@ -1473,6 +1489,14 @@ async function initFirebaseSync() {
   }
 }
 
+// Needed for kitchen alerts on Android, and it lets the app be installed to the
+// home screen, which Chrome keeps alive far longer than a browser tab.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(e => console.error('Service worker registration failed', e));
+  });
+}
+
 window.addEventListener('fb-ready', () => {
   // Only auto-connect if this device already knows which outlet it belongs
   // to. A brand-new device has no saved outlet, so it waits for the owner
@@ -1911,7 +1935,7 @@ function renderMain() {
   document.getElementById('hdr-name').textContent = D.settings.name;
   renderHeaderUser();
   bindEvents();
-  if (isChef()) checkKotAlert();
+  if (isChef()) { checkKotAlert(); updateKotWakeLock(); }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4368,6 +4392,7 @@ function kotHTML() {
         ${!chefMode ? `<span style="font-size:12.5px;background:#DC2626;color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;">${t('deletedKots')}: ${deleted.length}</span>` : ''}
       </span>
     </div>
+    ${chefMode ? kotAlertPrefsHTML() : ''}
     ${!chefMode && D.kitchens.length ? `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
       <div class="kot-kitchen-filter" style="margin-bottom:0;">
         <strong style="color:var(--muted);">${t('filterByKitchen')}:</strong>
@@ -6540,6 +6565,86 @@ function chefKotOrders() {
 function kotSig(o) {
   return `${o.items.length}:${(o.kotCancellations||[]).length}:${o.kotSavedAt||o.createdAt}`;
 }
+// ── Kitchen alerts ─────────────────────────────────────────────────────────
+// Kept per device, not per account: a chef signing in on their own phone wants
+// their own choice, and the same login on the kitchen tablet may want the
+// opposite.
+function kotSoundOn()  { return localStorage.getItem('rb2_kot_sound')  !== '0'; }
+function kotNotifyOn() { return localStorage.getItem('rb2_kot_notify') === '1'; }
+
+function setKotSound(on) {
+  localStorage.setItem('rb2_kot_sound', on ? '1' : '0');
+  if (!on) { clearInterval(S.kotAlertTimer); S.kotAlertTimer = null; }
+  else if (S.kotAlertActive) { playKotBeep(); S.kotAlertTimer = setInterval(playKotBeep, 2500); }
+  renderMain();
+}
+
+async function setKotNotify(on) {
+  if (!on) { localStorage.setItem('rb2_kot_notify', '0'); renderMain(); return; }
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+    notify(t('notifUnsupported')); renderMain(); return;
+  }
+  let perm = Notification.permission;
+  if (perm === 'default') { try { perm = await Notification.requestPermission(); } catch (e) { perm = 'denied'; } }
+  if (perm !== 'granted') {
+    // Chrome only asks once; after a block the user has to clear it themselves.
+    localStorage.setItem('rb2_kot_notify', '0');
+    notify(t('notifBlocked')); renderMain(); return;
+  }
+  localStorage.setItem('rb2_kot_notify', '1');
+  renderMain();
+}
+
+// Android Chrome rejects `new Notification(...)`, so this has to go through the
+// service worker registration.
+async function showKotNotification(count) {
+  if (!kotNotifyOn()) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification(t('newKotTitle'), {
+      body: count === 1 ? t('newKotOne') : count + ' ' + t('newKotMany'),
+      icon: 'icon-192.png', badge: 'icon-192.png',
+      tag: 'restobill-kot', renotify: true, requireInteraction: true,
+      vibrate: [200, 100, 200],
+    });
+  } catch (e) { console.error('KOT notification failed', e); }
+}
+
+// Keeps the kitchen screen awake while a chef is watching it, so the phone does
+// not sleep the page and miss the next order.
+let kotWakeLock = null;
+async function updateKotWakeLock() {
+  const wanted = isChef() && S.view === 'kot' && document.visibilityState === 'visible';
+  try {
+    if (wanted && !kotWakeLock && 'wakeLock' in navigator) {
+      kotWakeLock = await navigator.wakeLock.request('screen');
+      kotWakeLock.addEventListener('release', () => { kotWakeLock = null; });
+    } else if (!wanted && kotWakeLock) {
+      await kotWakeLock.release(); kotWakeLock = null;
+    }
+  } catch (e) { /* denied or unsupported: the alert still works, the screen just sleeps */ }
+}
+document.addEventListener('visibilitychange', updateKotWakeLock);
+
+function kotAlertPrefsHTML() {
+  const sw = (on, fn) => `<button type="button" class="alert-toggle${on ? ' on' : ''}" onclick="${fn}"><span class="knob"></span></button>`;
+  const blocked = ('Notification' in window) && Notification.permission === 'denied';
+  return `
+    <div class="kot-prefs">
+      <div class="kot-pref">
+        <span>&#128266; ${t('soundAlert')}</span>
+        ${sw(kotSoundOn(), `setKotSound(${!kotSoundOn()})`)}
+      </div>
+      <div class="kot-pref">
+        <span>&#128276; ${t('pushAlert')}</span>
+        ${sw(kotNotifyOn(), `setKotNotify(${!kotNotifyOn()})`)}
+      </div>
+      ${blocked ? `<div class="kot-pref-note">${t('notifBlocked')}</div>` : ''}
+    </div>`;
+}
+
 function playKotBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -6557,10 +6662,16 @@ function checkKotAlert() {
   if (!isChef()) return;
   const orders = chefKotOrders();
   const hasNew = orders.some(o => S.kotKnown[o.id] !== kotSig(o));
-  if (hasNew && !S.kotAlertTimer) {
+  // Track the alert on its own flag rather than on the beep timer, so turning
+  // the sound off does not also stop the alert being noticed.
+  if (hasNew && !S.kotAlertActive) {
     S.kotAlertActive = true;
-    playKotBeep();
-    S.kotAlertTimer = setInterval(playKotBeep, 2500);
+    if (kotSoundOn()) {
+      playKotBeep();
+      clearInterval(S.kotAlertTimer);
+      S.kotAlertTimer = setInterval(playKotBeep, 2500);
+    }
+    showKotNotification(orders.length);
   } else if (!hasNew && S.kotAlertActive) {
     S.kotAlertActive = false;
     clearInterval(S.kotAlertTimer); S.kotAlertTimer = null;
