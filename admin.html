@@ -117,12 +117,31 @@
         <input class="search" id="client-search" placeholder="Search by name, outlet, email…" oninput="renderClients()">
       </div>
       <table>
-        <thead><tr><th>Outlet</th><th>Owner</th><th>Contact</th><th>User ID</th><th>Password</th><th>Created</th></tr></thead>
+        <thead><tr><th>Outlet</th><th>Owner</th><th>Contact</th><th>User ID</th><th>Password</th><th>Created</th><th></th></tr></thead>
         <tbody id="clients-tbody"></tbody>
       </table>
       <p class="hint" id="clients-empty">No outlets created yet.</p>
     </div>
 
+  </div>
+</div>
+
+<div id="edit-modal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;">
+  <div class="card" style="width:380px;max-height:90vh;overflow:auto;">
+    <h2>Edit Outlet Record</h2>
+    <div class="form-grp"><label>Outlet (locked)</label><input id="e-outletDisplay" disabled></div>
+    <div class="form-grp"><label>Restaurant Owner Name</label><input id="e-ownerName"></div>
+    <div class="form-grp"><label>Registered Email</label><input id="e-email" type="email"></div>
+    <div class="form-grp"><label>Phone Number</label><input id="e-phone" type="tel"></div>
+    <div class="form-grp"><label>Brand Name</label><input id="e-brandName"></div>
+    <div class="form-grp"><label>Company Name</label><input id="e-companyName"></div>
+    <div class="form-grp"><label>User ID</label><input id="e-userId"></div>
+    <div class="form-grp"><label>Password</label><input id="e-password"></div>
+    <div class="err" id="edit-err"></div>
+    <div class="row-actions">
+      <button class="btn" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" id="edit-save-btn" onclick="saveEdit()">Save</button>
+    </div>
   </div>
 </div>
 
@@ -362,8 +381,77 @@ function renderClients() {
       <td class="mono"><span id="pw-${escapeHtml(c.id)}" data-pw="${escapeHtml(c.password)}" data-shown="0">••••••••</span>
         <button class="btn btn-sm" onclick="togglePass('${escapeHtml(c.id)}')">👁</button></td>
       <td>${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ''}</td>
+      <td><button class="btn btn-sm" onclick="openEditModal('${escapeHtml(c.id)}')">Edit</button></td>
     </tr>
   `).join('');
+}
+
+// ── Edit existing client/outlet record ──
+let editingClientId = null;
+function openEditModal(clientId) {
+  const c = allClients.find(x => x.id === clientId);
+  if (!c) return;
+  editingClientId = clientId;
+  document.getElementById('e-outletDisplay').value = `${c.outletName} (${c.outletCode})`;
+  document.getElementById('e-ownerName').value = c.ownerName || '';
+  document.getElementById('e-email').value = c.email || '';
+  document.getElementById('e-phone').value = c.phone || '';
+  document.getElementById('e-brandName').value = c.brandName || '';
+  document.getElementById('e-companyName').value = c.companyName || '';
+  document.getElementById('e-userId').value = c.userId || '';
+  document.getElementById('e-password').value = c.password || '';
+  document.getElementById('edit-err').textContent = '';
+  document.getElementById('edit-modal').classList.remove('hidden');
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.add('hidden');
+  editingClientId = null;
+}
+async function saveEdit() {
+  const errEl = document.getElementById('edit-err');
+  errEl.textContent = '';
+  const c = allClients.find(x => x.id === editingClientId);
+  if (!c) { closeEditModal(); return; }
+  const ownerName = document.getElementById('e-ownerName').value.trim();
+  const email = document.getElementById('e-email').value.trim();
+  const phone = document.getElementById('e-phone').value.trim();
+  const brandName = document.getElementById('e-brandName').value.trim();
+  const companyName = document.getElementById('e-companyName').value.trim();
+  const userId = document.getElementById('e-userId').value.trim();
+  const password = document.getElementById('e-password').value;
+  if (!ownerName || !email || !phone || !userId || !password) {
+    errEl.textContent = 'Owner name, email, phone, user ID and password are required.';
+    return;
+  }
+
+  const { fbDb, collection, doc, setDoc, getDocs } = window.__fb;
+  const saveBtn = document.getElementById('edit-save-btn');
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+  try {
+    // If the login changed, softly verify it against the outlet's actual users
+    // (this record is just a reference — it never creates/changes POS data).
+    if (userId !== c.userId || password !== c.password) {
+      const usersSnap = await getDocs(collection(fbDb, 'outlets', c.outletCode, 'users'));
+      const matches = usersSnap.docs.some(d => {
+        const u = d.data();
+        return (u.username || '').toLowerCase() === userId.toLowerCase() && u.password === password;
+      });
+      if (!matches) {
+        const proceed = confirm(`No matching login for "${userId}" was found in this outlet's existing users. Save anyway?`);
+        if (!proceed) return;
+      }
+    }
+    await setDoc(doc(fbDb, 'clients', editingClientId), {
+      ...c, ownerName, email, phone, brandName, companyName, userId, password,
+    });
+    closeEditModal();
+    loadClients();
+  } catch (e) {
+    console.error(e);
+    errEl.textContent = 'Failed to save: ' + e.message;
+  } finally {
+    saveBtn.disabled = false; saveBtn.textContent = 'Save';
+  }
 }
 
 window.checkGate = checkGate;
@@ -375,6 +463,9 @@ window.createOutlet = createOutlet;
 window.togglePass = togglePass;
 window.renderClients = renderClients;
 window.onExistingToggle = onExistingToggle;
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.saveEdit = saveEdit;
 </script>
 </body>
 </html>
