@@ -261,9 +261,12 @@ async function createOutlet() {
         return (u.username || '').toLowerCase() === userId.toLowerCase() && u.password === password;
       });
       if (!matches) {
-        const proceed = confirm(`No matching login for "${userId}" was found in this outlet's existing users. Save this record anyway?`);
+        const proceed = confirm(`No matching login for "${userId}" was found in this outlet's existing users.\n\nSave this record and make "${userId}" the outlet's master login?`);
         if (!proceed) return;
       }
+      // The admin panel owns the master login, so the client record and the
+      // outlet's actual POS user must never drift apart.
+      await syncMasterLogin(outletCode, userId, userId, password);
       const clientId = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       await setDoc(doc(fbDb, 'clients', clientId), {
         id: clientId, ownerName, email, phone, brandName, companyName,
@@ -430,20 +433,15 @@ async function saveEdit() {
   try {
     // If the login changed, softly verify it against the outlet's actual users
     // (this record is just a reference — it never creates/changes POS data).
-    if (userId !== c.userId || password !== c.password) {
-      const usersSnap = await getDocs(collection(fbDb, 'outlets', c.outletCode, 'users'));
-      const matches = usersSnap.docs.some(d => {
-        const u = d.data();
-        return (u.username || '').toLowerCase() === userId.toLowerCase() && u.password === password;
-      });
-      if (!matches) {
-        const proceed = confirm(`No matching login for "${userId}" was found in this outlet's existing users. Save anyway?`);
-        if (!proceed) return;
-      }
-    }
     await setDoc(doc(fbDb, 'clients', editingClientId), {
       ...c, ownerName, email, phone, brandName, companyName, userId, password,
     });
+    // Push the login through to the outlet's master user as well, matching on
+    // the previous user id so a rename edits that account rather than stranding
+    // it and creating a second one.
+    if (userId !== c.userId || password !== c.password) {
+      await syncMasterLogin(c.outletCode, c.userId, userId, password);
+    }
     closeEditModal();
     loadClients();
   } catch (e) {
@@ -452,6 +450,24 @@ async function saveEdit() {
   } finally {
     saveBtn.disabled = false; saveBtn.textContent = 'Save';
   }
+}
+
+// ── Master login sync ──────────────────────────────────────────────────────
+// An outlet's master login lives in two places: the `clients` record the admin
+// panel lists, and the real POS account under outlets/<code>/users. This keeps
+// the POS side in step with the admin record. Matching on prevUserId means a
+// renamed login updates the existing account instead of leaving a stale one.
+async function syncMasterLogin(outletCode, prevUserId, userId, password) {
+  const { fbDb, collection, doc, setDoc, getDocs } = window.__fb;
+  const norm = s => (s || '').trim().toLowerCase();
+  const snap = await getDocs(collection(fbDb, 'outlets', outletCode, 'users'));
+  const target = snap.docs.find(d => norm(d.data().username) === norm(prevUserId))
+              || snap.docs.find(d => norm(d.data().username) === norm(userId));
+  const docId = target ? target.id : 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const prev = target ? target.data() : {};
+  await setDoc(doc(fbDb, 'outlets', outletCode, 'users', docId),
+    { ...prev, id: docId, username: userId, password, role: 'Master' });
+  return { docId, created: !target };
 }
 
 window.checkGate = checkGate;
