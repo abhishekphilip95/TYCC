@@ -319,7 +319,8 @@ async function createOutlet() {
     console.error(e);
     errEl.textContent = 'Failed to create outlet: ' + e.message;
   } finally {
-    createBtn.disabled = false; createBtn.textContent = 'Create Outlet';
+    createBtn.disabled = false;
+    createBtn.textContent = isExisting ? 'Register Outlet' : 'Create Outlet';
   }
 }
 
