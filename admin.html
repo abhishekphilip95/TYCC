@@ -82,6 +82,7 @@
         <div class="form-grp"><label>Phone Number *</label><input id="f-phone" type="tel"></div>
         <div class="form-grp"><label>Brand Name</label><input id="f-brandName" placeholder="Optional, if different from outlet name"></div>
         <div class="form-grp full"><label>Company Name</label><input id="f-companyName" placeholder="Optional, legal/company name"></div>
+        <div class="form-grp full"><label>Address</label><textarea id="f-address" rows="3" placeholder="Optional, the outlet can fill this in later"></textarea></div>
       </div>
 
       <div class="tab-panel" data-panel="outlet">
@@ -135,6 +136,7 @@
     <div class="form-grp"><label>Phone Number</label><input id="e-phone" type="tel"></div>
     <div class="form-grp"><label>Brand Name</label><input id="e-brandName"></div>
     <div class="form-grp"><label>Company Name</label><input id="e-companyName"></div>
+    <div class="form-grp"><label>Address</label><textarea id="e-address" rows="3"></textarea></div>
     <div class="form-grp"><label>User ID</label><input id="e-userId"></div>
     <div class="form-grp"><label>Password</label><input id="e-password"></div>
     <div class="err" id="edit-err"></div>
@@ -232,6 +234,7 @@ async function createOutlet() {
   const phone = document.getElementById('f-phone').value.trim();
   const brandName = document.getElementById('f-brandName').value.trim();
   const companyName = document.getElementById('f-companyName').value.trim();
+  const address = document.getElementById('f-address').value.trim();
   const outletName = document.getElementById('f-outletName').value.trim();
   const outletCode = document.getElementById('f-outletCode').value.trim().toUpperCase();
   const userId = document.getElementById('f-userId').value.trim();
@@ -270,10 +273,11 @@ async function createOutlet() {
       if (sync.cancelled) return;
       const clientId = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       await setDoc(doc(fbDb, 'clients', clientId), {
-        id: clientId, ownerName, email, phone, brandName, companyName,
+        id: clientId, ownerName, email, phone, brandName, companyName, address,
         outletName, outletCode, userId, password, createdAt: new Date().toISOString(),
         registeredExisting: true,
       });
+      await publishProfile(outletCode, { ownerName, email, phone, brandName, companyName, address, outletName, outletCode });
       document.getElementById('creds-box').classList.remove('hidden');
       document.getElementById('creds-box').innerHTML = `
         <div class="ok">Outlet registered — its existing POS data was left untouched.</div>
@@ -281,7 +285,7 @@ async function createOutlet() {
         <div><b>User ID:</b> ${escapeHtml(userId)}</div>
         <div><b>Password:</b> ${escapeHtml(password)}</div>
       `;
-      ['f-ownerName','f-email','f-phone','f-brandName','f-companyName','f-outletName','f-outletCode','f-userId','f-password']
+      ['f-ownerName','f-email','f-phone','f-brandName','f-companyName','f-address','f-outletName','f-outletCode','f-userId','f-password']
         .forEach(id => document.getElementById(id).value = '');
       document.getElementById('f-existingOutlet').checked = false;
       onExistingToggle();
@@ -304,7 +308,7 @@ async function createOutlet() {
 
     const batch = writeBatch(fbDb);
     batch.set(doc(fbDb, 'clients', clientId), {
-      id: clientId, ownerName, email, phone, brandName, companyName,
+      id: clientId, ownerName, email, phone, brandName, companyName, address,
       outletName, outletCode, userId, password, createdAt: now,
     });
     batch.set(doc(fbDb, 'outlets', outletCode, 'users', userDocId), {
@@ -317,6 +321,9 @@ async function createOutlet() {
         billPrinter: { enabled: true, size: '80mm' },
       },
       billSeq: 1, kotSeq: { day: null, next: 1 }, categoryOrder: {}, categoryActive: {},
+      // The POS reads its profile from here rather than from `clients`, which
+      // holds every other outlet's record and must stay admin-only.
+      profile: { ownerName, email, phone, brandName, companyName, address, outletName, outletCode },
     });
     batch.set(doc(fbDb, 'outlets', outletCode, 'sections', 'sec1'), { id: 'sec1', name: 'Main' });
     for (let i = 1; i <= 10; i++) {
@@ -333,7 +340,7 @@ async function createOutlet() {
       <div><b>User ID:</b> ${escapeHtml(userId)}</div>
       <div><b>Password:</b> ${escapeHtml(password)}</div>
     `;
-    ['f-ownerName','f-email','f-phone','f-brandName','f-companyName','f-outletName','f-outletCode','f-userId','f-password']
+    ['f-ownerName','f-email','f-phone','f-brandName','f-companyName','f-address','f-outletName','f-outletCode','f-userId','f-password']
       .forEach(id => document.getElementById(id).value = '');
     f_codeTouched = false;
     curTab = 0; renderTabs();
@@ -402,6 +409,7 @@ function openEditModal(clientId) {
   document.getElementById('e-phone').value = c.phone || '';
   document.getElementById('e-brandName').value = c.brandName || '';
   document.getElementById('e-companyName').value = c.companyName || '';
+  document.getElementById('e-address').value = c.address || '';
   document.getElementById('e-userId').value = c.userId || '';
   document.getElementById('e-password').value = c.password || '';
   document.getElementById('edit-err').textContent = '';
@@ -421,6 +429,7 @@ async function saveEdit() {
   const phone = document.getElementById('e-phone').value.trim();
   const brandName = document.getElementById('e-brandName').value.trim();
   const companyName = document.getElementById('e-companyName').value.trim();
+  const address = document.getElementById('e-address').value.trim();
   const userId = document.getElementById('e-userId').value.trim();
   const password = document.getElementById('e-password').value;
   if (!ownerName || !email || !phone || !userId || !password) {
@@ -443,7 +452,11 @@ async function saveEdit() {
       if (sync.cancelled) return;
     }
     await setDoc(doc(fbDb, 'clients', editingClientId), {
-      ...c, ownerName, email, phone, brandName, companyName, userId, password,
+      ...c, ownerName, email, phone, brandName, companyName, address, userId, password,
+    });
+    await publishProfile(c.outletCode, {
+      ownerName, email, phone, brandName, companyName, address,
+      outletName: c.outletName, outletCode: c.outletCode,
     });
     closeEditModal();
     loadClients();
@@ -453,6 +466,14 @@ async function saveEdit() {
   } finally {
     saveBtn.disabled = false; saveBtn.textContent = 'Save';
   }
+}
+
+// Copy an outlet's registration details into its own document, which is the
+// only place the POS is allowed to read them from. Merged, so it cannot
+// disturb the outlet's live settings or counters sitting in the same doc.
+async function publishProfile(outletCode, profile) {
+  const { fbDb, doc, setDoc } = window.__fb;
+  await setDoc(doc(fbDb, 'outlets', outletCode, 'meta', 'main'), { profile }, { merge: true });
 }
 
 // ── Master login sync ──────────────────────────────────────────────────────

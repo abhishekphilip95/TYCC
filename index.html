@@ -663,6 +663,9 @@ body.dark .kot-pending-review { background: #3A2E10; }
 }
 .hub-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px 16px; }
 .hub-greet { font-size: 22px; font-weight: 700; margin-bottom: 6px; text-align: center; }
+/* Read-only profile value: reads as content, not as a field you can type in. */
+.profile-val { font-size: 13.5px; font-weight: 600; padding: 2px 0 1px; word-break: break-word; }
+.profile-empty { color: var(--muted); font-weight: 500; font-style: italic; }
 .hub-title { font-size: 18px; font-weight: 600; margin-bottom: 28px; }
 /* Wide enough for four cards in a row before wrapping. */
 .hub-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 860px; }
@@ -976,7 +979,7 @@ const I18N = {
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', comingSoon:'Coming soon', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', 
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
-    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', outletProfile:'Outlet Profile', backToMenu:'Back to menu',
+    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', outletProfile:'Outlet Profile', outletDetails:'Outlet Details', ownerName:'Owner Name', email:'Email', phone:'Phone', brandName:'Brand Name', companyName:'Company Name', address:'Address', billing:'Billing', notSet:'Not set', profileManaged:'These details come from your RestoBill registration. Contact support to change them.', backToMenu:'Back to menu',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
     deleteTable:'Delete Table', deleteTableConfirm:'Delete table "%s" and its current order?', nothingToClear:'No items to clear',
@@ -1182,7 +1185,10 @@ function compressImageFile(file, maxDim, quality) {
 
 // ── Firebase (Firestore) real-time sync ──
 const FB_SYNC_COLLECTIONS = ['menu','tables','orders','users','customers','dueSettlements','vendors','expenses','kitchens','sections'];
-const FB_META_KEYS = ['settings','billSeq','kotSeq','tablesRenumbered','tablesRenumberedV2','categoryOrder','categoryActive'];
+// 'profile' carries the outlet's registration details, written here by the
+// admin panel so the POS can read its own without seeing the clients
+// collection, which holds every other outlet's record.
+const FB_META_KEYS = ['settings','billSeq','kotSeq','tablesRenumbered','tablesRenumberedV2','categoryOrder','categoryActive','profile'];
 let fbOutlet = (D.settings && D.settings.outletCode) || 'TYCC';
 let fbLastSynced = {};
 let fbLastMetaJson = null;
@@ -1890,7 +1896,8 @@ function renderMain() {
     else if (S.view === 'reports') d.innerHTML = reportsHTML();
     else if (S.view === 'accounts') d.innerHTML = backToHubHTML() + accountsHTML();
     else if (S.view === 'vendorBills') d.innerHTML = backToHubHTML() + vendorBillsHTML();
-    else if (S.view === 'settings') d.innerHTML = backToHubHTML() + settingsHTML();
+    else if (S.view === 'settings') d.innerHTML = settingsHTML();
+    else if (S.view === 'outlet-profile') d.innerHTML = backToHubHTML() + outletProfileHTML();
     else if (S.view === 'hub') d.innerHTML = hubHTML();
     else if (S.view === 'user-settings') d.innerHTML = backToHubHTML() + userSettingsHTML();
     el.appendChild(d);
@@ -5748,22 +5755,13 @@ function settingsHTML() {
     <div class="sec-hdr"><h2>${t('settings')}</h2></div>
     <div class="settings-grid">
       <div class="card">
-        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('restaurantInfo')}</h3>
-        <div class="form-grp"><label>${t('restaurantName')}</label><input id="s-nm" value="${h(D.settings.name)}"></div>
+        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('billing')}</h3>
         <div class="form-grp"><label>${t('currency')}</label><input id="s-cur" value="${h(D.settings.currency)}" style="max-width:80px;"></div>
         <div class="form-grp"><label>${t('taxRate')}</label><input id="s-tax" type="number" value="${D.settings.taxRate}" min="0" max="100" style="max-width:100px;"></div>
-        <div class="form-grp"><label>${t('outletCode')}</label><input id="s-code" value="${h(D.settings.outletCode||'TYCC')}" maxlength="6" style="max-width:120px;text-transform:uppercase;"></div>
         <button class="btn btn-primary" onclick="saveSettings()">${t('saveSettings')}</button>
       </div>
 
-      <div class="card">
-        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('security')}</h3>
-        <div class="form-grp"><label>${t('managerPin')}</label><input id="s-pin" type="text" inputmode="numeric" pattern="\\d*" maxlength="4" value="${h(D.settings.pin||'1234')}" placeholder="4 digits" style="max-width:120px;letter-spacing:4px;"></div>
-        <p style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">Required to edit or delete bills in Sales Report.</p>
-        <button class="btn btn-primary" onclick="savePin()">${t('saveSettings')}</button>
-      </div>
-
-      <div class="card">
+            <div class="card">
         <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('appearance')}</h3>
         <div class="form-grp">
           <label>${t('theme')}</label>
@@ -5830,6 +5828,54 @@ function settingsHTML() {
         </div>
       </div>
 
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  OUTLET PROFILE
+// ═══════════════════════════════════════════════════════
+// The registration details belong to RestoBill and are shown as they were
+// entered in the admin panel, never edited here. Address is the exception:
+// it is the outlet's own operational detail, so it can be corrected on the
+// spot and syncs back.
+function outletProfileHTML() {
+  const p = D.profile || {};
+  const row = (label, value) => `
+    <div class="form-grp">
+      <label>${label}</label>
+      <div class="profile-val">${value ? h(value) : `<span class="profile-empty">${t('notSet')}</span>`}</div>
+    </div>`;
+  return `
+    <div class="sec-hdr"><h2>${t('outletProfile')}</h2></div>
+    <div class="settings-grid">
+      <div class="card">
+        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('outletDetails')}</h3>
+        ${row(t('outletName'), p.outletName)}
+        ${row(t('outletCode'), p.outletCode || D.settings.outletCode)}
+        ${row(t('brandName'), p.brandName)}
+        ${row(t('companyName'), p.companyName)}
+        ${row(t('ownerName'), p.ownerName)}
+        ${row(t('email'), p.email)}
+        ${row(t('phone'), p.phone)}
+        <p style="font-size:11.5px;color:var(--muted);margin-top:4px;">${t('profileManaged')}</p>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('address')}</h3>
+        <div class="form-grp">
+          <label>${t('address')}</label>
+          <textarea id="p-addr" rows="4" style="width:100%;resize:vertical;">${h(p.address || '')}</textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveOutletAddress()">${t('saveSettings')}</button>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('security')}</h3>
+        <div class="form-grp"><label>${t('managerPin')}</label><input id="s-pin" type="text" inputmode="numeric" pattern="\d*" maxlength="4" value="${h(D.settings.pin||'1234')}" placeholder="4 digits" style="max-width:120px;letter-spacing:4px;"></div>
+        <p style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">Required to edit or delete bills in Sales Report.</p>
+        <button class="btn btn-primary" onclick="savePin()">${t('saveSettings')}</button>
+      </div>
+
       <div class="card">
         <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('dataManagement')}</h3>
         <div style="display:flex;flex-direction:column;gap:8px;">
@@ -5839,8 +5885,14 @@ function settingsHTML() {
           <button class="btn btn-ghost" style="color:var(--danger);border-color:#FCA5A5;" onclick="resetAll()">&#128465; Reset All Data</button>
         </div>
       </div>
-
     </div>`;
+}
+
+function saveOutletAddress() {
+  const el = document.getElementById('p-addr');
+  if (!el) return;
+  D.profile = Object.assign({}, D.profile, { address: el.value.trim() });
+  save(); notify(t('save'));
 }
 
 // ═══════════════════════════════════════════════════════
@@ -5861,7 +5913,7 @@ function hubHTML() {
           <div class="hub-label">${t('accounts')}</div>
           ${ACCOUNTS_ENABLED ? '' : `<div class="hub-soon">${t('comingSoon')}</div>`}
         </div>
-        <div class="hub-card" onclick="enterHub('settings')">
+        <div class="hub-card" onclick="enterHub('outlet-profile')">
           <div class="hub-ico">&#127978;</div>
           <div class="hub-label">${t('outletProfile')}</div>
         </div>
@@ -5910,13 +5962,14 @@ function userSettingsHTML() {
 
 
 
+// Only the two billing values are set here now. The outlet's name and code
+// come from its RestoBill registration and are shown, read-only, on the
+// Outlet Profile screen — an outlet editing its own code would point the app
+// at a different outlet's data entirely.
 function saveSettings() {
-  D.settings.name    = document.getElementById('s-nm').value.trim() || 'My Restaurant';
   D.settings.currency = document.getElementById('s-cur').value.trim() || '\u20B9';
   D.settings.taxRate  = parseFloat(document.getElementById('s-tax').value) || 0;
-  D.settings.outletCode = (document.getElementById('s-code').value.trim().toUpperCase() || 'TYCC').replace(/[^A-Z0-9]/g, '');
   save(); notify('Settings saved');
-  document.getElementById('hdr-name').textContent = D.settings.name;
 }
 
 function savePin() {
