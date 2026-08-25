@@ -6,3 +6,6 @@ preview-admin.js
 
 # Built by scripts/build-admin.js at deploy time.
 admin-dist/
+
+# Firebase CLI deploy cache.
+.firebase/
