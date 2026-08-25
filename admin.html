@@ -114,6 +114,29 @@
 
     <div class="card">
       <div class="top-actions">
+        <h2 style="margin:0;">CRM &mdash; Demo Requests <span class="pill" id="leads-count">0</span></h2>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="lead-status-filter" onchange="renderLeads()" style="width:auto;">
+            <option value="">All statuses</option>
+            <option value="New">New</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Demo Booked">Demo Booked</option>
+            <option value="Converted">Converted</option>
+            <option value="Lost">Lost</option>
+          </select>
+          <input class="search" id="lead-search" placeholder="Search name, cafe, phone…" oninput="renderLeads()">
+          <button class="btn btn-sm" onclick="loadLeads()">Refresh</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Received</th><th>Name</th><th>Cafe</th><th>Contact</th><th>City</th><th>Message</th><th>Status</th></tr></thead>
+        <tbody id="leads-tbody"></tbody>
+      </table>
+      <p class="hint" id="leads-empty">No demo requests yet.</p>
+    </div>
+
+    <div class="card">
+      <div class="top-actions">
         <h2 style="margin:0;">Existing Outlets</h2>
         <input class="search" id="client-search" placeholder="Search by name, outlet, email…" oninput="renderClients()">
       </div>
@@ -179,6 +202,7 @@ function checkGate() {
     document.getElementById('gate').classList.add('hidden');
     document.getElementById('main').classList.remove('hidden');
     loadClients();
+    loadLeads();
   } else {
     document.getElementById('gate-err').textContent = 'Wrong password.';
   }
@@ -358,6 +382,68 @@ function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// ── CRM: demo requests captured by the website form ──
+const LEAD_STATUSES = ['New', 'Contacted', 'Demo Booked', 'Converted', 'Lost'];
+let allLeads = [];
+
+async function loadLeads() {
+  const { fbDb, collection, getDocs } = window.__fb;
+  try {
+    const snap = await getDocs(collection(fbDb, 'leads'));
+    allLeads = snap.docs.map(d => d.data())
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  } catch (e) {
+    console.error('Failed to load leads', e);
+  }
+  renderLeads();
+}
+
+function renderLeads() {
+  const q = (document.getElementById('lead-search').value || '').toLowerCase();
+  const status = document.getElementById('lead-status-filter').value;
+  const rows = allLeads.filter(l =>
+    (!status || (l.status || 'New') === status) &&
+    (!q || [l.name, l.outletName, l.phone, l.email, l.city, l.message]
+      .some(v => (v || '').toLowerCase().includes(q))));
+
+  document.getElementById('leads-count').textContent = allLeads.length;
+  document.getElementById('leads-empty').classList.toggle('hidden', rows.length > 0);
+  document.getElementById('leads-empty').textContent =
+    allLeads.length && !rows.length ? 'No demo requests match that filter.' : 'No demo requests yet.';
+
+  document.getElementById('leads-tbody').innerHTML = rows.map(l => {
+    const when = l.createdAt ? new Date(l.createdAt) : null;
+    const cur = l.status || 'New';
+    return `
+    <tr>
+      <td style="white-space:nowrap;">${when ? escapeHtml(when.toLocaleDateString()) : ''}<br>
+        <span class="hint">${when ? escapeHtml(when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : ''}</span></td>
+      <td><b>${escapeHtml(l.name)}</b></td>
+      <td>${escapeHtml(l.outletName)}</td>
+      <td>${l.phone ? `<a href="tel:${escapeHtml(l.phone)}">${escapeHtml(l.phone)}</a>` : ''}
+        ${l.email ? `<br><a href="mailto:${escapeHtml(l.email)}">${escapeHtml(l.email)}</a>` : ''}</td>
+      <td>${escapeHtml(l.city)}</td>
+      <td style="max-width:260px;white-space:normal;">${escapeHtml(l.message)}</td>
+      <td><select onchange="setLeadStatus('${escapeHtml(l.id)}', this.value)" style="width:auto;">
+        ${LEAD_STATUSES.map(sv => `<option value="${sv}"${sv === cur ? ' selected' : ''}>${sv}</option>`).join('')}
+      </select></td>
+    </tr>`;
+  }).join('');
+}
+
+async function setLeadStatus(id, status) {
+  const { fbDb, doc, setDoc } = window.__fb;
+  const lead = allLeads.find(l => l.id === id);
+  if (lead) lead.status = status;
+  try {
+    await setDoc(doc(fbDb, 'leads', id), { status, statusAt: new Date().toISOString() }, { merge: true });
+  } catch (e) {
+    console.error('Failed to update lead status', e);
+    alert('Could not save that status change. Check the connection and try again.');
+  }
+  renderLeads();
+}
+
 // ── Client list ──
 let allClients = [];
 async function loadClients() {
@@ -526,6 +612,9 @@ window.switchTabRel = switchTabRel;
 window.createOutlet = createOutlet;
 window.togglePass = togglePass;
 window.renderClients = renderClients;
+window.loadLeads = loadLeads;
+window.renderLeads = renderLeads;
+window.setLeadStatus = setLeadStatus;
 window.onExistingToggle = onExistingToggle;
 window.openEditModal = openEditModal;
 window.closeEditModal = closeEditModal;
