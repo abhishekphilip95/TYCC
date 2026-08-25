@@ -907,6 +907,7 @@ let S = {
   reportDate: today(),
   reportDateFrom: today(),
   reportDateTo: today(),
+  reportPreset: 'today',
   kotAutoAccept: [],
   payMethod: 'Cash',
   editBuf: { variants: [], addons: [] },
@@ -1697,6 +1698,41 @@ function billId(o) { return o.serial != null ? outletCode() + 'BILL' + ddmmyy(o.
 // ═══════════════════════════════════════════════════════
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
 function today() { return new Date().toISOString().split('T')[0]; }
+
+// Report range presets. Every date is derived from today()'s own string so a
+// range lines up with the dates stamped on orders, whatever the clock's zone.
+const REPORT_PRESETS = [
+  ['today',     'Today'],
+  ['yesterday', 'Yesterday'],
+  ['thisMonth', 'Current Month'],
+  ['lastMonth', 'Last Month'],
+  ['custom',    'Custom'],
+];
+function presetRange(p) {
+  const td = today();
+  const [y, m] = td.split('-').map(Number);
+  const pad = v => String(v).padStart(2, '0');
+  if (p === 'yesterday') {
+    const d = new Date(td + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() - 1);
+    const ys = d.toISOString().slice(0, 10);
+    return { from: ys, to: ys };
+  }
+  if (p === 'thisMonth') return { from: y + '-' + pad(m) + '-01', to: td };
+  if (p === 'lastMonth') {
+    const ly = m === 1 ? y - 1 : y, lm = m === 1 ? 12 : m - 1;
+    const last = new Date(Date.UTC(ly, lm, 0)).getUTCDate();
+    return { from: ly + '-' + pad(lm) + '-01', to: ly + '-' + pad(lm) + '-' + pad(last) };
+  }
+  return { from: td, to: td };
+}
+function setReportPreset(p) {
+  S.reportPreset = p;
+  // Custom keeps whatever range is already on screen as its starting point.
+  if (p !== 'custom') { const r = presetRange(p); S.reportDateFrom = r.from; S.reportDateTo = r.to; }
+  S.reportPage = 0;
+  rerenderReports();
+}
 function fmt(n) { return D.settings.currency + Number(n).toFixed(2); }
 function cats() { return [...new Set(D.menu.map(i => i.category))]; }
 // Categories sorted by their custom display order (D.categoryOrder), falling back to original order
@@ -4482,6 +4518,11 @@ function applyDeleteKOT(orderId) {
 //  REPORTS
 // ═══════════════════════════════════════════════════════
 function reportsHTML() {
+  const preset = S.reportPreset || 'today';
+  const isCustom = preset === 'custom';
+  // Re-resolved on every render, so a session left open overnight still shows
+  // the real "Today" rather than a range frozen at load time.
+  if (!isCustom) { const r = presetRange(preset); S.reportDateFrom = r.from; S.reportDateTo = r.to; }
   const from = S.reportDateFrom || today();
   const to   = S.reportDateTo   || today();
   const td   = today();
@@ -4546,16 +4587,20 @@ function reportsHTML() {
     <div class="sec-hdr">
       <h2>${t('salesReports')}</h2>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <select
+          style="padding:5px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;background:var(--card,#fff);color:inherit;cursor:pointer;"
+          onchange="setReportPreset(this.value)">
+          ${REPORT_PRESETS.map(([v, lbl]) => `<option value="${v}"${v === preset ? ' selected' : ''}>${lbl}</option>`).join('')}
+        </select>
         <label style="font-size:12.5px;color:var(--muted);">From:</label>
-        <input type="date" value="${from}" max="${td}"
-          style="padding:5px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;"
+        <input type="date" value="${from}" max="${td}"${isCustom ? '' : ' disabled'}
+          style="padding:5px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;${isCustom ? '' : 'opacity:.6;'}"
           onchange="(function(v){S.reportDateFrom=v;const mx=new Date(new Date(v).getTime()+90*86400000).toISOString().slice(0,10);if(S.reportDateTo<v)S.reportDateTo=v;if(S.reportDateTo>mx)S.reportDateTo=mx;S.reportPage=0;rerenderReports();})(this.value)">
         <label style="font-size:12.5px;color:var(--muted);">To:</label>
-        <input type="date" value="${to}" max="${maxTo}" min="${from}"
-          style="padding:5px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;"
+        <input type="date" value="${to}" max="${maxTo}" min="${from}"${isCustom ? '' : ' disabled'}
+          style="padding:5px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;${isCustom ? '' : 'opacity:.6;'}"
           onchange="S.reportDateTo=this.value;S.reportPage=0;rerenderReports()">
-        <button class="btn btn-sm btn-ghost" onclick="S.reportDateFrom=today();S.reportDateTo=today();S.reportPage=0;rerenderReports()" style="white-space:nowrap;">Today</button>
-        <span style="font-size:11.5px;color:var(--muted);">Max 90 days</span>
+        ${isCustom ? '<span style="font-size:11.5px;color:var(--muted);">Max 90 days</span>' : ''}
       </div>
     </div>
 
