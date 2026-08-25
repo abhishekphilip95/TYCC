@@ -12,7 +12,7 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --primary: #4B5563;
+  --primary: #05164D;
   --primary-dk: #374151;
   --success: #16A34A;
   --danger: #DC2626;
@@ -52,7 +52,7 @@ input, select, textarea { background: var(--card); color: var(--text); }
 }
 header {
   background: var(--primary); color: #fff;
-  padding: 0 20px; height: 54px;
+  padding: 0 22px; height: 62px;
   display: flex; align-items: center; gap: 16px;
   flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   z-index: 10;
@@ -61,8 +61,8 @@ header {
 nav { display: flex; gap: 2px; }
 nav button {
   background: transparent; border: none; color: rgba(255,255,255,0.72);
-  padding: 7px 14px; border-radius: 6px; cursor: pointer;
-  font-size: 13.5px; font-weight: 500; transition: all 0.12s;
+  padding: 10px 16px; border-radius: 8px; cursor: pointer;
+  font-size: 14.5px; font-weight: 500; transition: all 0.12s;
 }
 nav button:hover { background: rgba(255,255,255,0.14); color: #fff; }
 nav button.active { background: rgba(255,255,255,0.22); color: #fff; }
@@ -436,7 +436,7 @@ body.dark .tbl-card.payment-pending { background: #1E2A4A; }
 
 /* Very small phones */
 @media (max-width: 400px) {
-  nav button { padding: 5px 8px; font-size: 11px; }
+  nav button { padding: 7px 10px; font-size: 12.5px; }
   .items-grid { grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); }
   .tables-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
 }
@@ -691,7 +691,7 @@ body.dark .kot-pending-review { background: #3A2E10; }
   width: 190px; padding: 28px 16px; background: var(--card); border: 1px solid var(--border);
   border-radius: 14px; text-align: center; cursor: pointer; transition: transform .12s, box-shadow .12s;
 }
-.hub-card:hover { border-color: #1F3557; }
+.hub-card:hover { border-color: #05164D; }
 /* A held-back feature reads as inactive, but stays tappable — tapping it is
    what explains why it is greyed out, so it must not look inert. */
 .hub-card.soon { opacity: .55; }
@@ -701,9 +701,11 @@ body.dark .kot-pending-review { background: #3A2E10; }
   background: var(--border); color: var(--muted);
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
 }
-#main-nav button svg, #drawer-nav button svg { width: 17px; height: 17px; flex-shrink: 0; }
-#main-nav button, #drawer-nav button { display: inline-flex; align-items: center; gap: 7px; }
-.hub-ico { width: 30px; height: 30px; margin: 0 auto 14px; color: #1F3557; }
+#main-nav button svg, #drawer-nav button svg { width: 20px; height: 20px; flex-shrink: 0; }
+#main-nav button, #drawer-nav button { display: inline-flex; align-items: center; gap: 8px; }
+.lico { width: 1em; height: 1em; display: inline-block; vertical-align: -.14em; flex-shrink: 0; }
+.eico .lico { width: 1em; height: 1em; }
+.hub-ico { width: 40px; height: 40px; margin: 0 auto 14px; color: #05164D; }
 .hub-ico svg { width: 100%; height: 100%; display: block; }
 .hub-card.soon .hub-ico { color: var(--muted); }
 .hub-label { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
@@ -826,15 +828,15 @@ body.dark .kot-pending-review { background: #3A2E10; }
 </div>
 <div id="app">
   <header>
-    <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()">&#9776;</button>
+    <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <div class="logo" onclick="goHome()" style="cursor:pointer;"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true" style="flex-shrink:0"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#fff"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#fff" opacity=".55"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#fff" opacity=".55"/><circle cx="71.375" cy="71.375" r="18.625" fill="#fff"/></svg>tafelbill</div>
     <nav id="main-nav"></nav>
     <div id="hdr-right">
       <span id="hdr-name"></span>
       <span id="hdr-user"></span>
       <span id="fb-status" title="Local only" style="width:9px;height:9px;border-radius:50%;background:#9CA3AF;flex-shrink:0;"></span>
-      <button id="theme-btn" onclick="toggleTheme()" title="Toggle theme">&#127769;</button>
-      <button id="logout-btn" onclick="logout()" title="Sign out" style="display:none;">&#9211;</button>
+      <button id="theme-btn" onclick="toggleTheme()" title="Toggle theme"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg></button>
+      <button id="logout-btn" onclick="logout()" title="Sign out" style="display:none;"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v8"/><path d="M17.7 6.8a8 8 0 1 1-11.4 0"/></svg></button>
     </div>
   </header>
   <main id="main"></main>
@@ -850,7 +852,7 @@ body.dark .kot-pending-review { background: #3A2E10; }
 <!-- Login / Sign-in screen -->
 <div id="login-screen" style="display:none;">
   <div class="login-card">
-    <div class="login-logo"><svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true" style="flex-shrink:0"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#1F3557"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#84888D"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#84888D"/><circle cx="71.375" cy="71.375" r="18.625" fill="#1F3557"/></svg>tafelbill</div>
+    <div class="login-logo"><svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true" style="flex-shrink:0"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#05164D"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#84888D"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#84888D"/><circle cx="71.375" cy="71.375" r="18.625" fill="#05164D"/></svg>tafelbill</div>
     <p class="login-sub" id="login-sub"></p>
     <div class="form-grp"><label id="lbl-outlet"></label><input id="login-outlet" type="text" autocomplete="organization"></div>
     <div class="form-grp"><label id="lbl-uid"></label><input id="login-user" type="text" autocomplete="username" autofocus></div>
@@ -1951,11 +1953,11 @@ function tablesHTML() {
   const tdOrders = D.orders.filter(o => o.status === 'open' && o.type !== 'dine-in');
   const low = lowStockItems();
   return `
-    ${low.length ? `<div class="lowstock-banner">&#9888; <strong>${low.length}</strong> ${t('lowStockAlert')}: ${low.slice(0,4).map(i=>h(i.name)).join(', ')}${low.length>4?'\u2026':''}</div>` : ''}
+    ${low.length ? `<div class="lowstock-banner"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.5 17.5a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.5M12 17.5h.01"/></svg> <strong>${low.length}</strong> ${t('lowStockAlert')}: ${low.slice(0,4).map(i=>h(i.name)).join(', ')}${low.length>4?'\u2026':''}</div>` : ''}
     <div class="type-bar">
-      <button class="btn btn-primary" onclick="newCounterOrder()">&#128722; ${t('newOrder')}</button>
-      <button class="btn btn-primary" onclick="newOrderModal('takeaway')">&#129385; ${t('newTakeaway')}</button>
-      <button class="btn btn-primary" onclick="newOrderModal('delivery')">&#128666; ${t('newDelivery')}</button>
+      <button class="btn btn-primary" onclick="newCounterOrder()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 12.2a1.8 1.8 0 0 1-1.8 1.8H8.8A1.8 1.8 0 0 1 7 19.2z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg> ${t('newOrder')}</button>
+      <button class="btn btn-primary" onclick="newOrderModal('takeaway')"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 8.5h15l-1 11a1.8 1.8 0 0 1-1.8 1.6H7.3a1.8 1.8 0 0 1-1.8-1.6z"/><path d="M8.5 8.5 12 3l3.5 5.5"/></svg> ${t('newTakeaway')}</button>
+      <button class="btn btn-primary" onclick="newOrderModal('delivery')"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.5h10.5v9H2.5z"/><path d="M13 9.5h3.6l2.9 3v3H13z"/><circle cx="6.5" cy="18" r="1.9"/><circle cx="16.5" cy="18" r="1.9"/></svg> ${t('newDelivery')}</button>
     </div>
     ${tdOrders.length ? `
       <div style="margin-bottom:20px;">
@@ -1964,7 +1966,7 @@ function tablesHTML() {
           ${tdOrders.map(ordCardHTML).join('')}
         </div>
       </div>` : ''}
-    ${D.tables.some(t => t.splitGroup) ? `<p class="merge-hint">&#9986; ${t('mergeHint')}</p>` : ''}
+    ${D.tables.some(t => t.splitGroup) ? `<p class="merge-hint"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6.5" cy="6.5" r="2.6"/><circle cx="6.5" cy="17.5" r="2.6"/><path d="M8.6 8.4 20 19M20 5 8.6 15.6"/></svg> ${t('mergeHint')}</p>` : ''}
     ${S.selectedTables.length ? mergeBarHTML() : ''}
     ${sortedSections().map(sectionHTML).join('')}
     <button class="btn btn-ghost" style="margin-top:4px;" onclick="showAddSectionModal()">+ ${t('addSection')}</button>`;
@@ -1976,7 +1978,7 @@ function sectionHTML(sec) {
   return `
     <div class="sec-hdr">
       <div>
-        <h2>${h(sec.name)} <button class="icon-btn" onclick="editSectionModal('${sec.id}')" title="${t('editSection')}">&#9998;</button></h2>
+        <h2>${h(sec.name)} <button class="icon-btn" onclick="editSectionModal('${sec.id}')" title="${t('editSection')}"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4.5l10-10a2.5 2.5 0 0 0-3.5-3.5l-10 10z"/><path d="m14 6.5 3.5 3.5"/></svg></button></h2>
         <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">${occ} ${t('occupied').toLowerCase()} &middot; ${tables.length - occ} ${t('available').toLowerCase()}</div>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="showAddTableModal('${sec.id}')">+ ${t('addTable')}</button>
@@ -1987,9 +1989,9 @@ function sectionHTML(sec) {
 }
 
 function ordTypeMeta(type) {
-  if (type === 'delivery') return { cls:'ot-delivery', ico:'&#128666;', label:t('newDelivery') };
-  if (type === 'takeaway') return { cls:'ot-takeaway', ico:'&#129385;', label:t('newTakeaway') };
-  return { cls:'ot-counter', ico:'&#128722;', label:t('counter') };
+  if (type === 'delivery') return { cls:'ot-delivery', ico:'<svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.5h10.5v9H2.5z"/><path d="M13 9.5h3.6l2.9 3v3H13z"/><circle cx="6.5" cy="18" r="1.9"/><circle cx="16.5" cy="18" r="1.9"/></svg>', label:t('newDelivery') };
+  if (type === 'takeaway') return { cls:'ot-takeaway', ico:'<svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 8.5h15l-1 11a1.8 1.8 0 0 1-1.8 1.6H7.3a1.8 1.8 0 0 1-1.8-1.6z"/><path d="M8.5 8.5 12 3l3.5 5.5"/></svg>', label:t('newTakeaway') };
+  return { cls:'ot-counter', ico:'<svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 12.2a1.8 1.8 0 0 1-1.8 1.8H8.8A1.8 1.8 0 0 1 7 19.2z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>', label:t('counter') };
 }
 
 function ordCardHTML(o) {
@@ -2003,7 +2005,7 @@ function ordCardHTML(o) {
     <div class="ord-cust">${h(name)}</div>
     <div class="ord-meta">${o.customer && o.customer.phone ? h(o.customer.phone)+' &middot; ' : ''}${n} ${t('items')}</div>
     <div class="ord-amt">${fmt(b.total)}</div>
-    ${kotPending ? `<div class="ord-kot-warn">&#9888; ${t('kotNotPrinted')}</div>` : ''}
+    ${kotPending ? `<div class="ord-kot-warn"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.5 17.5a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.5M12 17.5h.01"/></svg> ${t('kotNotPrinted')}</div>` : ''}
   </div>`;
 }
 
@@ -2014,10 +2016,10 @@ function orderMenu(e, orderId) {
   if (!o) return;
   const menu = document.getElementById('ctx-menu');
   menu.innerHTML = `
-    <button onclick="editOrderDetails('${orderId}')"><span class="ctx-ico">&#9998;</span> ${t('editDetails')}</button>
-    <button onclick="moveToTableFromMenu('${orderId}')"><span class="ctx-ico">&#129681;</span> ${t('moveToTable')}</button>
-    <button onclick="clearOrder('${orderId}')"><span class="ctx-ico">&#129529;</span> ${t('clear')}</button>
-    <button class="ctx-danger" onclick="deleteOrder('${orderId}')"><span class="ctx-ico">&#128465;</span> ${t('deleteOrder')}</button>`;
+    <button onclick="editOrderDetails('${orderId}')"><span class="ctx-ico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4.5l10-10a2.5 2.5 0 0 0-3.5-3.5l-10 10z"/><path d="m14 6.5 3.5 3.5"/></svg></span> ${t('editDetails')}</button>
+    <button onclick="moveToTableFromMenu('${orderId}')"><span class="ctx-ico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="4" rx="1.4"/><path d="M6.5 9v10M17.5 9v10"/></svg></span> ${t('moveToTable')}</button>
+    <button onclick="clearOrder('${orderId}')"><span class="ctx-ico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5h17"/><path d="m14.5 4.5 5 5-8 8H6.5v-5z"/></svg></span> ${t('clear')}</button>
+    <button class="ctx-danger" onclick="deleteOrder('${orderId}')"><span class="ctx-ico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5h17M9 6.5V4.2A1.2 1.2 0 0 1 10.2 3h3.6A1.2 1.2 0 0 1 15 4.2v2.3"/><path d="M6 6.5 7 20a1.4 1.4 0 0 0 1.4 1.3h7.2A1.4 1.4 0 0 0 17 20l1-13.5"/></svg></span> ${t('deleteOrder')}</button>`;
   menu.style.display = 'block';
   const mw = 180, mh = 190;
   let x = e.clientX, y = e.clientY;
@@ -2092,9 +2094,9 @@ function tblCardHTML(t) {
   const kotPending = o && o.items.length > 0 && o.kotStatus !== 'active';
   const paymentPending = o && o.kotStatus === 'active' && o.status === 'open';
   return `<div class="tbl-card ${t.status}${selected ? ' selected' : ''}${kotPending ? ' kot-pending' : paymentPending ? ' payment-pending' : ''}" onclick="tableClick(event,'${t.id}')" oncontextmenu="tableMenu(event,'${t.id}')">
-    ${t.splitGroup ? '<div class="split-badge">&#9986;</div>' : ''}
-    ${kotPending ? `<div class="kot-flag">&#9888; ${window.t('kotNotPrinted')}</div>` : paymentPending ? `<div class="kot-flag payment-flag">&#9203; ${window.t('paymentPending')}</div>` : ''}
-    <div class="tbl-icon">${t.status === 'occupied' ? '&#127869;' : '&#129681;'}</div>
+    ${t.splitGroup ? '<div class="split-badge"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6.5" cy="6.5" r="2.6"/><circle cx="6.5" cy="17.5" r="2.6"/><path d="M8.6 8.4 20 19M20 5 8.6 15.6"/></svg></div>' : ''}
+    ${kotPending ? `<div class="kot-flag"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.5 17.5a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.5M12 17.5h.01"/></svg> ${window.t('kotNotPrinted')}</div>` : paymentPending ? `<div class="kot-flag payment-flag"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 7v5.3l3.2 1.9"/></svg> ${window.t('paymentPending')}</div>` : ''}
+    <div class="tbl-icon">${t.status === 'occupied' ? '<svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v8a2.5 2.5 0 0 0 5 0V3"/><path d="M9.5 11v10"/><path d="M17.5 3c-1.6 1.3-2.2 3-2.2 5.2 0 1.6.7 2.6 2.2 2.8V21"/></svg>' : '<svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="4" rx="1.4"/><path d="M6.5 9v10M17.5 9v10"/></svg>'}</div>
     <div class="tbl-name">${h(t.name)}</div>
     <div class="tbl-status ${t.status}">${t.status === 'occupied' ? window.t('occupied') : window.t('available')}</div>
     ${o && o.customer && o.customer.name ? `<div class="tbl-cust">${h(o.customer.name)}</div>` : ''}
@@ -2128,10 +2130,10 @@ function tableMenu(e, tableId) {
   e.preventDefault();
   const menu = document.getElementById('ctx-menu');
   menu.innerHTML = `
-    <button onclick="renameTable('${tableId}')"><span class="ctx-ico">&#9998;</span> ${t('rename')}</button>
-    <button onclick="splitTable('${tableId}')"><span class="ctx-ico">&#9986;</span> ${t('split')}</button>
-    <button onclick="clearTableOrder('${tableId}')"><span class="ctx-ico">&#129529;</span> ${t('clear')}</button>
-    <button class="ctx-danger" onclick="deleteTable('${tableId}')"><span class="ctx-ico">&#128465;</span> ${t('deleteTable')}</button>`;
+    <button onclick="renameTable('${tableId}')"><span class="ctx-ico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4.5l10-10a2.5 2.5 0 0 0-3.5-3.5l-10 10z"/><path d="m14 6.5 3.5 3.5"/></svg></span> ${t('rename')}</button>
+    <button onclick="splitTable('${tableId}')"><span class="ctx-ico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6.5" cy="6.5" r="2.6"/><circle cx="6.5" cy="17.5" r="2.6"/><path d="M8.6 8.4 20 19M20 5 8.6 15.6"/></svg></span> ${t('split')}</button>
+    <button onclick="clearTableOrder('${tableId}')"><span class="ctx-ico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5h17"/><path d="m14.5 4.5 5 5-8 8H6.5v-5z"/></svg></span> ${t('clear')}</button>
+    <button class="ctx-danger" onclick="deleteTable('${tableId}')"><span class="ctx-ico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5h17M9 6.5V4.2A1.2 1.2 0 0 1 10.2 3h3.6A1.2 1.2 0 0 1 15 4.2v2.3"/><path d="M6 6.5 7 20a1.4 1.4 0 0 0 1.4 1.3h7.2A1.4 1.4 0 0 0 17 20l1-13.5"/></svg></span> ${t('deleteTable')}</button>`;
   menu.style.display = 'block';
   // position within viewport
   const mw = 170, mh = 180;
@@ -2228,9 +2230,9 @@ function mergeBarHTML() {
   const group = sel[0] && sel[0].splitGroup;
   const canMerge = sel.length >= 2 && group && sel.every(x => x.splitGroup === group);
   return `<div class="merge-bar">
-    <span>&#9745; <strong>${sel.length}</strong> ${t('selected')}${sel.length ? ': ' + sel.map(x => h(x.name)).join(', ') : ''}</span>
+    <span><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2.4"/><path d="m8.4 12.2 2.5 2.5 4.7-4.9"/></svg> <strong>${sel.length}</strong> ${t('selected')}${sel.length ? ': ' + sel.map(x => h(x.name)).join(', ') : ''}</span>
     <div style="display:flex;gap:8px;margin-left:auto;">
-      <button class="btn btn-success btn-sm" ${canMerge ? '' : 'disabled'} onclick="mergeSelectedTables()">&#128279; ${t('merge')}</button>
+      <button class="btn btn-success btn-sm" ${canMerge ? '' : 'disabled'} onclick="mergeSelectedTables()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13.5a4 4 0 0 0 5.7.4l2.6-2.6a4 4 0 0 0-5.7-5.7l-1.5 1.5"/><path d="M14 10.5a4 4 0 0 0-5.7-.4l-2.6 2.6a4 4 0 0 0 5.7 5.7l1.5-1.5"/></svg> ${t('merge')}</button>
       <button class="btn btn-ghost btn-sm" onclick="clearTableSelection()">${t('cancel')}</button>
     </div>
   </div>`;
@@ -2308,9 +2310,9 @@ function moveToTableModal(orderId) {
     ${avail.length
       ? `<p style="color:var(--muted);margin-bottom:14px;font-size:13px;">${t('selectTable')}</p>
          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;">
-           ${avail.map(tb => `<button class="btn btn-ghost" style="justify-content:center;padding:14px;" onclick="assignTable('${orderId}','${tb.id}')">&#129681; ${h(tb.name)}</button>`).join('')}
+           ${avail.map(tb => `<button class="btn btn-ghost" style="justify-content:center;padding:14px;" onclick="assignTable('${orderId}','${tb.id}')"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="4" rx="1.4"/><path d="M6.5 9v10M17.5 9v10"/></svg> ${h(tb.name)}</button>`).join('')}
          </div>`
-      : `<div class="empty"><div class="eico">&#129681;</div><p>${t('noTables')}</p></div>`
+      : `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="4" rx="1.4"/><path d="M6.5 9v10M17.5 9v10"/></svg></div><p>${t('noTables')}</p></div>`
     }
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal()">${t('cancel')}</button>
@@ -2387,7 +2389,7 @@ function buildOrderView() {
       <button class="btn btn-ghost btn-sm" onclick="go('tables')">&#8592; ${t('back')}</button>
       <h2>${title}</h2>
       ${badge}
-      <button class="btn btn-ghost btn-sm" onclick="moveToTableModal('${o.id}')">&#129681; ${t('moveToTable')}</button>
+      <button class="btn btn-ghost btn-sm" onclick="moveToTableModal('${o.id}')"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="4" rx="1.4"/><path d="M6.5 9v10M17.5 9v10"/></svg> ${t('moveToTable')}</button>
       <span class="order-id">#${o.id.slice(-6).toUpperCase()}</span>
     </div>
     <div class="order-split" id="order-split">
@@ -2415,7 +2417,7 @@ function itemCardHTML(o, item) {
     : low ? `<span class="stock-badge stock-low">${item.stock} left</span>`
     : '';
   return `<div class="item-card${oos?' oos':''}" ${oos?'':`onclick="clickMenuItem('${o.id}','${item.id}')"`}>
-    <div class="item-nm">${h(item.name)}${hasOpts?' &#9881;':''}</div>
+    <div class="item-nm">${h(item.name)}${hasOpts?' <svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3"/></svg>':''}</div>
     <div class="item-pr">${fmt(item.price)}</div>
     ${badge}
   </div>`;
@@ -2449,7 +2451,7 @@ function menuPaneHTML(o) {
           ${orderedCatList.map((cat, idx) => `<button class="mobile-cat-pill" data-target="cat-sec-${idx}">${h(cat)}</button>`).join('')}
         </div>
         <div class="menu-search-box">
-          <span class="search-ico">&#128269;</span>
+          <span class="search-ico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m15.8 15.8 4.7 4.7"/></svg></span>
           <input id="menu-q" type="text" placeholder="Search items..." value="${h(S.menuQ)}">
         </div>
         <div class="items-scroll" id="items-scroll">
@@ -2497,7 +2499,7 @@ function orderPaneHTML(o) {
       </div>
       ${unsettledRefunds.map(r => `
         <div class="kot-cancel-note" style="background:#FEF3C7;color:#92400E;">
-          <span>&#9888; ${t('refundDue')}: ${fmt(r.amount)} (${h(r.reason)})</span>
+          <span><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.5 17.5a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.5M12 17.5h.01"/></svg> ${t('refundDue')}: ${fmt(r.amount)} (${h(r.reason)})</span>
           <span>
             <button class="btn btn-sm" style="background:#16A34A;color:#fff;" onclick="settleRefund('${o.id}','${r.id}')">${t('settleCash')}</button>
             <button class="btn btn-sm" style="background:#fff;color:#92400E;border:1.5px solid #92400E;" onclick="returnRefundLater('${o.id}','${r.id}')">${t('returnLater')}</button>
@@ -2505,7 +2507,7 @@ function orderPaneHTML(o) {
         </div>`).join('')}
       ${billingNotices.map(nt => `
         <div class="kot-cancel-note" style="background:#DBEAFE;color:#1E40AF;">
-          <span>&#8505; ${h(nt.text)}</span>
+          <span><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 11v5.5M12 7.8h.01"/></svg> ${h(nt.text)}</span>
           <button class="btn btn-sm" style="background:#fff;color:#374151;" onclick="dismissBillingNotice('${o.id}','${nt.id}')">${t('dismiss')}</button>
         </div>`).join('')}
       <div class="order-list">
@@ -2520,11 +2522,11 @@ function orderPaneHTML(o) {
               const minusDisabled = item.qty <= lockedQty;
               const pend = item.qty - (item.acceptedQty || 0);
               if (o.kotStatus === 'active') {
-                if (pend > 0) subs.push(`&#9203; ${pend} ${t('pendingReview').toLowerCase()}`);
+                if (pend > 0) subs.push(`<svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 7v5.3l3.2 1.9"/></svg> ${pend} ${t('pendingReview').toLowerCase()}`);
                 else if ((item.acceptedQty || 0) > 0) {
                   subs.push(o.kotPrepStatus === 'done'
-                    ? `&#9989; ${t('delivered').toLowerCase()}`
-                    : `&#128293; ${t('kotPreparing').toLowerCase()}`);
+                    ? `<svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="m8.4 12.2 2.5 2.5 4.7-4.9"/></svg> ${t('delivered').toLowerCase()}`
+                    : `<svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.5c3.6 0 6.2-2.4 6.2-5.8 0-3.9-3.2-5.6-4.2-9.7-2.2 1.6-2.6 4-2.2 5.6-1-.6-1.5-1.8-1.5-3-1.8 1.3-4.5 3.7-4.5 7.1 0 3.4 2.6 5.8 6.2 5.8z"/></svg> ${t('kotPreparing').toLowerCase()}`);
                 }
               }
               return `<div class="order-row">
@@ -2540,7 +2542,7 @@ function orderPaneHTML(o) {
                 <div class="or-price">${fmt(itemUnit(item) * item.qty)}</div>
               </div>`;
             }).join('')
-          : `<div class="empty"><div class="eico">&#128722;</div><p>${t('addItems')}</p></div>`
+          : `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 12.2a1.8 1.8 0 0 1-1.8 1.8H8.8A1.8 1.8 0 0 1 7 19.2z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></div><p>${t('addItems')}</p></div>`
         }
       </div>
       ${customerBoxHTML(o)}
@@ -2561,14 +2563,14 @@ function orderPaneHTML(o) {
       </div>
       <div class="order-actions">
         <button class="btn btn-primary" ${!o.items.length?'disabled':''} onclick="saveKOT('${o.id}')">
-          &#128190; ${o.kotStatus === 'active' ? t('updateKot') : t('saveKot')}
+          <svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5h11.5L20 9v10.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M8 4.5v5h7M8 20.5v-6h8v6"/></svg> ${o.kotStatus === 'active' ? t('updateKot') : t('saveKot')}
         </button>
-        <button class="btn btn-ghost" ${(!o.items.length || !kotPrintEnabled())?'disabled':''} onclick="printKOTById('${o.id}')">&#128424; ${t('printKot')}</button>
+        <button class="btn btn-ghost" ${(!o.items.length || !kotPrintEnabled())?'disabled':''} onclick="printKOTById('${o.id}')"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 9V3.5h11V9"/><rect x="3" y="9" width="18" height="7" rx="1.5"/><path d="M6.5 14h11v6.5h-11z"/></svg> ${t('printKot')}</button>
       </div>
       <div class="order-actions">
-        <button class="btn btn-ghost" ${(!o.items.length || !D.settings.billPrinter.enabled)?'disabled':''} onclick="printReceipt('${o.id}')">&#129534; ${t('printBill')}</button>
-        <button class="btn ${S.splitMode?'btn-primary':'btn-ghost'}" ${!o.items.length?'disabled':''} onclick="toggleSplitMode()">&#10696; ${t('splitBill')}</button>
-        <button id="pay-later-btn" class="btn ${S.payLaterMode?'btn-primary':'btn-success'}" ${(!o.items.length || !canPayLater(o))?'disabled':''} onclick="togglePayLaterMode()">&#128337; ${t('payLater')}</button>
+        <button class="btn btn-ghost" ${(!o.items.length || !D.settings.billPrinter.enabled)?'disabled':''} onclick="printReceipt('${o.id}')"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5h12v19l-2.4-1.6-2.4 1.6-2.4-1.6-2.4 1.6z"/><path d="M9.5 8h5M9.5 12h5M9.5 16h3"/></svg> ${t('printBill')}</button>
+        <button class="btn ${S.splitMode?'btn-primary':'btn-ghost'}" ${!o.items.length?'disabled':''} onclick="toggleSplitMode()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h5l6 12h5"/><path d="M4 18h5l2-4"/><path d="M17 3.5 20.5 6 17 8.5M17 15.5l3.5 2.5-3.5 2.5"/></svg> ${t('splitBill')}</button>
+        <button id="pay-later-btn" class="btn ${S.payLaterMode?'btn-primary':'btn-success'}" ${(!o.items.length || !canPayLater(o))?'disabled':''} onclick="togglePayLaterMode()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 7v5.3l3.2 1.9"/></svg> ${t('payLater')}</button>
       </div>
       ${S.splitMode && o.items.length
         ? splitPayHTML(o)
@@ -3023,7 +3025,7 @@ function updateMobileFab(o) {
   const count = o.items.reduce((s, i) => s + i.qty, 0);
   if (count > 0) {
     const b = calcBill(o);
-    fab.innerHTML = `&#128722; ${count} item${count > 1 ? 's' : ''} &nbsp;&middot;&nbsp; ${fmt(b.total)} &nbsp;&#8250;`;
+    fab.innerHTML = `<svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 12.2a1.8 1.8 0 0 1-1.8 1.8H8.8A1.8 1.8 0 0 1 7 19.2z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg> ${count} item${count > 1 ? 's' : ''} &nbsp;&middot;&nbsp; ${fmt(b.total)} &nbsp;&#8250;`;
     fab.style.display = 'flex';
   } else {
     fab.style.display = 'none';
@@ -3103,7 +3105,7 @@ function splitPayHTML(o) {
   return `
     <div class="split-wrap">
       <div class="split-head">
-        <span>&#10696; ${t('splitBill')}</span>
+        <span><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h5l6 12h5"/><path d="M4 18h5l2-4"/><path d="M17 3.5 20.5 6 17 8.5M17 15.5l3.5 2.5-3.5 2.5"/></svg> ${t('splitBill')}</span>
         <span class="split-rem-lbl">${t('remaining')}: <b id="split-rem">${fmt(total)}</b></span>
       </div>
       <div class="split-grid">
@@ -3170,7 +3172,7 @@ function payLaterHTML(o) {
   return `
     <div class="split-wrap">
       <div class="split-head">
-        <span>&#128337; ${t('payLater')}</span>
+        <span><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 7v5.3l3.2 1.9"/></svg> ${t('payLater')}</span>
         <span class="split-rem-lbl">${t('dueAmount')}: <b id="pl-due">${fmt(total)}</b></span>
       </div>
       <div class="split-grid">
@@ -3245,7 +3247,7 @@ function showCashModal(orderId) {
   const custName = (o.customer && o.customer.name) || '';
   const custPhone = (o.customer && o.customer.phone) || '+91 ';
   showModal(`
-    <h3>&#128181; ${t('cash')}</h3>
+    <h3><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg> ${t('cash')}</h3>
     <p style="color:var(--muted);margin-bottom:14px;">${t('amountDue')}: <strong style="font-size:20px;color:var(--text);">${fmt(total)}</strong></p>
     <div class="form-grp">
       <label>${t('cashReceived')}</label>
@@ -3570,7 +3572,7 @@ function crmHTML() {
     <div class="card" style="margin-bottom:18px;">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <div style="position:relative;flex:1;min-width:200px;">
-          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;">&#128269;</span>
+          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m15.8 15.8 4.7 4.7"/></svg></span>
           <input type="text" id="crm-q" placeholder="${t('searchCustomers')}" value="${h(S.crmQ)}"
             style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"
             oninput="S.crmQ=this.value;rerenderCrm()">
@@ -3580,7 +3582,7 @@ function crmHTML() {
     </div>
     <div class="card">
       ${filtered.length === 0
-        ? `<div class="empty"><div class="eico">&#128100;</div><p>${t('noCustomers')}</p></div>`
+        ? `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></div><p>${t('noCustomers')}</p></div>`
         : `<table class="data-tbl">
             <thead><tr><th>${t('customerName')}</th><th>${t('mobileNumber')}</th><th>${t('totalPurchases')}</th><th>${t('balance')}</th><th></th><th style="width:160px;text-align:right;"></th></tr></thead>
             <tbody>
@@ -3623,7 +3625,7 @@ function showCustomerHistoryModal(custId) {
     <h3>${t('billHistory')}: ${h(c.name)}</h3>
     <p style="color:var(--muted);margin-bottom:14px;font-size:13px;">${h(c.phone||'')} &middot; ${t('totalPurchases')}: <strong style="color:var(--text);">${fmt(total)}</strong></p>
     ${hist.length === 0
-      ? `<div class="empty"><div class="eico">&#129534;</div><p>${t('noBills')}</p></div>`
+      ? `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5h12v19l-2.4-1.6-2.4 1.6-2.4-1.6-2.4 1.6z"/><path d="M9.5 8h5M9.5 12h5M9.5 16h3"/></svg></div><p>${t('noBills')}</p></div>`
       : `<div style="overflow-x:auto;margin:0 -24px;padding:0 24px;">
         <table class="data-tbl" style="min-width:480px;">
           <thead><tr><th>${t('date')}</th><th>${t('billNo')}</th><th>${t('items')}</th><th style="text-align:right;">${t('amount')}</th><th style="text-align:right;">${t('dueAmount')}</th></tr></thead>
@@ -3791,22 +3793,22 @@ function menuMgmtHTML() {
     <div class="sec-hdr">
       <h2>${t('menuManagement')}</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-ghost" onclick="exportMenuCsv()">&#128229; ${t('exportMenuCsv')}</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('menu-csv-file').click()">&#128228; ${t('importMenuCsv')}</button>
+        <button class="btn btn-ghost" onclick="exportMenuCsv()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="m7.8 10.3 4.2 4.2 4.2-4.2"/><path d="M4 16.5v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg> ${t('exportMenuCsv')}</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('menu-csv-file').click()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 14.5v-11"/><path d="m7.8 7.7 4.2-4.2 4.2 4.2"/><path d="M4 16.5v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg> ${t('importMenuCsv')}</button>
         <input type="file" id="menu-csv-file" accept=".csv" style="display:none" onchange="importMenuCsv(this)">
         <button class="btn btn-primary" onclick="showAddItemModal()">+ ${t('addItem')}</button>
       </div>
     </div>
-    ${low.length ? `<div class="lowstock-banner">&#9888; <strong>${low.length}</strong> ${t('lowStockAlert')}: ${low.map(i=>h(i.name)+' ('+i.stock+')').join(', ')}</div>` : ''}
+    ${low.length ? `<div class="lowstock-banner"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.5 17.5a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.5M12 17.5h.01"/></svg> <strong>${low.length}</strong> ${t('lowStockAlert')}: ${low.map(i=>h(i.name)+' ('+i.stock+')').join(', ')}</div>` : ''}
     <div class="card" style="margin-bottom:18px;">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
         <div style="position:relative;flex:1;min-width:200px;">
-          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;">&#128269;</span>
+          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m15.8 15.8 4.7 4.7"/></svg></span>
           <input type="text" id="mgmt-q" placeholder="${t('searchPlaceholder')}" value="${h(S.mgmtQ)}"
             style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;"
             oninput="S.mgmtQ=this.value;rerenderMgmt()">
         </div>
-        <span style="font-size:12.5px;font-weight:700;color:var(--text);">&#127869; ${D.menu.length} items &middot; ${cats().length} categories</span>
+        <span style="font-size:12.5px;font-weight:700;color:var(--text);"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v8a2.5 2.5 0 0 0 5 0V3"/><path d="M9.5 11v10"/><path d="M17.5 3c-1.6 1.3-2.2 3-2.2 5.2 0 1.6.7 2.6 2.2 2.8V21"/></svg> ${D.menu.length} items &middot; ${cats().length} categories</span>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
         ${orderedCats().map(cat => {
@@ -3831,7 +3833,7 @@ function menuMgmtHTML() {
       </div>
     </div>` : ''}
     ${Object.keys(grouped).length === 0
-      ? '<div class="card empty"><div class="eico">&#127869;</div><p>No menu items yet. Add some!</p></div>'
+      ? '<div class="card empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v8a2.5 2.5 0 0 0 5 0V3"/><path d="M9.5 11v10"/><path d="M17.5 3c-1.6 1.3-2.2 3-2.2 5.2 0 1.6.7 2.6 2.2 2.8V21"/></svg></div><p>No menu items yet. Add some!</p></div>'
       : orderedCats().filter(cat => grouped[cat]).map((cat, idx) => { const items = grouped[cat]; const secId = 'mgmt-cat-' + idx;
         const collapsed = !S.mgmtExpandedCats.includes(secId); return `
         <div class="card mgmt-cat-card${collapsed?' collapsed':''}" id="${secId}" style="margin-bottom:14px;">
@@ -4334,7 +4336,7 @@ function kotHTML() {
       ${cancellations.map(c => {
         const extra = c.variant ? ` (${h(c.variant)})` : '';
         return `<div class="kot-cancel-note">
-          <span>&#9888; ${t('itemCancelled')}: ${c.qty}\u00D7 ${h(c.name)}${extra}</span>
+          <span><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.5 17.5a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.5M12 17.5h.01"/></svg> ${t('itemCancelled')}: ${c.qty}\u00D7 ${h(c.name)}${extra}</span>
           <button class="btn btn-sm" style="background:#9333EA;color:#fff;" onclick="event.stopPropagation();acceptKotCancellation('${o.id}','${c.id}')">${t('accept')}</button>
         </div>`;
       }).join('')}
@@ -4343,7 +4345,7 @@ function kotHTML() {
         if (!pendingItems.length) return '';
         return `<div class="kot-pending-review" onclick="event.stopPropagation()">
           <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 4px;">
-            <strong style="font-size:12px;color:var(--warning);">&#9203; ${t('pendingReview')}</strong>
+            <strong style="font-size:12px;color:var(--warning);"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 7v5.3l3.2 1.9"/></svg> ${t('pendingReview')}</strong>
             <button class="btn btn-sm" style="background:#16A34A;color:#fff;" onclick="acceptAllPending('${o.id}')">${t('acceptAll')}</button>
           </div>
           ${pendingItems.map(i => {
@@ -4388,11 +4390,11 @@ function kotHTML() {
   return `
     ${chefMode && S.kotAlertActive ? `
     <div class="kot-alert-banner">
-      <div class="alert-msg">&#128276; New order / update in your kitchen!</div>
+      <div class="alert-msg"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 15 18 9"/><path d="M13.7 20a2 2 0 0 1-3.4 0"/></svg> New order / update in your kitchen!</div>
       <button class="kot-alert-dismiss" onclick="dismissKotAlert()">&#10003; Accept</button>
     </div>` : ''}
     <div class="sec-hdr">
-      <h2>&#128221; ${chefMode ? `Kitchen: ${chefKitchenNames||'(no kitchen assigned)'}` : t('kot')}</h2>
+      <h2><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5h6M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M10 10h4M10 14h4"/></svg> ${chefMode ? `Kitchen: ${chefKitchenNames||'(no kitchen assigned)'}` : t('kot')}</h2>
       <span style="margin-left:auto;display:flex;gap:10px;align-items:center;">
         <span style="font-size:12.5px;background:var(--warning);color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;">${t('activeKots')}: ${active.length}</span>
         ${!chefMode ? `<span style="font-size:12.5px;background:#DC2626;color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;">${t('deletedKots')}: ${deleted.length}</span>` : ''}
@@ -4417,7 +4419,7 @@ function kotHTML() {
     </div>
     ${active.length
       ? `<div class="kot-grid">${activeCards}</div>`
-      : `<div class="empty"><div class="eico">&#128221;</div><p>${t('noActiveKots')}</p></div>`}
+      : `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5h6M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M10 10h4M10 14h4"/></svg></div><p>${t('noActiveKots')}</p></div>`}
 
     <div class="sec-hdr" style="margin-top:26px;"><h2 style="font-size:16px;">${t('deletedKots')} (${deleted.length})</h2></div>
     ${deleted.length
@@ -4585,7 +4587,7 @@ function reportsHTML() {
     ${pendingRefunds.length > 0 ? `
     <div class="card" style="margin-bottom:16px;border:1.5px solid #F59E0B;background:#FFFBEB;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <h3 style="font-size:15px;font-weight:600;color:#92400E;">&#9888; ${t('pendingRefunds')}</h3>
+        <h3 style="font-size:15px;font-weight:600;color:#92400E;"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.5 17.5a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.5M12 17.5h.01"/></svg> ${t('pendingRefunds')}</h3>
         <span style="font-size:12.5px;color:#92400E;">${pendingRefunds.length} &middot; ${fmt(pendingRefunds.reduce((s,r)=>s+(Number(r.amount)||0),0))}</span>
       </div>
       <table class="data-tbl">
@@ -4614,7 +4616,7 @@ function reportsHTML() {
         const page = Math.max(0, Math.min(S.reportPage||0, Math.ceil(rangeAll.length/PAGE)-1));
         const totalPages = Math.ceil(rangeAll.length/PAGE) || 1;
         const slice = rangeAll.slice(page*PAGE, (page+1)*PAGE);
-        if (!rangeAll.length) return `<div class="empty"><div class="eico">&#128203;</div><p>${t('noOrders')}</p></div>`;
+        if (!rangeAll.length) return `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg></div><p>${t('noOrders')}</p></div>`;
         return `
           <table class="data-tbl">
             <thead><tr><th>${t('billNo')}</th><th>Table / Customer</th><th>Items</th><th>Method</th><th>Time</th><th>Billed By</th><th style="text-align:right;">Total</th><th style="text-align:right;">${t('actions')}</th></tr></thead>
@@ -4947,7 +4949,7 @@ function expenditureHTML() {
     </div>
     <div class="card">
       ${filtered.length === 0
-        ? `<div class="empty"><div class="eico">&#128176;</div><p>${t('noExpenseBills')}</p></div>`
+        ? `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg></div><p>${t('noExpenseBills')}</p></div>`
         : `<div style="overflow-x:auto;margin:0 -24px;padding:0 24px;">
         <table class="data-tbl" style="min-width:760px;">
             <thead><tr><th>${t('billId')}</th><th>${t('dateAndTime')}</th><th>${t('vendor')}</th><th>${t('paymentMethod')}</th><th style="text-align:right;">${t('amount')}</th><th style="text-align:right;">${t('dueAmount')}</th><th>${t('notes')}</th><th style="width:140px;"></th></tr></thead>
@@ -4973,8 +4975,8 @@ function expenseRowHTML(e) {
     methodLabel = `${t('paySplit')}: ${parts.join(', ')}`;
   }
   const notes = [];
-  if (e.attachment) notes.push(`<a href="#" onclick="viewExpenseAttachment('${e.id}');return false;" title="${h(e.attachment.name||'')}">&#128206;</a>`);
-  if (e.comment) notes.push(`<span title="${h(e.comment)}">&#128172;</span>`);
+  if (e.attachment) notes.push(`<a href="#" onclick="viewExpenseAttachment('${e.id}');return false;" title="${h(e.attachment.name||'')}"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5 12 19.5a5 5 0 0 1-7-7l8.5-8.5a3.4 3.4 0 0 1 4.8 4.8L10 16.6a1.7 1.7 0 0 1-2.4-2.4l7.6-7.6"/></svg></a>`);
+  if (e.comment) notes.push(`<span title="${h(e.comment)}"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12.5a7.5 7.5 0 0 1-10.6 6.8L4 21l1.7-5.4A7.5 7.5 0 1 1 20.5 12.5z"/></svg></span>`);
   return `<tr>
     <td style="font-family:monospace;font-size:11.5px;font-weight:600;white-space:nowrap;">${h(e.billId||'—')}</td>
     <td style="font-size:12px;white-space:nowrap;">${ds}</td>
@@ -5021,7 +5023,7 @@ function vendorsHTML() {
     </div>
     <div class="card">
       ${vendors.length === 0
-        ? `<div class="empty"><div class="eico">&#127970;</div><p>${t('noVendors')}</p></div>`
+        ? `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4.5A1.5 1.5 0 0 1 5.5 3h8A1.5 1.5 0 0 1 15 4.5V21"/><path d="M15 9h4.5A1.5 1.5 0 0 1 21 10.5V21M2.5 21h19"/><path d="M7.5 7h4M7.5 11h4M7.5 15h4"/></svg></div><p>${t('noVendors')}</p></div>`
         : `<table class="data-tbl">
             <thead><tr><th>${t('vendorName')}</th><th>${t('mobileNumber')}</th><th style="text-align:right;">${t('totalDue')}</th><th style="width:200px;text-align:right;"></th></tr></thead>
             <tbody>
@@ -5045,7 +5047,7 @@ function vendorsHTML() {
 function vendorBillsHTML() {
   const v = D.vendors.find(x => x.id === S.vendorBillsId);
   if (!v) {
-    return `<div class="empty"><div class="eico">&#127970;</div><p>${t('noVendors')}</p></div>`;
+    return `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4.5A1.5 1.5 0 0 1 5.5 3h8A1.5 1.5 0 0 1 15 4.5V21"/><path d="M15 9h4.5A1.5 1.5 0 0 1 21 10.5V21M2.5 21h19"/><path d="M7.5 7h4M7.5 11h4M7.5 15h4"/></svg></div><p>${t('noVendors')}</p></div>`;
   }
   const bills = (D.expenses||[]).filter(e => e.vendorId === v.id).slice().sort((a,b) => new Date(b.date) - new Date(a.date));
   const due = vendorTotalDue(v);
@@ -5071,7 +5073,7 @@ function vendorBillsHTML() {
     </div>
     <div class="card">
       ${bills.length === 0
-        ? `<div class="empty"><div class="eico">&#128176;</div><p>${t('noVendorBills')}</p></div>`
+        ? `<div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg></div><p>${t('noVendorBills')}</p></div>`
         : `<div style="overflow-x:auto;margin:0 -24px;padding:0 24px;">
           <table class="data-tbl" style="min-width:760px;">
             <thead><tr><th>${t('billId')}</th><th>${t('dateAndTime')}</th><th>${t('paymentMethod')}</th><th style="text-align:right;">${t('amount')}</th><th style="text-align:right;">${t('dueAmount')}</th><th>${t('notes')}</th><th style="width:140px;"></th></tr></thead>
@@ -5098,8 +5100,8 @@ function vendorBillRowHTML(e) {
     methodLabel = `${t('paySplit')}: ${parts.join(', ')}`;
   }
   const notes = [];
-  if (e.attachment) notes.push(`<a href="#" onclick="viewExpenseAttachment('${e.id}');return false;" title="${h(e.attachment.name||'')}">&#128206;</a>`);
-  if (e.comment) notes.push(`<span title="${h(e.comment)}">&#128172;</span>`);
+  if (e.attachment) notes.push(`<a href="#" onclick="viewExpenseAttachment('${e.id}');return false;" title="${h(e.attachment.name||'')}"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5 12 19.5a5 5 0 0 1-7-7l8.5-8.5a3.4 3.4 0 0 1 4.8 4.8L10 16.6a1.7 1.7 0 0 1-2.4-2.4l7.6-7.6"/></svg></a>`);
+  if (e.comment) notes.push(`<span title="${h(e.comment)}"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12.5a7.5 7.5 0 0 1-10.6 6.8L4 21l1.7-5.4A7.5 7.5 0 1 1 20.5 12.5z"/></svg></span>`);
   return `<tr>
     <td style="font-family:monospace;font-size:11.5px;font-weight:600;white-space:nowrap;">${h(e.billId||'—')}</td>
     <td style="font-size:12px;white-space:nowrap;">${ds}</td>
@@ -5232,7 +5234,7 @@ function revenueHTML() {
   }, { cash:0, onlineSum:0, charges:0, netOnline:0, cashRefund:0, netCash:0, apps:{} });
 
   if (rows.length === 0) {
-    return `<div class="card"><div class="empty"><div class="eico">&#128202;</div><p>${t('noRevenueData')}</p></div></div>`;
+    return `<div class="card"><div class="empty"><div class="eico"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v17a1 1 0 0 0 1 1h17"/><path d="M7.5 16.5v-4M12 16.5v-8M16.5 16.5v-6"/></svg></div><p>${t('noRevenueData')}</p></div></div>`;
   }
 
   return `
@@ -5455,7 +5457,7 @@ function showEditBillModal(expId) {
     <div class="form-grp">
       <label>${t('attachment')}</label>
       ${e.attachment ? `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12.5px;">
-        <a href="#" onclick="viewExpenseAttachment('${expId}');return false;">&#128206; ${h(e.attachment.name||t('attachment'))}</a>
+        <a href="#" onclick="viewExpenseAttachment('${expId}');return false;"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5 12 19.5a5 5 0 0 1-7-7l8.5-8.5a3.4 3.4 0 0 1 4.8 4.8L10 16.6a1.7 1.7 0 0 1-2.4-2.4l7.6-7.6"/></svg> ${h(e.attachment.name||t('attachment'))}</a>
         <label style="display:flex;align-items:center;gap:4px;font-weight:400;"><input type="checkbox" id="eb-remove-att"> ${t('removeAttachment')}</label>
       </div>` : ''}
       <input id="eb-file" type="file" accept="image/*,application/pdf" capture="environment">
@@ -5917,10 +5919,10 @@ function outletProfileHTML() {
       <div class="card">
         <h3 style="font-size:14.5px;font-weight:600;margin-bottom:14px;">${t('dataManagement')}</h3>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button class="btn btn-ghost" onclick="exportData()">&#128229; Export Backup (JSON)</button>
-          <button class="btn btn-ghost" onclick="document.getElementById('imp-file').click()">&#128228; Import Backup</button>
+          <button class="btn btn-ghost" onclick="exportData()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="m7.8 10.3 4.2 4.2 4.2-4.2"/><path d="M4 16.5v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg> Export Backup (JSON)</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('imp-file').click()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 14.5v-11"/><path d="m7.8 7.7 4.2-4.2 4.2 4.2"/><path d="M4 16.5v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg> Import Backup</button>
           <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importData(this)">
-          <button class="btn btn-ghost" style="color:var(--danger);border-color:#FCA5A5;" onclick="resetAll()">&#128465; Reset All Data</button>
+          <button class="btn btn-ghost" style="color:var(--danger);border-color:#FCA5A5;" onclick="resetAll()"><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5h17M9 6.5V4.2A1.2 1.2 0 0 1 10.2 3h3.6A1.2 1.2 0 0 1 15 4.2v2.3"/><path d="M6 6.5 7 20a1.4 1.4 0 0 0 1.4 1.3h7.2A1.4 1.4 0 0 0 17 20l1-13.5"/></svg> Reset All Data</button>
         </div>
       </div>
     </div>`;
@@ -6640,11 +6642,11 @@ function kotAlertPrefsHTML() {
   return `
     <div class="kot-prefs">
       <div class="kot-pref">
-        <span>&#128266; ${t('soundAlert')}</span>
+        <span><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6.5 8.7H3v6.6h3.5L11 19z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18.4 6.4a8 8 0 0 1 0 11.2"/></svg> ${t('soundAlert')}</span>
         ${sw(kotSoundOn(), `setKotSound(${!kotSoundOn()})`)}
       </div>
       <div class="kot-pref">
-        <span>&#128276; ${t('pushAlert')}</span>
+        <span><svg class="lico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 15 18 9"/><path d="M13.7 20a2 2 0 0 1-3.4 0"/></svg> ${t('pushAlert')}</span>
         ${sw(kotNotifyOn(), `setKotNotify(${!kotNotifyOn()})`)}
       </div>
       ${blocked ? `<div class="kot-pref-note">${t('notifBlocked')}</div>` : ''}
