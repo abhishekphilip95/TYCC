@@ -691,18 +691,22 @@ body.dark .kot-pending-review { background: #3A2E10; }
   width: 190px; padding: 28px 16px; background: var(--card); border: 1px solid var(--border);
   border-radius: 14px; text-align: center; cursor: pointer; transition: transform .12s, box-shadow .12s;
 }
-.hub-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.08); border-color: var(--primary); }
+.hub-card:hover { border-color: #1F3557; }
 /* A held-back feature reads as inactive, but stays tappable — tapping it is
    what explains why it is greyed out, so it must not look inert. */
 .hub-card.soon { opacity: .55; }
-.hub-card.soon:hover { transform: none; box-shadow: none; border-color: var(--border); }
+.hub-card.soon:hover { border-color: var(--border); }
 .hub-soon {
   display: inline-block; margin-top: 8px; padding: 2px 9px; border-radius: 10px;
   background: var(--border); color: var(--muted);
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
 }
-.hub-ico { font-size: 34px; margin-bottom: 10px; }
-.hub-label { font-size: 14px; font-weight: 600; }
+#main-nav button svg, #drawer-nav button svg { width: 17px; height: 17px; flex-shrink: 0; }
+#main-nav button, #drawer-nav button { display: inline-flex; align-items: center; gap: 7px; }
+.hub-ico { width: 30px; height: 30px; margin: 0 auto 14px; color: #1F3557; }
+.hub-ico svg { width: 100%; height: 100%; display: block; }
+.hub-card.soon .hub-ico { color: var(--muted); }
+.hub-label { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
 
 /* ── Settings ── */
 .settings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
@@ -5939,20 +5943,20 @@ function hubHTML() {
       <h2 class="hub-title">${t('chooseArea')}</h2>
       <div class="hub-grid">
         <div class="hub-card" onclick="enterHub('tables')">
-          <div class="hub-ico">&#128722;</div>
+          <div class="hub-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5h12v19l-2.4-1.6-2.4 1.6-2.4-1.6-2.4 1.6L6 21.5z"/><path d="M9.5 8h5M9.5 12h5M9.5 16h3"/></svg></div>
           <div class="hub-label">${t('billingPos')}</div>
         </div>
         <div class="hub-card${ACCOUNTS_ENABLED ? '' : ' soon'}" onclick="enterHub('accounts')">
-          <div class="hub-ico">&#128176;</div>
+          <div class="hub-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5v5M18 9.5v5"/></svg></div>
           <div class="hub-label">${t('accounts')}</div>
           ${ACCOUNTS_ENABLED ? '' : `<div class="hub-soon">${t('comingSoon')}</div>`}
         </div>
         <div class="hub-card" onclick="enterHub('outlet-profile')">
-          <div class="hub-ico">&#127978;</div>
+          <div class="hub-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 9.5h17V20a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M2.5 9.5 4 3.5h16l1.5 6"/><path d="M9.5 21v-6h5v6"/></svg></div>
           <div class="hub-label">${t('outletProfile')}</div>
         </div>
         <div class="hub-card" onclick="enterHub('user-settings')">
-          <div class="hub-ico">&#9881;</div>
+          <div class="hub-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16.5 5.2a3.2 3.2 0 0 1 0 5.9M18 20a5.6 5.6 0 0 0-2-4.3"/></svg></div>
           <div class="hub-label">${t('userSettings')}</div>
         </div>
       </div>
@@ -6697,14 +6701,14 @@ function buildNav() {
     return;
   }
   const navItems = chefMode ? [
-    { v:'kot', ico:'&#128221;', key:'kot' },
+    { v:'kot', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5h6M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M10 10h4M10 14h4"/></svg>', key:'kot' },
   ] : [
-    { v:'tables',   ico:'&#129681;', key:'tables'   },
-    { v:'kot',      ico:'&#128221;', key:'kot'      },
-    { v:'crm',      ico:'&#128100;', key:'crm'      },
-    { v:'menu',     ico:'&#128203;', key:'menu'     },
-    { v:'reports',  ico:'&#128202;', key:'reports'  },
-    { v:'settings', ico:'&#9881;',   key:'settings' },
+    { v:'tables',   ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="4.5" rx="1.4"/><path d="M6.5 9v10.5M17.5 9v10.5M9.5 14h5"/></svg>', key:'tables'   },
+    { v:'kot',      ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5h6M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M10 10h4M10 14h4"/></svg>', key:'kot'      },
+    { v:'crm',      ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>', key:'crm'      },
+    { v:'menu',     ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>', key:'menu'     },
+    { v:'reports',  ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v17a1 1 0 0 0 1 1h17"/><path d="M7.5 16.5v-4M12 16.5v-8M16.5 16.5v-6"/></svg>', key:'reports'  },
+    { v:'settings', ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M4.6 15a1.6 1.6 0 0 1-.3 1.8 2 2 0 1 0 2.8 2.8 1.6 1.6 0 0 1 2.8 1.2 2 2 0 1 0 4 0 1.6 1.6 0 0 1 2.8-1.2 2 2 0 1 0 2.8-2.8 1.6 1.6 0 0 1 1.2-2.8 2 2 0 1 0 0-4 1.6 1.6 0 0 1-1.2-2.8 2 2 0 1 0-2.8-2.8 1.6 1.6 0 0 1-2.8-1.2 2 2 0 1 0-4 0A1.6 1.6 0 0 1 7.1 4.2 2 2 0 1 0 4.3 7a1.6 1.6 0 0 1-1.2 2.8 2 2 0 1 0 0 4A1.6 1.6 0 0 1 4.6 15z"/></svg>', key:'settings' },
   ];
   const btnHTML = navItems.map(n => `<button data-v="${n.v}" class="${S.view===n.v?'active':''}" onclick="go('${n.v}')">${n.ico} ${t(n.key)}</button>`).join('');
   document.getElementById('main-nav').innerHTML = btnHTML;
