@@ -1,2 +1,5 @@
 # Machine-specific Claude Code permissions, not shared tooling
 .claude/settings.local.json
+
+# Local-only console helper for previewing the admin panel without Firestore.
+preview-admin.js

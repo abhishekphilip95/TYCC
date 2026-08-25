@@ -102,19 +102,26 @@
 
 <div id="setup" class="screen hidden">
   <div class="login-card">
-    <div class="login-brand">
-      <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#05164D"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#84888D"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#84888D"/><circle cx="71.375" cy="71.375" r="18.625" fill="#05164D"/></svg>
-      tafelbill
+    <h2>No staff record for this account</h2>
+    <p class="hint" style="line-height:1.7;margin-bottom:12px;">
+      Your sign-in worked, but no employee record is linked to it, so there is nothing you may open.
+      If this is the first account, create its record once in the Firebase console under
+      Firestore &rarr; <span class="mono">employees</span>, using the ID below as the document ID.
+    </p>
+    <div class="creds-box" style="margin-top:0;">
+      <div><b>Your account ID:</b> <span class="mono" id="uid-out"></span></div>
+      <div><b>Signed in as:</b> <span class="mono" id="uid-email"></span></div>
     </div>
-    <p class="login-sub">No staff accounts exist yet. Create the master account.</p>
-    <div class="form-grp"><label for="s-name">Full Name</label><input id="s-name" placeholder="e.g. Abhishek Philip"></div>
-    <div class="form-grp"><label for="s-empId">Employee ID</label><input id="s-empId" value="CEO001"></div>
-    <div class="form-grp"><label for="s-email">Email</label><input id="s-email" type="email"></div>
-    <div class="form-grp"><label for="s-pass">Password</label><input id="s-pass" type="password" autocomplete="new-password"></div>
-    <div class="form-grp"><label for="s-pass2">Confirm Password</label><input id="s-pass2" type="password" autocomplete="new-password"></div>
-    <div class="err" id="setup-err"></div>
-    <button class="btn btn-navy" id="setup-btn" onclick="createMaster()">Create Master Account</button>
-    <p class="hint" style="margin-top:12px;text-align:center;">Only the hash of this password is stored. It is never written to this file or to the repository.</p>
+    <pre class="mono" style="background:var(--subtle);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11.5px;overflow-x:auto;line-height:1.6;margin-top:12px;">name:       Abhishek Philip
+empId:      CEO001
+email:      (the address above)
+department: all
+role:       CEO
+active:     true</pre>
+    <div class="row-actions">
+      <button class="btn btn-navy" onclick="location.reload()">Reload</button>
+      <button class="btn" onclick="signOutStaff()">Sign out</button>
+    </div>
   </div>
 </div>
 
@@ -122,15 +129,23 @@
   <div class="login-card">
     <h2 style="color:var(--danger);">Firestore rules needed</h2>
     <p class="hint" style="line-height:1.7;margin-bottom:12px;">This panel cannot reach the collections it needs. Add the following in the Firebase console under Firestore &rarr; Rules, then reload.</p>
-    <pre class="mono" style="background:var(--subtle);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11.5px;overflow-x:auto;line-height:1.6;">match /employees/{id} {
-  allow read, write: if true;
+    <pre class="mono" style="background:var(--subtle);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11.5px;overflow-x:auto;line-height:1.6;">function isStaff() {
+  return request.auth != null &&
+    exists(/databases/$(database)/documents/employees/$(request.auth.uid));
+}
+match /employees/{uid} {
+  allow read, write: if isStaff();
+}
+match /staff_index/{empId} {
+  allow read: if true;
+  allow write: if isStaff();
 }
 match /leads/{id} {
   allow create: if true;
-  allow read, update: if true;
+  allow read, update, delete: if isStaff();
 }
-match /contacts/{id} { allow read, write: if true; }
-match /accounts/{id} { allow read, write: if true; }</pre>
+match /contacts/{id} { allow read, write: if isStaff(); }
+match /accounts/{id} { allow read, write: if isStaff(); }</pre>
     <div class="err" id="rules-err" style="margin-top:10px;"></div>
     <button class="btn btn-navy" style="margin-top:10px;" onclick="location.reload()">Reload</button>
   </div>
@@ -141,7 +156,7 @@ match /accounts/{id} { allow read, write: if true; }</pre>
     <div class="brand" style="display:flex;align-items:center;gap:9px;"><svg width="22" height="22" viewBox="0 0 100 100" aria-hidden="true" style="flex-shrink:0"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#05164D"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#84888D"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#84888D"/><circle cx="71.375" cy="71.375" r="18.625" fill="#05164D"/></svg>tafelbill <span>Admin Panel (local)</span></div>
     <div style="display:flex;gap:8px;align-items:center;">
       <span id="who" class="pill" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.2);color:#fff;"></span>
-      <button class="btn btn-sm" onclick="location.reload()">Lock</button>
+      <button class="btn btn-sm" onclick="signOutStaff()">Sign out</button>
     </div>
   </div>
   <div class="wrap">
@@ -368,10 +383,14 @@ match /accounts/{id} { allow read, write: if true; }</pre>
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
   import {
     getFirestore, collection, doc, setDoc, getDoc, getDocs, writeBatch, query, orderBy
   } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+    createUserWithEmailAndPassword, sendPasswordResetEmail
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBZoKA9WNUkdWfykPKP0pUw1wuka7PI0yk",
@@ -384,7 +403,25 @@ match /accounts/{id} { allow read, write: if true; }</pre>
 
   const fbApp = initializeApp(firebaseConfig);
   const fbDb = getFirestore(fbApp);
-  window.__fb = { fbDb, collection, doc, setDoc, getDoc, getDocs, writeBatch, query, orderBy };
+  const fbAuth = getAuth(fbApp);
+
+  // Creating a user signs that user in, which would bump the admin out of
+  // their own session. A throwaway second app keeps HR where they are.
+  async function createStaffUser(email, password) {
+    const secondary = initializeApp(firebaseConfig, 'staff-maker-' + Date.now());
+    try {
+      const cred = await createUserWithEmailAndPassword(getAuth(secondary), email, password);
+      return cred.user.uid;
+    } finally {
+      await deleteApp(secondary);
+    }
+  }
+
+  window.__fb = {
+    fbDb, collection, doc, setDoc, getDoc, getDocs, writeBatch, query, orderBy,
+    fbAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+    sendPasswordResetEmail, createStaffUser,
+  };
   window.dispatchEvent(new Event('fb-ready'));
 </script>
 
@@ -404,9 +441,13 @@ const DEPARTMENTS = [
 let currentEmp = null;
 let allEmployees = [];
 
-async function sha256(text) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+// Employee IDs are resolved to an email before sign-in, because Firebase Auth
+// only knows addresses. staff_index holds nothing but that mapping.
+async function emailForLogin(input) {
+  if (input.includes('@')) return input;
+  const { fbDb, doc, getDoc } = window.__fb;
+  const snap = await getDoc(doc(fbDb, 'staff_index', input.toUpperCase()));
+  return snap.exists() ? snap.data().email : null;
 }
 
 // Only the first word, capitalised — "abhishek philip" greets as "Hej Abhishek".
@@ -422,79 +463,68 @@ function showScreen(id) {
   document.getElementById('main').classList.toggle('hidden', id !== null);
 }
 
-async function boot() {
-  const { fbDb, collection, getDocs } = window.__fb;
-  try {
-    const snap = await getDocs(collection(fbDb, 'employees'));
-    allEmployees = snap.docs.map(d => d.data());
-    showScreen(allEmployees.length ? 'gate' : 'setup');
-  } catch (e) {
-    console.error('Cannot reach employees', e);
-    document.getElementById('rules-err').textContent = e.code || e.message;
-    showScreen('rules-warn');
-  }
-}
-
-async function createMaster() {
-  const err = document.getElementById('setup-err');
-  const btn = document.getElementById('setup-btn');
-  err.textContent = '';
-  const name = document.getElementById('s-name').value.trim();
-  const empId = document.getElementById('s-empId').value.trim();
-  const email = document.getElementById('s-email').value.trim();
-  const pass = document.getElementById('s-pass').value;
-  const pass2 = document.getElementById('s-pass2').value;
-  if (!name || !empId || !email || !pass) { err.textContent = 'Every field is required.'; return; }
-  if (pass !== pass2) { err.textContent = 'The two passwords do not match.'; return; }
-  if (pass.length < 8) { err.textContent = 'Use at least 8 characters.'; return; }
-
-  btn.disabled = true; btn.textContent = 'Creating…';
-  try {
-    const { fbDb, doc, setDoc } = window.__fb;
-    const id = 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const rec = { id, empId, name, email, phone: '', department: 'all', role: 'CEO',
-                  passwordHash: await sha256(pass), active: true, createdAt: new Date().toISOString() };
-    await setDoc(doc(fbDb, 'employees', id), rec);
-    allEmployees = [rec];
-    showScreen('gate');
-    document.getElementById('gate-user').value = email;
-    document.getElementById('gate-pass').focus();
-  } catch (e) {
-    console.error(e);
-    err.textContent = 'Could not create the account: ' + (e.code || e.message);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Create Master Account';
-  }
+// Auth is the source of truth for who is signed in; the employees doc keyed by
+// that account's ID is what says whether they are staff and what they may open.
+function boot() {
+  const { fbAuth, onAuthStateChanged } = window.__fb;
+  onAuthStateChanged(fbAuth, async user => {
+    if (!user) { currentEmp = null; showScreen('gate'); return; }
+    const { fbDb, doc, getDoc } = window.__fb;
+    try {
+      const snap = await getDoc(doc(fbDb, 'employees', user.uid));
+      if (!snap.exists() || snap.data().active === false) {
+        document.getElementById('uid-out').textContent = user.uid;
+        document.getElementById('uid-email').textContent = user.email;
+        showScreen('setup');
+        return;
+      }
+      currentEmp = snap.data();
+      document.getElementById('who').textContent = currentEmp.name + ' · ' + currentEmp.role;
+      showScreen(null);
+      goHub();
+      loadClients();
+      loadLeads();
+      loadEmployees();
+      loadContacts();
+      loadAccounts();
+    } catch (e) {
+      console.error('Cannot read the staff record', e);
+      document.getElementById('rules-err').textContent = e.code || e.message;
+      showScreen('rules-warn');
+    }
+  });
 }
 
 async function signIn() {
   const err = document.getElementById('gate-err');
   const btn = document.getElementById('gate-btn');
   err.textContent = '';
-  const who = document.getElementById('gate-user').value.trim().toLowerCase();
+  const who = document.getElementById('gate-user').value.trim();
   const pass = document.getElementById('gate-pass').value;
   if (!who || !pass) { err.textContent = 'Enter your ID or email, and your password.'; return; }
 
   btn.disabled = true; btn.textContent = 'Signing in…';
   try {
-    const hash = await sha256(pass);
-    const emp = allEmployees.find(e =>
-      e.active !== false &&
-      ((e.empId || '').toLowerCase() === who || (e.email || '').toLowerCase() === who) &&
-      e.passwordHash === hash);
-    if (!emp) { err.textContent = 'No account matches those details.'; return; }
-    currentEmp = emp;
-    document.getElementById('who').textContent = emp.name + ' · ' + emp.role;
-    showScreen(null);
-    goHub();
-    loadClients();
-    loadLeads();
-    loadEmployees();
-    loadContacts();
-    loadAccounts();
+    const email = await emailForLogin(who);
+    if (!email) { err.textContent = 'No account matches those details.'; return; }
+    const { fbAuth, signInWithEmailAndPassword } = window.__fb;
+    await signInWithEmailAndPassword(fbAuth, email, pass);
+    // onAuthStateChanged takes it from here.
+  } catch (e) {
+    // Firebase distinguishes these; staff should not learn which addresses exist.
+    err.textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found']
+      .includes(e.code) ? 'No account matches those details.'
+      : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again shortly.'
+      : 'Could not sign in: ' + (e.code || e.message);
   } finally {
     btn.disabled = false; btn.textContent = 'Sign In';
   }
+}
+
+async function signOutStaff() {
+  const { fbAuth, signOut } = window.__fb;
+  try { await signOut(fbAuth); } catch (e) { console.error(e); }
+  location.reload();
 }
 
 function isMaster() { return currentEmp && currentEmp.role === 'CEO'; }
@@ -809,9 +839,9 @@ function renderEmployees() {
       <td>${escapeHtml(e.email)}${e.phone ? '<br>' + escapeHtml(e.phone) : ''}</td>
       <td>${escapeHtml(deptName(e.department))}</td>
       <td>${escapeHtml(e.role)}</td>
-      <td class="hint">stored as a hash</td>
+      <td class="hint">held by Firebase Auth</td>
       <td style="white-space:nowrap;">
-        <button class="btn btn-sm" onclick="resetEmpPassword('${escapeHtml(e.id)}')">Reset</button>
+        <button class="btn btn-sm" onclick="resetEmpPassword('${escapeHtml(e.id)}')">Send reset</button>
         ${e.role === 'CEO' ? '' :
           `<button class="btn btn-sm" onclick="toggleEmpActive('${escapeHtml(e.id)}')">${e.active === false ? 'Enable' : 'Disable'}</button>`}
       </td>
@@ -837,15 +867,18 @@ async function addEmployee() {
 
   btn.disabled = true; btn.textContent = 'Adding…';
   try {
-    const { fbDb, doc, setDoc } = window.__fb;
-    const id = 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    await setDoc(doc(fbDb, 'employees', id), {
-      id, empId, name, email, phone, department, role,
-      passwordHash: await sha256(pass), active: true, createdAt: new Date().toISOString(),
+    const { fbDb, doc, setDoc, createStaffUser } = window.__fb;
+    // The account comes first: its ID is what the employee record is filed under,
+    // and what the rules check on every read.
+    const uid = await createStaffUser(email, pass);
+    await setDoc(doc(fbDb, 'employees', uid), {
+      id: uid, empId, name, email, phone, department, role,
+      active: true, createdAt: new Date().toISOString(),
     });
+    await setDoc(doc(fbDb, 'staff_index', empId.toUpperCase()), { empId: empId.toUpperCase(), email });
     const box = document.getElementById('hr-creds');
     box.classList.remove('hidden');
-    // Shown once: the hash is all that is kept, so it cannot be looked up later.
+    // Shown once: the password lives in Firebase Auth, not anywhere we can read.
     box.innerHTML = `
       <div class="ok">Employee added. Pass these on now — the password cannot be shown again.</div>
       <div><b>Employee ID:</b> ${escapeHtml(empId)}</div>
@@ -855,26 +888,28 @@ async function addEmployee() {
     loadEmployees();
   } catch (e) {
     console.error(e);
-    err.textContent = 'Could not add the employee: ' + (e.code || e.message);
+    err.textContent = e.code === 'auth/email-already-in-use'
+      ? 'That email already has an account.'
+      : e.code === 'auth/weak-password'
+      ? 'Firebase rejected that password as too weak.'
+      : 'Could not add the employee: ' + (e.code || e.message);
   } finally {
     btn.disabled = false; btn.textContent = 'Add Employee';
   }
 }
 
+// Passwords live in Firebase Auth, so HR sends a reset rather than setting one.
 async function resetEmpPassword(id) {
   const emp = allEmployees.find(e => e.id === id);
   if (!emp) return;
-  const pass = prompt('New password for ' + emp.name + ' (at least 8 characters):');
-  if (pass == null) return;
-  if (pass.length < 8) { alert('Use at least 8 characters.'); return; }
+  if (!confirm('Email a password reset link to ' + emp.email + '?')) return;
   try {
-    const { fbDb, doc, setDoc } = window.__fb;
-    await setDoc(doc(fbDb, 'employees', id), { passwordHash: await sha256(pass) }, { merge: true });
-    emp.passwordHash = await sha256(pass);
-    alert('Password updated for ' + emp.name + '.');
+    const { fbAuth, sendPasswordResetEmail } = window.__fb;
+    await sendPasswordResetEmail(fbAuth, emp.email);
+    alert('Reset link sent to ' + emp.email + '.');
   } catch (e) {
     console.error(e);
-    alert('Could not update that password: ' + (e.code || e.message));
+    alert('Could not send that reset: ' + (e.code || e.message));
   }
 }
 
@@ -1152,7 +1187,7 @@ window.loadLeads = loadLeads;
 window.renderLeads = renderLeads;
 window.setLeadStatus = setLeadStatus;
 window.signIn = signIn;
-window.createMaster = createMaster;
+window.signOutStaff = signOutStaff;
 window.goHub = goHub;
 window.openDept = openDept;
 window.switchSales = switchSales;
