@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "tycc-9a6d2"
+  },
+  "targets": {
+    "tycc-9a6d2": {
+      "hosting": {
+        "admin": [
+          "tycc-9a6d2-admin"
+        ]
+      }
+    }
+  }
+}

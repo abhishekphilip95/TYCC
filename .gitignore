@@ -3,3 +3,6 @@
 
 # Local-only console helper for previewing the admin panel without Firestore.
 preview-admin.js
+
+# Built by scripts/build-admin.js at deploy time.
+admin-dist/

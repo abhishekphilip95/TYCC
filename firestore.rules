@@ -1,0 +1,74 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Who is asking ─────────────────────────────────────────────────
+    // get() and exists() inside a rule are privileged reads, so these
+    // helpers do not recurse back through the rules below.
+    function staffDoc() {
+      return get(/databases/$(database)/documents/employees/$(request.auth.uid)).data;
+    }
+    function isStaff() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/employees/$(request.auth.uid))
+        && staffDoc().active == true;
+    }
+    // 'all' is the master department: the CEO sits at every desk.
+    function inDept(dept) {
+      return isStaff() && (staffDoc().department == 'all' || staffDoc().department == dept);
+    }
+
+    // ── The POS ───────────────────────────────────────────────────────
+    // Still open, and knowingly so: the POS signs nobody in to Firebase, it
+    // authenticates staff against users held inside the outlet itself. Any
+    // rule stricter than this stops live tills from reading and writing
+    // their own orders. Closing it means giving the POS an identity first
+    // (anonymous auth, with the outlet code pinned to it), not editing here.
+    match /outlets/{outlet}/{document=**} {
+      allow read, write: if true;
+    }
+
+    match /finance/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── Admin panel ───────────────────────────────────────────────────
+
+    // Outlet records, including each outlet's POS login. Operations only.
+    match /clients/{clientId} {
+      allow read, write: if inDept('operations');
+    }
+
+    // A signed-in account may always fetch its own record, because sign-in
+    // has to read it to learn the person's department before anything else
+    // can be decided. Anyone may fetch a missing one too, so an account with
+    // no staff record gets told that rather than a permission error.
+    // Listing the collection, and every write, is HR's alone.
+    match /employees/{uid} {
+      allow get: if request.auth != null && (request.auth.uid == uid || inDept('hr'));
+      allow list: if inDept('hr');
+      allow write: if inDept('hr');
+    }
+
+    // Read openly, because it is consulted before anyone is signed in. It
+    // holds an employee ID and an address, and nothing else worth holding.
+    match /staff_index/{empId} {
+      allow read: if true;
+      allow write: if inDept('hr');
+    }
+
+    // The public form on tafelbill.com may file a lead and do nothing else:
+    // it cannot read one back, edit one, or delete one.
+    match /leads/{leadId} {
+      allow create: if true;
+      allow read, update, delete: if inDept('sales');
+    }
+    match /contacts/{contactId} {
+      allow read, write: if inDept('sales');
+    }
+    match /accounts/{accountId} {
+      allow read, write: if inDept('sales');
+    }
+  }
+}
