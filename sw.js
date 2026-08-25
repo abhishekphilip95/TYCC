@@ -1,4 +1,4 @@
-// RestoBill service worker.
+// TafelBill service worker.
 //
 // Android Chrome refuses `new Notification(...)` from a page — a kitchen alert
 // has to be raised through a service worker registration, which is why this

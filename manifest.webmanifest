@@ -1,12 +1,12 @@
 {
-  "name": "RestoBill",
-  "short_name": "RestoBill",
+  "name": "TafelBill",
+  "short_name": "TafelBill",
   "description": "Restaurant and cafe billing",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#4B5563",
-  "theme_color": "#4B5563",
+  "background_color": "#1F3557",
+  "theme_color": "#1F3557",
   "orientation": "any",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },

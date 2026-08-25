@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RestoBill - Restaurant & Cafe Billing</title>
+<title>TafelBill - Restaurant & Cafe Billing</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#4B5563">
 <meta name="mobile-web-app-capable" content="yes">
@@ -83,6 +83,8 @@ nav button.active { background: rgba(255,255,255,0.22); color: #fff; }
   border: 1px solid var(--border); border-radius: 16px; padding: 32px 28px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.15);
 }
+.logo, .mobile-drawer-hdr, .login-logo { display: flex; align-items: center; gap: 9px; }
+.login-logo { justify-content: center; }
 .login-logo { font-size: 26px; font-weight: 800; text-align: center; color: var(--text); margin-bottom: 6px; }
 .login-sub { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 22px; }
 .login-card .form-grp { margin-bottom: 14px; }
@@ -821,7 +823,7 @@ body.dark .kot-pending-review { background: #3A2E10; }
 <div id="app">
   <header>
     <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()">&#9776;</button>
-    <div class="logo" onclick="goHome()" style="cursor:pointer;">&#127374; RestoBill</div>
+    <div class="logo" onclick="goHome()" style="cursor:pointer;"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true" style="flex-shrink:0"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#fff"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#fff" opacity=".55"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#fff" opacity=".55"/><circle cx="71.375" cy="71.375" r="18.625" fill="#fff"/></svg>tafelbill</div>
     <nav id="main-nav"></nav>
     <div id="hdr-right">
       <span id="hdr-name"></span>
@@ -836,7 +838,7 @@ body.dark .kot-pending-review { background: #3A2E10; }
 
 <!-- Mobile side drawer -->
 <div id="mobile-drawer" class="mobile-drawer">
-  <div class="mobile-drawer-hdr" onclick="goHome();closeMobileMenu();" style="cursor:pointer;">&#127374; RestoBill</div>
+  <div class="mobile-drawer-hdr" onclick="goHome();closeMobileMenu();" style="cursor:pointer;"><svg width="22" height="22" viewBox="0 0 100 100" aria-hidden="true" style="flex-shrink:0"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#fff"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#fff" opacity=".55"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#fff" opacity=".55"/><circle cx="71.375" cy="71.375" r="18.625" fill="#fff"/></svg>tafelbill</div>
   <nav id="drawer-nav"></nav>
 </div>
 <div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" onclick="closeMobileMenu()"></div>
@@ -844,7 +846,7 @@ body.dark .kot-pending-review { background: #3A2E10; }
 <!-- Login / Sign-in screen -->
 <div id="login-screen" style="display:none;">
   <div class="login-card">
-    <div class="login-logo">&#127374; RestoBill</div>
+    <div class="login-logo"><svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true" style="flex-shrink:0"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#1F3557"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#84888D"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#84888D"/><circle cx="71.375" cy="71.375" r="18.625" fill="#1F3557"/></svg>tafelbill</div>
     <p class="login-sub" id="login-sub"></p>
     <div class="form-grp"><label id="lbl-outlet"></label><input id="login-outlet" type="text" autocomplete="organization"></div>
     <div class="form-grp"><label id="lbl-uid"></label><input id="login-user" type="text" autocomplete="username" autofocus></div>
@@ -995,7 +997,7 @@ const I18N = {
     outletName:'Outlet Name', outletRequired:'Enter your outlet name', outletNotFound:'Outlet not found. Check the name and try again.', connecting:'Connecting\u2026', loadingMsg:'Brewing\u2026', savingBill:'Saving the bill\u2026', loadingReports:'Building your report\u2026', ok:'OK', comingSoon:'Coming soon', featureUnavailable:'Accounts', featureUnavailableMsg:'This feature is currently unavailable we are working on it..', 
     userManagement:'User Management', addUser:'Add User', editUser:'Edit User', deleteUser:'Delete User', role:'Role', userExists:'User ID already exists', lastOwner:'Cannot delete the only Owner', cantDeleteSelf:'You cannot delete your own account',
     masterLogin:'Master Login', owner:'Owner', ownerProtected:'Only a master login can add or remove an owner', offlineMsg:'\u26A0 You are not connected to the internet. Please connect to the internet \u2014 billing still works, and your data will sync once you are back online.', supportMsg:'\u26A0 Oops... sorry software issue please contact the support team..!!', protectedAccount:'Protected', masterProtected:'The master login can\'t be created, changed or deleted here',
-    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', outletProfile:'Outlet Profile', outletDetails:'Outlet Details', noAccess:'You do not have access to this', soundAlert:'Sound alert', pushAlert:'Notifications', newKotTitle:'New KOT', newKotOne:'One order is waiting in your kitchen.', newKotMany:'orders are waiting in your kitchen.', notifBlocked:'Notifications are blocked for this site. Allow them in your browser settings to turn this on.', notifUnsupported:'This browser cannot show notifications.', ownerName:'Owner Name', email:'Email', phone:'Phone', brandName:'Brand Name', companyName:'Company Name', address:'Address', billing:'Billing', notSet:'Not set', profileManaged:'These details come from your RestoBill registration. Contact support to change them.', backToMenu:'Back to menu',
+    chooseArea:'What would you like to do?', billingPos:'Billing POS', userSettings:'User Settings', outletProfile:'Outlet Profile', outletDetails:'Outlet Details', noAccess:'You do not have access to this', soundAlert:'Sound alert', pushAlert:'Notifications', newKotTitle:'New KOT', newKotOne:'One order is waiting in your kitchen.', newKotMany:'orders are waiting in your kitchen.', notifBlocked:'Notifications are blocked for this site. Allow them in your browser settings to turn this on.', notifUnsupported:'This browser cannot show notifications.', ownerName:'Owner Name', email:'Email', phone:'Phone', brandName:'Brand Name', companyName:'Company Name', address:'Address', billing:'Billing', notSet:'Not set', profileManaged:'These details come from your TafelBill registration. Contact support to change them.', backToMenu:'Back to menu',
     rename:'Rename', split:'Split', splitOccupied:'Free the table before splitting', splitConfirm:'Split "%s" into two tables?',
     merge:'Merge', selected:'selected', onlySplitMerge:'Only split tables can be merged', mergeSameGroup:'Select tables from the same split', mergeConfirm:'Merge selected tables back into "%s"?', mergeHint:'Hold Ctrl and click split tables to select, then Merge.',
     deleteTable:'Delete Table', deleteTableConfirm:'Delete table "%s" and its current order?', nothingToClear:'No items to clear',
@@ -5747,7 +5749,7 @@ function usersCardHTML() {
     const masterRow = u.role === 'Master';
     const ownerRow  = u.role === 'Owner';
     const roleLabel = masterRow ? t('masterLogin') : (ownerRow ? t('owner') : h(u.role));
-    // RestoBill issues the master login, so it is never deleted from inside the
+    // TafelBill issues the master login, so it is never deleted from inside the
     // outlet — but a master may edit the master row to correct it. Owner rows
     // are always editable, while only a master may delete one, so owners can
     // remove neither each other nor themselves.
@@ -5865,7 +5867,7 @@ function settingsHTML() {
 // ═══════════════════════════════════════════════════════
 //  OUTLET PROFILE
 // ═══════════════════════════════════════════════════════
-// The registration details belong to RestoBill and are shown as they were
+// The registration details belong to TafelBill and are shown as they were
 // entered in the admin panel, never edited here. Address is the exception:
 // it is the outlet's own operational detail, so it can be corrected on the
 // spot and syncs back.
@@ -5995,7 +5997,7 @@ function userSettingsHTML() {
 
 
 // Only the two billing values are set here now. The outlet's name and code
-// come from its RestoBill registration and are shown, read-only, on the
+// come from its TafelBill registration and are shown, read-only, on the
 // Outlet Profile screen — an outlet editing its own code would point the app
 // at a different outlet's data entirely.
 function saveSettings() {
@@ -6825,14 +6827,14 @@ function showUserModal(userId) {
   // here. Owner may be granted, but only by a master login — an existing owner
   // keeps the option so editing their own row does not silently demote them.
   const canAssignOwner = isMaster() || (u && u.role === 'Owner');
-  // Master is never created here — RestoBill issues it. It stays in the list
+  // Master is never created here — TafelBill issues it. It stays in the list
   // only while editing an existing master, so saving that row cannot silently
   // demote them.
   const editingMaster = !!(u && u.role === 'Master');
   const roleOpts = ROLES
     .filter(r => (r !== 'Master' || editingMaster) && (r !== 'Owner' || canAssignOwner))
     .map(r => `<option value="${r}"${u && u.role === r ? ' selected' : ''}>${r}</option>`).join('');
-  // RestoBill issues the master login, so the outlet may change its password
+  // TafelBill issues the master login, so the outlet may change its password
   // but never its user id or its role. The fields stay in the form, disabled,
   // so the row still reads as a whole account rather than a lone password box.
   const lock = editingMaster ? ' disabled' : '';
@@ -6853,7 +6855,7 @@ function saveUser(userId) {
   const role = document.getElementById('u-role').value;
   const target = userId ? D.users.find(x => x.id === userId) : null;
   const targetIsMaster = !!(target && target.role === 'Master');
-  // The master login belongs to RestoBill. Only a master may open its row, and
+  // The master login belongs to TafelBill. Only a master may open its row, and
   // even then only the password changes — the user id and the role are fixed,
   // so the outlet can never rename, demote or duplicate its own master. Read
   // from the record rather than the form, which a disabled field cannot be
@@ -6865,7 +6867,7 @@ function saveUser(userId) {
     save(); closeModal(); renderMain(); renderHeaderUser(); notify(t('save'));
     return;
   }
-  // A master login is issued by RestoBill, never created from inside an outlet.
+  // A master login is issued by TafelBill, never created from inside an outlet.
   if (role === 'Master') { notify(t('masterProtected')); return; }
   // Only a master login may create an owner or promote someone into one.
   if (role === 'Owner' && !isMaster() && !(target && target.role === 'Owner')) { notify(t('ownerProtected')); return; }
@@ -6896,7 +6898,7 @@ function deleteUser(userId) {
 
 // One-time role sync for outlets that predate the Master/Owner split, when
 // every elevated account was stored as 'Owner'. Exactly one account per outlet
-// is the RestoBill-issued master; everyone the restaurant created itself is an
+// is the TafelBill-issued master; everyone the restaurant created itself is an
 // owner. It stays dormant until a master can actually be identified, so it
 // still applies when the outlet's data only arrives from Firebase after login,
 // and it repairs an outlet an earlier build left with several masters.
@@ -6905,7 +6907,7 @@ function syncOutletRoles() {
   const norm = s => (s || '').trim().toLowerCase();
   // An outlet's Firestore code is the slug of the outlet name typed at login,
   // so it does not have to equal the master's user id — check every name this
-  // outlet is known by. TYCC is the single outlet that existed before RestoBill
+  // outlet is known by. TYCC is the single outlet that existed before TafelBill
   // began issuing master logins, and its master is the login of the same name.
   const names = [
     D.settings && D.settings.outletCode,
