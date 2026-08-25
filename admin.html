@@ -43,30 +43,120 @@
   .search { width: 260px; }
   .creds-box { background: var(--subtle); border: 1px dashed var(--border); border-radius: 8px; padding: 14px; margin-top: 14px; font-size: 13.5px; line-height: 1.9; }
   .creds-box b { color: var(--primary-dk); }
-  #gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; }
-  #gate .card { width: 320px; }
   .hidden { display: none !important; }
   .top-actions { display:flex; justify-content: space-between; align-items:center; margin-bottom: 14px; }
+
+  /* ── Sign in, mirroring the POS login so staff meet one pattern ── */
+  .screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+  .login-card { background: var(--card); border-radius: 14px; padding: 40px 36px; width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(5,22,77,.10); }
+  .login-brand { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 27px; font-weight: 700; color: #05164D; letter-spacing: -.5px; }
+  .login-sub { text-align: center; color: var(--muted); font-size: 14.5px; margin: 6px 0 26px; }
+  .login-card .form-grp { margin-bottom: 18px; }
+  .login-card label { font-size: 11.5px; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .login-card input { padding: 12px 13px; border-radius: 9px; background: #fff; font-size: 15px; }
+  .btn-navy { background: #05164D; color: #fff; border-color: #05164D; width: 100%; padding: 13px; border-radius: 9px; font-size: 15px; font-weight: 600; }
+  .btn-navy:disabled { opacity: .6; cursor: default; }
+  .login-ver { text-align: center; color: var(--muted); font-size: 12px; margin-top: 16px; }
+
+  /* ── Department hub ── */
+  .hub-wrap { padding: 26px 0 40px; text-align: center; }
+  .hub-greet { font-size: 27px; font-weight: 700; color: #05164D; }
+  .hub-title { font-size: 17px; font-weight: 500; color: #374151; margin: 8px 0 26px; }
+  .hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 16px; max-width: 900px; margin: 0 auto; }
+  .hub-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 26px 14px; cursor: pointer; transition: box-shadow .15s, transform .15s; }
+  .hub-card:hover { box-shadow: 0 6px 20px rgba(5,22,77,.10); transform: translateY(-2px); }
+  .hub-card.soon { opacity: .55; }
+  .hub-ico { color: #05164D; margin-bottom: 12px; }
+  .hub-ico svg { width: 34px; height: 34px; }
+  .hub-label { font-size: 15px; font-weight: 600; color: #111827; }
+  .hub-soon { display: inline-block; margin-top: 7px; font-size: 10.5px; font-weight: 700; letter-spacing: .5px; color: var(--muted); background: var(--subtle); border-radius: 20px; padding: 3px 9px; }
+  .dept-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .dept-hdr h1 { font-size: 21px; }
+  .sub-tabs { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+  .sub-tab { padding: 9px 15px; cursor: pointer; font-size: 13.5px; color: var(--muted); border-bottom: 2px solid transparent; }
+  .sub-tab.active { color: #05164D; border-bottom-color: #05164D; font-weight: 600; }
+  .placeholder { text-align: center; padding: 54px 20px; color: var(--muted); }
+  .placeholder h3 { font-size: 16px; color: var(--text); margin-bottom: 8px; }
 </style>
 </head>
 <body>
 
-<div id="gate">
-  <div class="card">
-    <h2>TafelBill Admin — Sign In</h2>
-    <div class="form-grp"><label>Admin Password</label><input id="gate-pass" type="password"></div>
+<div id="boot" class="screen">
+  <div class="login-card" style="text-align:center;color:var(--muted);">Loading…</div>
+</div>
+
+<div id="gate" class="screen hidden">
+  <div class="login-card">
+    <div class="login-brand">
+      <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#05164D"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#84888D"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#84888D"/><circle cx="71.375" cy="71.375" r="18.625" fill="#05164D"/></svg>
+      tafelbill
+    </div>
+    <p class="login-sub">Staff Portal</p>
+    <div class="form-grp"><label for="gate-user">Employee ID or Email</label><input id="gate-user" autocomplete="username"></div>
+    <div class="form-grp"><label for="gate-pass">Password</label><input id="gate-pass" type="password" autocomplete="current-password"></div>
     <div class="err" id="gate-err"></div>
-    <div class="row-actions"><button class="btn btn-primary" onclick="checkGate()">Enter</button></div>
-    <p class="hint" style="margin-top:10px;">Basic local access gate only — this tool is meant to be run locally by TafelBill staff, not hosted publicly.</p>
+    <button class="btn btn-navy" id="gate-btn" onclick="signIn()">Sign In</button>
+    <p class="login-ver">v0.0.1</p>
+  </div>
+</div>
+
+<div id="setup" class="screen hidden">
+  <div class="login-card">
+    <div class="login-brand">
+      <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden="true"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#05164D"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#84888D"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#84888D"/><circle cx="71.375" cy="71.375" r="18.625" fill="#05164D"/></svg>
+      tafelbill
+    </div>
+    <p class="login-sub">No staff accounts exist yet. Create the master account.</p>
+    <div class="form-grp"><label for="s-name">Full Name</label><input id="s-name" placeholder="e.g. Abhishek Philip"></div>
+    <div class="form-grp"><label for="s-empId">Employee ID</label><input id="s-empId" value="CEO001"></div>
+    <div class="form-grp"><label for="s-email">Email</label><input id="s-email" type="email"></div>
+    <div class="form-grp"><label for="s-pass">Password</label><input id="s-pass" type="password" autocomplete="new-password"></div>
+    <div class="form-grp"><label for="s-pass2">Confirm Password</label><input id="s-pass2" type="password" autocomplete="new-password"></div>
+    <div class="err" id="setup-err"></div>
+    <button class="btn btn-navy" id="setup-btn" onclick="createMaster()">Create Master Account</button>
+    <p class="hint" style="margin-top:12px;text-align:center;">Only the hash of this password is stored. It is never written to this file or to the repository.</p>
+  </div>
+</div>
+
+<div id="rules-warn" class="screen hidden">
+  <div class="login-card">
+    <h2 style="color:var(--danger);">Firestore rules needed</h2>
+    <p class="hint" style="line-height:1.7;margin-bottom:12px;">This panel cannot reach the collections it needs. Add the following in the Firebase console under Firestore &rarr; Rules, then reload.</p>
+    <pre class="mono" style="background:var(--subtle);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11.5px;overflow-x:auto;line-height:1.6;">match /employees/{id} {
+  allow read, write: if true;
+}
+match /leads/{id} {
+  allow create: if true;
+  allow read, update: if true;
+}
+match /contacts/{id} { allow read, write: if true; }
+match /accounts/{id} { allow read, write: if true; }</pre>
+    <div class="err" id="rules-err" style="margin-top:10px;"></div>
+    <button class="btn btn-navy" style="margin-top:10px;" onclick="location.reload()">Reload</button>
   </div>
 </div>
 
 <div id="main" class="hidden">
   <div class="topbar">
     <div class="brand" style="display:flex;align-items:center;gap:9px;"><svg width="22" height="22" viewBox="0 0 100 100" aria-hidden="true" style="flex-shrink:0"><path d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z" fill="#05164D"/><path d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z" fill="#84888D"/><path d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z" fill="#84888D"/><circle cx="71.375" cy="71.375" r="18.625" fill="#05164D"/></svg>tafelbill <span>Admin Panel (local)</span></div>
-    <button class="btn btn-sm" onclick="location.reload()">Lock</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span id="who" class="pill" style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.2);color:#fff;"></span>
+      <button class="btn btn-sm" onclick="location.reload()">Lock</button>
+    </div>
   </div>
   <div class="wrap">
+
+    <div id="hub" class="hub-wrap">
+      <div class="hub-greet" id="hub-greet"></div>
+      <h2 class="hub-title" style="font-weight:500;">What would you like to do?</h2>
+      <div class="hub-grid" id="hub-grid"></div>
+    </div>
+
+    <section class="dept hidden" id="dept-operations">
+      <div class="dept-hdr">
+        <button class="btn btn-sm" onclick="goHub()">&larr; Back</button>
+        <h1>Operations</h1>
+      </div>
 
     <div class="card">
       <h2>Create New Outlet</h2>
@@ -114,29 +204,6 @@
 
     <div class="card">
       <div class="top-actions">
-        <h2 style="margin:0;">CRM &mdash; Demo Requests <span class="pill" id="leads-count">0</span></h2>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <select id="lead-status-filter" onchange="renderLeads()" style="width:auto;">
-            <option value="">All statuses</option>
-            <option value="New">New</option>
-            <option value="Contacted">Contacted</option>
-            <option value="Demo Booked">Demo Booked</option>
-            <option value="Converted">Converted</option>
-            <option value="Lost">Lost</option>
-          </select>
-          <input class="search" id="lead-search" placeholder="Search name, outlet, phone…" oninput="renderLeads()">
-          <button class="btn btn-sm" onclick="loadLeads()">Refresh</button>
-        </div>
-      </div>
-      <table>
-        <thead><tr><th>Received</th><th>Name</th><th>Outlet</th><th>Contact</th><th>City</th><th>Message</th><th>Status</th></tr></thead>
-        <tbody id="leads-tbody"></tbody>
-      </table>
-      <p class="hint" id="leads-empty">No demo requests yet.</p>
-    </div>
-
-    <div class="card">
-      <div class="top-actions">
         <h2 style="margin:0;">Existing Outlets</h2>
         <input class="search" id="client-search" placeholder="Search by name, outlet, email…" oninput="renderClients()">
       </div>
@@ -146,6 +213,136 @@
       </table>
       <p class="hint" id="clients-empty">No outlets created yet.</p>
     </div>
+    </section>
+
+    <section class="dept hidden" id="dept-hr">
+      <div class="dept-hdr">
+        <button class="btn btn-sm" onclick="goHub()">&larr; Back</button>
+        <h1>Human Resources</h1>
+      </div>
+
+      <div class="card">
+        <h2>Add Employee</h2>
+        <div class="tab-panel active" style="display:grid;">
+          <div class="form-grp"><label>Full Name *</label><input id="h-name"></div>
+          <div class="form-grp"><label>Employee ID *</label><input id="h-empId"></div>
+          <div class="form-grp"><label>Email *</label><input id="h-email" type="email"></div>
+          <div class="form-grp"><label>Phone</label><input id="h-phone" type="tel"></div>
+          <div class="form-grp"><label>Department *</label><select id="h-dept"></select></div>
+          <div class="form-grp"><label>Role</label><select id="h-role">
+            <option value="Staff">Staff</option><option value="Manager">Manager</option><option value="CEO">CEO</option>
+          </select></div>
+          <div class="form-grp full"><label>Temporary Password *</label>
+            <div style="display:flex;gap:8px;"><input id="h-pass" style="flex:1;"><button class="btn btn-sm" onclick="genEmpPassword()">Generate</button></div>
+          </div>
+        </div>
+        <div class="err" id="hr-err"></div>
+        <div class="row-actions"><button class="btn btn-primary" id="hr-add-btn" onclick="addEmployee()">Add Employee</button></div>
+        <div class="creds-box hidden" id="hr-creds"></div>
+      </div>
+
+      <div class="card">
+        <div class="top-actions">
+          <h2 style="margin:0;">Employees <span class="pill" id="emp-count">0</span></h2>
+          <input class="search" id="emp-search" placeholder="Search name, ID, email…" oninput="renderEmployees()">
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Employee ID</th><th>Email</th><th>Department</th><th>Role</th><th>Password</th><th></th></tr></thead>
+          <tbody id="emp-tbody"></tbody>
+        </table>
+        <p class="hint" id="emp-empty">No employees yet.</p>
+      </div>
+    </section>
+
+    <section class="dept hidden" id="dept-sales">
+      <div class="dept-hdr">
+        <button class="btn btn-sm" onclick="goHub()">&larr; Back</button>
+        <h1>Sales</h1>
+      </div>
+      <div class="sub-tabs">
+        <div class="sub-tab active" data-sub="leads" onclick="switchSales('leads')">Leads</div>
+        <div class="sub-tab" data-sub="contacts" onclick="switchSales('contacts')">Contacts</div>
+        <div class="sub-tab" data-sub="accounts" onclick="switchSales('accounts')">Accounts</div>
+      </div>
+
+      <div class="sales-panel" data-sales="leads">
+        <div class="card">
+          <div class="top-actions">
+            <h2 style="margin:0;">Leads <span class="pill" id="leads-count">0</span></h2>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="lead-status-filter" onchange="renderLeads()" style="width:auto;">
+                <option value="">All statuses</option>
+                <option value="New">New</option>
+                <option value="Contacted">Contacted</option>
+                <option value="Demo Booked">Demo Booked</option>
+                <option value="Converted">Converted</option>
+                <option value="Lost">Lost</option>
+              </select>
+              <input class="search" id="lead-search" placeholder="Search name, outlet, phone…" oninput="renderLeads()">
+              <button class="btn btn-sm" onclick="loadLeads()">Refresh</button>
+            </div>
+          </div>
+          <p class="hint" style="margin-bottom:10px;">Submissions from the Book a Free Demo form on tafelbill.com land here.</p>
+          <table>
+            <thead><tr><th>Received</th><th>Name</th><th>Outlet</th><th>Contact</th><th>City</th><th>Message</th><th>Status</th><th></th></tr></thead>
+            <tbody id="leads-tbody"></tbody>
+          </table>
+          <p class="hint" id="leads-empty">No demo requests yet.</p>
+        </div>
+      </div>
+
+      <div class="sales-panel hidden" data-sales="contacts">
+        <div class="card">
+          <div class="top-actions">
+            <h2 style="margin:0;">Contacts <span class="pill" id="contacts-count">0</span></h2>
+            <input class="search" id="contact-search" placeholder="Search name, outlet, phone…" oninput="renderContacts()">
+          </div>
+          <p class="hint" style="margin-bottom:10px;">People. Converting a lead creates one automatically.</p>
+          <table>
+            <thead><tr><th>Name</th><th>Outlet</th><th>Contact</th><th>City</th><th>Added</th></tr></thead>
+            <tbody id="contacts-tbody"></tbody>
+          </table>
+          <p class="hint" id="contacts-empty">No contacts yet.</p>
+        </div>
+      </div>
+
+      <div class="sales-panel hidden" data-sales="accounts">
+        <div class="card">
+          <div class="top-actions">
+            <h2 style="margin:0;">Accounts <span class="pill" id="accounts-count">0</span></h2>
+            <input class="search" id="account-search" placeholder="Search outlet, city…" oninput="renderAccounts()">
+          </div>
+          <p class="hint" style="margin-bottom:10px;">Businesses. Converting a lead opens one, and it links to the outlet once Operations provisions it.</p>
+          <table>
+            <thead><tr><th>Outlet</th><th>Primary Contact</th><th>City</th><th>Stage</th><th>Opened</th></tr></thead>
+            <tbody id="accounts-tbody"></tbody>
+          </table>
+          <p class="hint" id="accounts-empty">No accounts yet.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="dept hidden" id="dept-support">
+      <div class="dept-hdr">
+        <button class="btn btn-sm" onclick="goHub()">&larr; Back</button>
+        <h1>Support</h1>
+      </div>
+      <div class="card"><div class="placeholder">
+        <h3>Nothing here yet</h3>
+        <p class="hint">Ticket queues and outlet issue history will live here once the workflow is decided.</p>
+      </div></div>
+    </section>
+
+    <section class="dept hidden" id="dept-it">
+      <div class="dept-hdr">
+        <button class="btn btn-sm" onclick="goHub()">&larr; Back</button>
+        <h1>IT</h1>
+      </div>
+      <div class="card"><div class="placeholder">
+        <h3>Nothing here yet</h3>
+        <p class="hint">Firebase health, release versions and device management will live here once the workflow is decided.</p>
+      </div></div>
+    </section>
 
   </div>
 </div>
@@ -192,22 +389,147 @@
 </script>
 
 <script>
-// Basic local-only access gate. Not real security — this tool is intended
-// to run on a trusted machine, not be hosted publicly.
-const ADMIN_PASSWORD = '1234';
+// Staff sign in. Accounts live in Firestore, never in this file, so no real
+// password is committed to the repository. This is still a client-side check
+// and is only sound because admin.html is excluded from the published site;
+// Firebase Auth is what would make it hold up on a public URL.
+const DEPARTMENTS = [
+  { id: 'hr',         name: 'Human Resources', icon: '<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16.5 5.2a3.2 3.2 0 0 1 0 5.9M18 20a5.6 5.6 0 0 0-2-4.3"/>' },
+  { id: 'support',    name: 'Support',         soon: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M9.1 9.5a3 3 0 1 1 3.4 4.3v1.2"/><circle cx="12.2" cy="17.8" r=".9" fill="currentColor" stroke="none"/>' },
+  { id: 'operations', name: 'Operations',      icon: '<path d="M3.5 9.5h17V20a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M2.5 9.5 4 3.5h16l1.5 6"/><path d="M9.5 21v-6h5v6"/>' },
+  { id: 'it',         name: 'IT',              soon: true, icon: '<rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>' },
+  { id: 'sales',      name: 'Sales',           icon: '<path d="M3 17.5 9 11l4 4 7.5-8"/><path d="M15.5 7h5v5"/>' },
+];
 
-function checkGate() {
-  const val = document.getElementById('gate-pass').value;
-  if (val === ADMIN_PASSWORD) {
-    document.getElementById('gate').classList.add('hidden');
-    document.getElementById('main').classList.remove('hidden');
-    loadClients();
-    loadLeads();
-  } else {
-    document.getElementById('gate-err').textContent = 'Wrong password.';
+let currentEmp = null;
+let allEmployees = [];
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Only the first word, capitalised — "abhishek philip" greets as "Hej Abhishek".
+function greetingFor(name) {
+  const first = (name || '').trim().split(/\s+/)[0] || '';
+  if (!first) return 'Hej';
+  return 'Hej ' + first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+}
+
+function showScreen(id) {
+  ['boot', 'gate', 'setup', 'rules-warn'].forEach(x =>
+    document.getElementById(x).classList.toggle('hidden', x !== id));
+  document.getElementById('main').classList.toggle('hidden', id !== null);
+}
+
+async function boot() {
+  const { fbDb, collection, getDocs } = window.__fb;
+  try {
+    const snap = await getDocs(collection(fbDb, 'employees'));
+    allEmployees = snap.docs.map(d => d.data());
+    showScreen(allEmployees.length ? 'gate' : 'setup');
+  } catch (e) {
+    console.error('Cannot reach employees', e);
+    document.getElementById('rules-err').textContent = e.code || e.message;
+    showScreen('rules-warn');
   }
 }
-document.getElementById('gate-pass').addEventListener('keydown', e => { if (e.key === 'Enter') checkGate(); });
+
+async function createMaster() {
+  const err = document.getElementById('setup-err');
+  const btn = document.getElementById('setup-btn');
+  err.textContent = '';
+  const name = document.getElementById('s-name').value.trim();
+  const empId = document.getElementById('s-empId').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  const pass = document.getElementById('s-pass').value;
+  const pass2 = document.getElementById('s-pass2').value;
+  if (!name || !empId || !email || !pass) { err.textContent = 'Every field is required.'; return; }
+  if (pass !== pass2) { err.textContent = 'The two passwords do not match.'; return; }
+  if (pass.length < 8) { err.textContent = 'Use at least 8 characters.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    const { fbDb, doc, setDoc } = window.__fb;
+    const id = 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const rec = { id, empId, name, email, phone: '', department: 'all', role: 'CEO',
+                  passwordHash: await sha256(pass), active: true, createdAt: new Date().toISOString() };
+    await setDoc(doc(fbDb, 'employees', id), rec);
+    allEmployees = [rec];
+    showScreen('gate');
+    document.getElementById('gate-user').value = email;
+    document.getElementById('gate-pass').focus();
+  } catch (e) {
+    console.error(e);
+    err.textContent = 'Could not create the account: ' + (e.code || e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Master Account';
+  }
+}
+
+async function signIn() {
+  const err = document.getElementById('gate-err');
+  const btn = document.getElementById('gate-btn');
+  err.textContent = '';
+  const who = document.getElementById('gate-user').value.trim().toLowerCase();
+  const pass = document.getElementById('gate-pass').value;
+  if (!who || !pass) { err.textContent = 'Enter your ID or email, and your password.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const hash = await sha256(pass);
+    const emp = allEmployees.find(e =>
+      e.active !== false &&
+      ((e.empId || '').toLowerCase() === who || (e.email || '').toLowerCase() === who) &&
+      e.passwordHash === hash);
+    if (!emp) { err.textContent = 'No account matches those details.'; return; }
+    currentEmp = emp;
+    document.getElementById('who').textContent = emp.name + ' · ' + emp.role;
+    showScreen(null);
+    goHub();
+    loadClients();
+    loadLeads();
+    loadEmployees();
+    loadContacts();
+    loadAccounts();
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+
+function isMaster() { return currentEmp && currentEmp.role === 'CEO'; }
+function canSee(deptId) { return isMaster() || (currentEmp && currentEmp.department === deptId); }
+
+function goHub() {
+  document.getElementById('hub').classList.remove('hidden');
+  document.querySelectorAll('.dept').forEach(d => d.classList.add('hidden'));
+  document.getElementById('hub-greet').textContent = greetingFor(currentEmp && currentEmp.name);
+  document.getElementById('hub-grid').innerHTML = DEPARTMENTS.filter(d => canSee(d.id)).map(d => `
+    <div class="hub-card${d.soon ? ' soon' : ''}" onclick="openDept('${d.id}')">
+      <div class="hub-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d.icon}</svg></div>
+      <div class="hub-label">${d.name}</div>
+      ${d.soon ? '<div class="hub-soon">COMING SOON</div>' : ''}
+    </div>`).join('');
+}
+
+function openDept(id) {
+  if (!canSee(id)) return;
+  document.getElementById('hub').classList.add('hidden');
+  document.querySelectorAll('.dept').forEach(d => d.classList.add('hidden'));
+  document.getElementById('dept-' + id).classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function switchSales(name) {
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.toggle('active', t.dataset.sub === name));
+  document.querySelectorAll('.sales-panel').forEach(p => p.classList.toggle('hidden', p.dataset.sales !== name));
+}
+
+document.getElementById('gate-pass').addEventListener('keydown', e => { if (e.key === 'Enter') signIn(); });
+document.getElementById('gate-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('gate-pass').focus(); });
+
+if (window.__fb) boot();
+else addEventListener('fb-ready', boot, { once: true });
 
 // ── Outlet code helper (kept identical in spirit to index.html's slugifyOutlet) ──
 function slugifyOutlet(name) {
@@ -427,6 +749,9 @@ function renderLeads() {
       <td><select onchange="setLeadStatus('${escapeHtml(l.id)}', this.value)" style="width:auto;">
         ${LEAD_STATUSES.map(sv => `<option value="${sv}"${sv === cur ? ' selected' : ''}>${sv}</option>`).join('')}
       </select></td>
+      <td>${l.convertedAt
+        ? '<span class="pill">Converted</span>'
+        : `<button class="btn btn-sm" onclick="convertLead('${escapeHtml(l.id)}')">Convert</button>`}</td>
     </tr>`;
   }).join('');
 }
@@ -442,6 +767,218 @@ async function setLeadStatus(id, status) {
     alert('Could not save that status change. Check the connection and try again.');
   }
   renderLeads();
+}
+
+// ── Human Resources: the staff who can sign in here ──
+function genEmpPassword() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let out = '';
+  for (let i = 0; i < 12; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('h-pass').value = out;
+}
+
+function fillDeptSelect() {
+  const sel = document.getElementById('h-dept');
+  sel.innerHTML = DEPARTMENTS.map(d => `<option value="${d.id}">${d.name}</option>`).join('')
+    + '<option value="all">All departments (master)</option>';
+}
+
+async function loadEmployees() {
+  const { fbDb, collection, getDocs } = window.__fb;
+  try {
+    const snap = await getDocs(collection(fbDb, 'employees'));
+    allEmployees = snap.docs.map(d => d.data())
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  } catch (e) {
+    console.error('Failed to load employees', e);
+  }
+  renderEmployees();
+}
+
+function renderEmployees() {
+  const q = (document.getElementById('emp-search').value || '').toLowerCase();
+  const rows = allEmployees.filter(e => !q ||
+    [e.name, e.empId, e.email, e.department, e.role].some(v => (v || '').toLowerCase().includes(q)));
+  document.getElementById('emp-count').textContent = allEmployees.length;
+  document.getElementById('emp-empty').classList.toggle('hidden', rows.length > 0);
+  const deptName = id => (DEPARTMENTS.find(d => d.id === id) || {}).name || (id === 'all' ? 'All (master)' : id || '');
+  document.getElementById('emp-tbody').innerHTML = rows.map(e => `
+    <tr${e.active === false ? ' style="opacity:.5;"' : ''}>
+      <td><b>${escapeHtml(e.name)}</b></td>
+      <td class="mono">${escapeHtml(e.empId)}</td>
+      <td>${escapeHtml(e.email)}${e.phone ? '<br>' + escapeHtml(e.phone) : ''}</td>
+      <td>${escapeHtml(deptName(e.department))}</td>
+      <td>${escapeHtml(e.role)}</td>
+      <td class="hint">stored as a hash</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-sm" onclick="resetEmpPassword('${escapeHtml(e.id)}')">Reset</button>
+        ${e.role === 'CEO' ? '' :
+          `<button class="btn btn-sm" onclick="toggleEmpActive('${escapeHtml(e.id)}')">${e.active === false ? 'Enable' : 'Disable'}</button>`}
+      </td>
+    </tr>`).join('');
+}
+
+async function addEmployee() {
+  const err = document.getElementById('hr-err');
+  const btn = document.getElementById('hr-add-btn');
+  err.textContent = '';
+  const name = document.getElementById('h-name').value.trim();
+  const empId = document.getElementById('h-empId').value.trim();
+  const email = document.getElementById('h-email').value.trim();
+  const phone = document.getElementById('h-phone').value.trim();
+  const department = document.getElementById('h-dept').value;
+  const role = document.getElementById('h-role').value;
+  const pass = document.getElementById('h-pass').value;
+  if (!name || !empId || !email || !pass) { err.textContent = 'Name, employee ID, email and password are required.'; return; }
+  if (pass.length < 8) { err.textContent = 'Use at least 8 characters for the password.'; return; }
+  const clash = allEmployees.find(e =>
+    (e.empId || '').toLowerCase() === empId.toLowerCase() || (e.email || '').toLowerCase() === email.toLowerCase());
+  if (clash) { err.textContent = 'That employee ID or email is already in use.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    const { fbDb, doc, setDoc } = window.__fb;
+    const id = 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    await setDoc(doc(fbDb, 'employees', id), {
+      id, empId, name, email, phone, department, role,
+      passwordHash: await sha256(pass), active: true, createdAt: new Date().toISOString(),
+    });
+    const box = document.getElementById('hr-creds');
+    box.classList.remove('hidden');
+    // Shown once: the hash is all that is kept, so it cannot be looked up later.
+    box.innerHTML = `
+      <div class="ok">Employee added. Pass these on now — the password cannot be shown again.</div>
+      <div><b>Employee ID:</b> ${escapeHtml(empId)}</div>
+      <div><b>Email:</b> ${escapeHtml(email)}</div>
+      <div><b>Password:</b> ${escapeHtml(pass)}</div>`;
+    ['h-name', 'h-empId', 'h-email', 'h-phone', 'h-pass'].forEach(x => document.getElementById(x).value = '');
+    loadEmployees();
+  } catch (e) {
+    console.error(e);
+    err.textContent = 'Could not add the employee: ' + (e.code || e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Add Employee';
+  }
+}
+
+async function resetEmpPassword(id) {
+  const emp = allEmployees.find(e => e.id === id);
+  if (!emp) return;
+  const pass = prompt('New password for ' + emp.name + ' (at least 8 characters):');
+  if (pass == null) return;
+  if (pass.length < 8) { alert('Use at least 8 characters.'); return; }
+  try {
+    const { fbDb, doc, setDoc } = window.__fb;
+    await setDoc(doc(fbDb, 'employees', id), { passwordHash: await sha256(pass) }, { merge: true });
+    emp.passwordHash = await sha256(pass);
+    alert('Password updated for ' + emp.name + '.');
+  } catch (e) {
+    console.error(e);
+    alert('Could not update that password: ' + (e.code || e.message));
+  }
+}
+
+async function toggleEmpActive(id) {
+  const emp = allEmployees.find(e => e.id === id);
+  if (!emp || emp.role === 'CEO') return;
+  const next = emp.active === false;
+  try {
+    const { fbDb, doc, setDoc } = window.__fb;
+    await setDoc(doc(fbDb, 'employees', id), { active: next }, { merge: true });
+    emp.active = next;
+    renderEmployees();
+  } catch (e) {
+    console.error(e);
+    alert('Could not change that account: ' + (e.code || e.message));
+  }
+}
+
+// ── Sales: contacts and accounts, both fed by converting a lead ──
+let allContacts = [];
+let allAccounts = [];
+
+async function loadContacts() {
+  const { fbDb, collection, getDocs } = window.__fb;
+  try {
+    const snap = await getDocs(collection(fbDb, 'contacts'));
+    allContacts = snap.docs.map(d => d.data()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  } catch (e) { console.error('Failed to load contacts', e); }
+  renderContacts();
+}
+
+function renderContacts() {
+  const q = (document.getElementById('contact-search').value || '').toLowerCase();
+  const rows = allContacts.filter(c => !q ||
+    [c.name, c.outletName, c.phone, c.email, c.city].some(v => (v || '').toLowerCase().includes(q)));
+  document.getElementById('contacts-count').textContent = allContacts.length;
+  document.getElementById('contacts-empty').classList.toggle('hidden', rows.length > 0);
+  document.getElementById('contacts-tbody').innerHTML = rows.map(c => `
+    <tr>
+      <td><b>${escapeHtml(c.name)}</b></td>
+      <td>${escapeHtml(c.outletName)}</td>
+      <td>${c.phone ? `<a href="tel:${escapeHtml(c.phone)}">${escapeHtml(c.phone)}</a>` : ''}
+        ${c.email ? `<br><a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a>` : ''}</td>
+      <td>${escapeHtml(c.city)}</td>
+      <td>${c.createdAt ? escapeHtml(new Date(c.createdAt).toLocaleDateString()) : ''}</td>
+    </tr>`).join('');
+}
+
+async function loadAccounts() {
+  const { fbDb, collection, getDocs } = window.__fb;
+  try {
+    const snap = await getDocs(collection(fbDb, 'accounts'));
+    allAccounts = snap.docs.map(d => d.data()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  } catch (e) { console.error('Failed to load accounts', e); }
+  renderAccounts();
+}
+
+function renderAccounts() {
+  const q = (document.getElementById('account-search').value || '').toLowerCase();
+  const rows = allAccounts.filter(a => !q ||
+    [a.outletName, a.city, a.primaryContact, a.stage].some(v => (v || '').toLowerCase().includes(q)));
+  document.getElementById('accounts-count').textContent = allAccounts.length;
+  document.getElementById('accounts-empty').classList.toggle('hidden', rows.length > 0);
+  document.getElementById('accounts-tbody').innerHTML = rows.map(a => `
+    <tr>
+      <td><b>${escapeHtml(a.outletName)}</b>${a.outletCode ? '<br><span class="pill mono">' + escapeHtml(a.outletCode) + '</span>' : ''}</td>
+      <td>${escapeHtml(a.primaryContact)}</td>
+      <td>${escapeHtml(a.city)}</td>
+      <td><span class="pill">${escapeHtml(a.stage || 'Prospect')}</span></td>
+      <td>${a.createdAt ? escapeHtml(new Date(a.createdAt).toLocaleDateString()) : ''}</td>
+    </tr>`).join('');
+}
+
+// One lead becomes one contact (the person) and one account (the business).
+async function convertLead(id) {
+  const lead = allLeads.find(l => l.id === id);
+  if (!lead) return;
+  if (!confirm('Convert "' + lead.name + '" into a contact and an account?')) return;
+  const { fbDb, doc, setDoc } = window.__fb;
+  const stamp = new Date().toISOString();
+  const rand = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  try {
+    const contactId = 'ct' + rand();
+    const accountId = 'ac' + rand();
+    await setDoc(doc(fbDb, 'contacts', contactId), {
+      id: contactId, name: lead.name, outletName: lead.outletName, phone: lead.phone,
+      email: lead.email, city: lead.city, accountId, leadId: lead.id, createdAt: stamp,
+    });
+    await setDoc(doc(fbDb, 'accounts', accountId), {
+      id: accountId, outletName: lead.outletName, primaryContact: lead.name, city: lead.city,
+      phone: lead.phone, email: lead.email, stage: 'Prospect', outletCode: '',
+      leadId: lead.id, createdAt: stamp,
+    });
+    await setDoc(doc(fbDb, 'leads', lead.id),
+      { status: 'Converted', convertedAt: stamp, contactId, accountId }, { merge: true });
+    lead.status = 'Converted'; lead.convertedAt = stamp;
+    renderLeads();
+    loadContacts();
+    loadAccounts();
+    switchSales('accounts');
+  } catch (e) {
+    console.error(e);
+    alert('Could not convert that lead: ' + (e.code || e.message));
+  }
 }
 
 // ── Client list ──
@@ -604,7 +1141,6 @@ async function syncMasterLogin(outletCode, prevUserId, userId, password) {
   return { docId, created: !target, demoted, promoted: promoting, cancelled: false };
 }
 
-window.checkGate = checkGate;
 window.onOutletNameInput = onOutletNameInput;
 window.genPassword = genPassword;
 window.switchTab = switchTab;
@@ -615,6 +1151,20 @@ window.renderClients = renderClients;
 window.loadLeads = loadLeads;
 window.renderLeads = renderLeads;
 window.setLeadStatus = setLeadStatus;
+window.signIn = signIn;
+window.createMaster = createMaster;
+window.goHub = goHub;
+window.openDept = openDept;
+window.switchSales = switchSales;
+window.genEmpPassword = genEmpPassword;
+window.addEmployee = addEmployee;
+window.renderEmployees = renderEmployees;
+window.resetEmpPassword = resetEmpPassword;
+window.toggleEmpActive = toggleEmpActive;
+window.renderContacts = renderContacts;
+window.renderAccounts = renderAccounts;
+window.convertLead = convertLead;
+fillDeptSelect();
 window.onExistingToggle = onExistingToggle;
 window.openEditModal = openEditModal;
 window.closeEditModal = closeEditModal;
