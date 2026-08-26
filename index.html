@@ -617,9 +617,13 @@ body.dark .kot-pending-review { background: #3A2E10; }
 .stat-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
 /* ── Hub (Owner / Master Login landing screen) ── */
-/* Loading overlay: a cup that fills while work is in flight and is topped up
-   the moment it finishes, so the animation ends on purpose rather than being
-   cut off mid-pour. Everything animates through opacity and transform only. */
+/* Loading overlay: the mark's four quadrants, lit one at a time clockwise so
+   the logo itself reads as the spinner. Everything animates through opacity
+   and transform only.
+
+   It also covers the first paint. The markup sits at the top of the body, so
+   it is on screen long before the script below has been parsed — which is the
+   stretch where the page looked ready but every keystroke went nowhere. */
 #app-loader {
   position: fixed; inset: 0; z-index: 400;
   display: flex; align-items: center; justify-content: center;
@@ -635,38 +639,44 @@ body.dark .kot-pending-review { background: #3A2E10; }
   backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
   transition: opacity .34s ease, visibility 0s;
 }
+/* Boot: opaque, so nobody watches a half-drawn screen assemble itself, and
+   in the brand navy because there is no dimmed page behind it yet. */
+#app-loader.boot {
+  /* Above the login screen and the drawer, both of which outrank the in-app
+     overlay and would otherwise take clicks through the cover. Below the
+     receipt sheet, which never shares the screen with a boot. */
+  z-index: 9990;
+  background: var(--bg);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+#app-loader.boot .q { fill: var(--text); }
+#app-loader.boot .loader-text { color: var(--muted); }
+
 .loader-box { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.loader-cup { width: 122px; height: 132px; overflow: visible; }
-.loader-cup .body, .loader-cup .handle {
-  fill: none; stroke: #fff; stroke-width: 4.5; stroke-linejoin: round; stroke-linecap: round;
+.loader-mark { width: 88px; height: 88px; }
+/* Quadrants are ordered clockwise in the markup, so staggering the same
+   animation by a quarter cycle each walks the lit one around the square. */
+.loader-mark .q {
+  fill: #fff;
+  opacity: .22;
+  transform-box: fill-box; transform-origin: center;
+  animation: loader-quadrant 1.6s linear infinite;
 }
-.loader-cup .saucer { fill: #fff; }
-.loader-cup .coffee {
-  fill: #B4713C;
-  transform-box: fill-box; transform-origin: bottom;
-  transform: scaleY(var(--fill, 0));
-  transition: transform .6s cubic-bezier(.4, 0, .2, 1);
-}
-.loader-cup .steam path {
-  fill: none; stroke: rgba(255, 255, 255, .6); stroke-width: 3; stroke-linecap: round;
-  opacity: 0; animation: loader-steam 2.8s ease-in-out infinite;
-}
-.loader-cup .steam path:nth-child(2) { animation-delay: .5s; }
-.loader-cup .steam path:nth-child(3) { animation-delay: 1s; }
-@keyframes loader-steam {
-  0%   { opacity: 0; transform: translateY(4px)  scaleY(.7); }
-  35%  { opacity: .75; }
-  100% { opacity: 0; transform: translateY(-9px) scaleY(1.15); }
+.loader-mark .q2 { animation-delay: .4s; }
+.loader-mark .q3 { animation-delay: .8s; }
+.loader-mark .q4 { animation-delay: 1.2s; }
+@keyframes loader-quadrant {
+  0%, 22%   { opacity: 1;   transform: scale(1); }
+  40%, 100% { opacity: .22; transform: scale(.9); }
 }
 .loader-text {
   color: #fff; font-size: 13.5px; font-weight: 600; letter-spacing: .2px;
   text-align: center; max-width: 260px;
 }
-/* Someone who asked for less motion still gets the cup and the fill level,
-   just none of the drifting steam. */
+/* Someone who asked for less motion still gets the mark, just held still and
+   evenly lit rather than chasing itself around. */
 @media (prefers-reduced-motion: reduce) {
-  .loader-cup .steam path { animation: none; opacity: .45; }
-  .loader-cup .coffee { transition-duration: .01s; }
+  .loader-mark .q { animation: none; opacity: .8; }
 }
 .hub-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px 16px; }
 .hub-greet { font-size: 22px; font-weight: 700; margin-bottom: 6px; text-align: center; }
@@ -803,25 +813,13 @@ body.dark .kot-pending-review { background: #3A2E10; }
 </head>
 <body>
 <div id="offline-bar" role="alert" aria-live="assertive" style="display:none;"></div>
-<div id="app-loader" role="status" aria-live="polite" aria-hidden="true">
+<div id="app-loader" class="boot on" role="status" aria-live="polite" aria-hidden="false">
   <div class="loader-box">
-    <svg class="loader-cup" viewBox="0 0 120 128" aria-hidden="true">
-      <defs>
-        <clipPath id="loader-cup-inside">
-          <path d="M30 36 h60 l-6 58 a11 11 0 0 1 -11 10 h-26 a11 11 0 0 1 -11 -10 z"/>
-        </clipPath>
-      </defs>
-      <g class="steam">
-        <path d="M52 26 c0 -6 6 -8 6 -14 c0 -6 -6 -8 -6 -13"/>
-        <path d="M64 26 c0 -6 6 -8 6 -14 c0 -6 -6 -8 -6 -13"/>
-        <path d="M76 26 c0 -6 6 -8 6 -14 c0 -6 -6 -8 -6 -13"/>
-      </g>
-      <g clip-path="url(#loader-cup-inside)">
-        <rect class="coffee" x="28" y="34" width="64" height="72"/>
-      </g>
-      <path class="body" d="M30 36 h60 l-6 58 a11 11 0 0 1 -11 10 h-26 a11 11 0 0 1 -11 -10 z"/>
-      <path class="handle" d="M90 48 h7 a13 13 0 0 1 0 26 h-4"/>
-      <rect class="saucer" x="22" y="112" width="76" height="6" rx="3"/>
+    <svg class="loader-mark" viewBox="0 0 100 100" aria-hidden="true">
+      <path  class="q q1" d="M10 27.1A17.1 17.1 0 0 1 27.1 10h20.15v37.25H10Z"/>
+      <path  class="q q2" d="M52.75 10H72.9A17.1 17.1 0 0 1 90 27.1v3.05A17.1 17.1 0 0 1 72.9 47.25H52.75Z"/>
+      <circle class="q q3" cx="71.375" cy="71.375" r="18.625"/>
+      <path  class="q q4" d="M10 52.75h37.25V90H27.1A17.1 17.1 0 0 1 10 72.9Z"/>
     </svg>
     <div class="loader-text" id="app-loader-text"></div>
   </div>
@@ -1843,7 +1841,7 @@ function go(view, extra) {
 // ── Loading overlay ────────────────────────────────────────────────────────
 // Reference-counted, because more than one thing can be in flight at once and
 // whichever finishes first must not pull the overlay out from under the other.
-let loaderCount = 0, loaderTimer = null, loaderSafety = null, loaderReveal = null;
+let loaderCount = 0, loaderSafety = null, loaderReveal = null;
 const LOADER_REVEAL_MS = 180;
 // A loader that never closes is worse than none: it dims and blocks the whole
 // till. Whatever we are waiting for, give up covering the screen after this.
@@ -1851,14 +1849,12 @@ const LOADER_MAX_MS = 12000;
 
 function closeLoader(el) {
   loaderCount = 0;
-  clearInterval(loaderTimer); loaderTimer = null;
   clearTimeout(loaderSafety); loaderSafety = null;
   clearTimeout(loaderReveal); loaderReveal = null;
-  // Never revealed, so there is nothing to animate away.
-  if (!el.classList.contains('on')) { el.setAttribute('aria-hidden', 'true'); return; }
-  el.style.setProperty('--fill', '1');
   el.setAttribute('aria-hidden', 'true');
-  setTimeout(() => { if (loaderCount === 0) el.classList.remove('on'); }, 520);
+  // Never revealed, so there is nothing to animate away.
+  if (!el.classList.contains('on')) return;
+  setTimeout(() => { if (loaderCount === 0) el.classList.remove('on'); }, 360);
 }
 
 function showLoader(text) {
@@ -1868,32 +1864,31 @@ function showLoader(text) {
   if (label) label.textContent = text || t('loadingMsg');
   if (++loaderCount > 1) return;
   el.setAttribute('aria-hidden', 'false');
-  el.style.setProperty('--fill', '0');
   // Hold off before dimming the screen. Most saves and re-renders finish in a
   // few dozen milliseconds, and an overlay that appears and vanishes again
   // reads as a glitch — so if the work beats this, it never shows at all.
   clearTimeout(loaderReveal);
   loaderReveal = setTimeout(() => el.classList.add('on'), LOADER_REVEAL_MS);
-  // Creep towards nearly full while waiting. The last stretch is deliberately
-  // held back for hideLoader, so the pour always finishes rather than stopping
-  // wherever the work happened to end.
-  let level = 0;
-  clearInterval(loaderTimer);
-  loaderTimer = setInterval(() => {
-    level += (0.88 - level) * 0.16;
-    el.style.setProperty('--fill', level.toFixed(3));
-  }, 260);
   clearTimeout(loaderSafety);
   loaderSafety = setTimeout(() => closeLoader(el), LOADER_MAX_MS);
-  setTimeout(() => el.style.setProperty('--fill', '0.22'), 30);
 }
 
 function hideLoader() {
   const el = document.getElementById('app-loader');
   if (!el) return;
   if (--loaderCount > 0) return;
-  // Tops the cup up, then clears once it has reached the brim.
   closeLoader(el);
+}
+
+// The boot cover is not part of the show/hide counting: it is already on
+// screen when the script starts, and comes off once there is something to
+// interact with. Safe to call more than once.
+function hideBootLoader() {
+  const el = document.getElementById('app-loader');
+  if (!el || !el.classList.contains('boot')) return;
+  el.setAttribute('aria-hidden', 'true');
+  el.classList.remove('on');
+  setTimeout(() => el.classList.remove('boot'), 360);
 }
 
 // Greeting for the hub. Logins get typed every which way — YELLOWCUP, philip,
@@ -7003,9 +6998,16 @@ function init() {
   } else {
     showLogin();
   }
+  hideBootLoader();
 }
 
-init();
+try {
+  init();
+} finally {
+  // Whatever happened above, the page must not be left sealed behind a cover
+  // that nothing will ever remove.
+  hideBootLoader();
+}
 </script>
 </body>
 </html>
