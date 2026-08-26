@@ -1847,6 +1847,13 @@ const LOADER_REVEAL_MS = 180;
 // till. Whatever we are waiting for, give up covering the screen after this.
 const LOADER_MAX_MS = 12000;
 
+// The cover stays up for at least this long, timed from the navigation rather
+// than from whenever this script got its turn, so parsing counts towards it.
+// A boot that beats it still waits: the mark finishing its rotation reads as
+// deliberate, where a cover that blinks past reads as a fault.
+const BOOT_MIN_MS = 4000;
+let bootHideTimer = null;
+
 function closeLoader(el) {
   loaderCount = 0;
   clearTimeout(loaderSafety); loaderSafety = null;
@@ -1882,10 +1889,18 @@ function hideLoader() {
 
 // The boot cover is not part of the show/hide counting: it is already on
 // screen when the script starts, and comes off once there is something to
-// interact with. Safe to call more than once.
+// interact with, or once BOOT_MIN_MS has passed, whichever is later.
+// Safe to call more than once; the wait is only ever scheduled once.
 function hideBootLoader() {
   const el = document.getElementById('app-loader');
   if (!el || !el.classList.contains('boot')) return;
+  const left = BOOT_MIN_MS - performance.now();
+  if (left > 0) {
+    if (!bootHideTimer) {
+      bootHideTimer = setTimeout(() => { bootHideTimer = null; hideBootLoader(); }, left);
+    }
+    return;
+  }
   el.setAttribute('aria-hidden', 'true');
   el.classList.remove('on');
   setTimeout(() => el.classList.remove('boot'), 360);
