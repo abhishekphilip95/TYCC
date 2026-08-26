@@ -2,23 +2,59 @@
   "firestore": {
     "rules": "firestore.rules"
   },
-  "hosting": {
-    "target": "admin",
-    "public": "admin-dist",
-    "predeploy": ["node scripts/build-admin.js"],
-    "ignore": ["**/.*"],
-    "cleanUrls": true,
-    "headers": [
-      {
-        "source": "**",
-        "headers": [
-          { "key": "X-Frame-Options", "value": "DENY" },
-          { "key": "Content-Security-Policy", "value": "frame-ancestors 'none'" },
-          { "key": "X-Content-Type-Options", "value": "nosniff" },
-          { "key": "Referrer-Policy", "value": "no-referrer" },
-          { "key": "Cache-Control", "value": "no-store" }
-        ]
-      }
-    ]
-  }
+  "hosting": [
+    {
+      "target": "app",
+      "public": "app-dist",
+      "predeploy": ["node scripts/build-app.js"],
+      "ignore": ["**/.*"],
+      "headers": [
+        {
+          "source": "**/*.@(html|webmanifest)",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-store" }
+          ]
+        },
+        {
+          "comment": "A stale service worker outlives a stale page, so it is never cached.",
+          "source": "/sw.js",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-store" }
+          ]
+        },
+        {
+          "source": "**/*.png",
+          "headers": [
+            { "key": "Cache-Control", "value": "public, max-age=604800" }
+          ]
+        },
+        {
+          "source": "**",
+          "headers": [
+            { "key": "X-Content-Type-Options", "value": "nosniff" },
+            { "key": "Referrer-Policy", "value": "no-referrer" }
+          ]
+        }
+      ]
+    },
+    {
+      "target": "admin",
+      "public": "admin-dist",
+      "predeploy": ["node scripts/build-admin.js"],
+      "ignore": ["**/.*"],
+      "cleanUrls": true,
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            { "key": "X-Frame-Options", "value": "DENY" },
+            { "key": "Content-Security-Policy", "value": "frame-ancestors 'none'" },
+            { "key": "X-Content-Type-Options", "value": "nosniff" },
+            { "key": "Referrer-Policy", "value": "no-referrer" },
+            { "key": "Cache-Control", "value": "no-store" }
+          ]
+        }
+      ]
+    }
+  ]
 }

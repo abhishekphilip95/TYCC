@@ -9,3 +9,6 @@ admin-dist/
 
 # Firebase CLI deploy cache.
 .firebase/
+
+# Built by scripts/build-app.js at deploy time.
+app-dist/

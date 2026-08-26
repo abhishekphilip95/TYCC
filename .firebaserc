@@ -7,6 +7,9 @@
       "hosting": {
         "admin": [
           "tycc-9a6d2-admin"
+        ],
+        "app": [
+          "tafelbill-app"
         ]
       }
     }
